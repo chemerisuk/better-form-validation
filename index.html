@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>better-forms demo</title>
+    <link rel="stylesheet" href="src/better-form-validation.css">
+</head>
+<body>
+    <form>
+        <p>
+            <label>Your email<br>
+                <input type="email" placeholder="my@email.com" name="email" required>
+            </label>
+        </p>
+        <p>
+            <label>Your password<br>
+                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" title="test">
+            </label>
+        </p>
+        <p>
+            <label>Your comment<br>
+                <textarea placeholder="say what you think..." name="comment" required></textarea>
+            </label>
+        </p>
+        <button type="submit">Submit</button>
+    </form>
+    <script src="components/better-dom/better-dom.js" data-htc="components/better-dom/better-dom.htc"></script>
+    <script src="src/better-form-validation.js"></script>
+    <script src="i18n/better-form-validation.en.js"></script>
+</body>
+</html>

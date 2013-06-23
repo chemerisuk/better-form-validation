@@ -1,0 +1,19 @@
+{
+    "name": "better-forms",
+    "version": "0.0.1",
+    "main": [
+        "better-forms.js"
+    ],
+    "ignore": [
+        ".*",
+        "test",
+        "src"
+    ],
+    "dependencies": {
+        "better-dom": "~1.0.0"
+    },
+    "devDependencies": {
+        "lodash": "1.2.1",
+        "jasmine": "1.3.1"
+    }
+}
