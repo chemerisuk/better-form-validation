@@ -17,14 +17,11 @@
         hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
-        makePair = function(name, value) {
-            return encodeURIComponent(name) + "=" + encodeURIComponent(value);
-        },
         checkCustomValidators = function(el) {
             var errors = [], selector, message;
 
             for (selector in customValidators) {
-                if (el.matches(selector)) {
+                if (el.is(selector)) {
                     message = customValidators[selector].fn.call(el);
 
                     if (message) errors.push(message);
@@ -41,13 +38,26 @@
         constructor: function() {
             this._validity = [];
 
-            this.on("input", this._checkValidity);
+            if (this.is("textarea") && !this.supports("maxLength")) {
+                this.on("input", function() {
+                    var maxlength = parseInt(this.get("maxlength"), 10),
+                        value = this.get();
+
+                    if (maxlength && value.length > maxlength) {
+                        this.set(value.substr(0, maxlength));
+                    }
+
+                    this._checkValidity();
+                });
+            } else {
+                this.on("input", this._checkValidity);
+            }
         },
         _checkValidity: function() {
             var type = this.get("type"),
                 value = this.get("value"),
-                required = this.has("required"),
-                checked = this.has("checked"),
+                checked = this.get("checked"),
+                required = this.is("[required]"),
                 errors = checkCustomValidators(this),
                 regexp, valid, event;
 
@@ -122,40 +132,6 @@
             this._checkValidity();
 
             return this;
-        },
-        toQueryString: function() {
-            var name = this.get("name"),
-                result = [];
-
-            if (name) { // don't include form fields without names
-                switch(this.get("type")) {
-                case "select-one":
-                case "select-multiple":
-                    this.get("options").each(function(option) {
-                        if (option.get("selected")) {
-                            result.push(makePair(name, option.get()));
-                        }
-                    });
-                    break;
-
-                case undefined:
-                case "fieldset": // fieldset
-                case "file": // file input
-                case "submit": // submit button
-                case "reset": // reset button
-                case "button": // custom button
-                    break;
-
-                case "radio": // radio button
-                case "checkbox": // checkbox
-                    if (!this.get("checked")) break;
-                    /* falls through */
-                default:
-                    result.push(makePair(name, this.get()));
-                }
-            }
-
-            return result.join("&").replace(/%20/g, "+");
         }
     });
 
@@ -224,44 +200,7 @@
             this._checkValidity();
 
             return this;
-        },
-        toQueryString: function() {
-            return this.get("elements").reduce(function(memo, el) {
-                if (el.get("name")) {
-                    var str = el.toQueryString();
-
-                    if (str) memo += (memo ? "&" : "") + str;
-                }
-
-                return memo;
-            }, "");
         }
-    });
-
-    DOM.ready(function() {
-        DOM.find("body").prepend(validityTooltip);
-    });
-
-    DOM.on("validation:fail(target)", function(target) {
-        if (target.get("tagName") !== "form") {
-            var offset = target.offset(),
-                message = target.getValidity()[0],
-                customMessage = message === "pattern-mismatch" && target.has("title");
-
-            validityTooltip
-                .setStyle({ left: offset.left, top: offset.bottom })
-                .set({
-                    "innerHTML": customMessage ? target.get("title") : "",
-                    "data-i18n": customMessage ? null : message
-                })
-                .show();
-
-            lastCapturedElement = target;
-        }
-    });
-
-    DOM.on("validation:success(target)", function() {
-        validityTooltip.hide();
     });
 
     validityTooltip.on("click", function() {
@@ -270,7 +209,39 @@
         validityTooltip.hide();
     });
 
+    DOM.on({
+        "validation:fail(target,defaultPrevented)": function(target, defaultPrevented) {
+            if (!defaultPrevented && target.get("tagName") !== "form") {
+                var offset = target.offset(),
+                    message = target.getValidity()[0],
+                    title = target.get("title"),
+                    hasCustomMessage = message === "pattern-mismatch" && title;
+
+                validityTooltip
+                    .setStyle({ left: offset.left, top: offset.bottom })
+                    .set({
+                        "innerHTML": hasCustomMessage ? title : "",
+                        "data-i18n": hasCustomMessage ? null : message
+                    })
+                    .show();
+
+                lastCapturedElement = target;
+            }
+        },
+        "validation:success(defaultPrevented)": function(defaultPrevented) {
+            if (!defaultPrevented) validityTooltip.hide();
+        }
+    });
+
+    DOM.ready(function() {
+        DOM.find("body").prepend(validityTooltip);
+    });
+
     DOM.registerValidator = function(selector, fn) {
+        if (selector in customValidators) {
+            throw "Can't register validator for the same selector twice!";
+        }
+
         customValidators[selector] = fn;
     };
 
