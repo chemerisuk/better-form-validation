@@ -6,3 +6,4 @@ coverage
 *.log
 reports
 specs.html
+.grunt

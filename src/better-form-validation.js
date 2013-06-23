@@ -36,7 +36,7 @@
 
     DOM.extend("input,textarea,select", {
         constructor: function() {
-            this._validity = [];
+            this._customErrors = this._validity = [];
 
             if (this.is("textarea") && !this.supports("maxLength")) {
                 this.on("input", function() {
@@ -63,9 +63,7 @@
                 errors = checkCustomValidators(this),
                 regexp;
 
-            if (this._customError) {
-                errors.push(this._customError);
-            }
+            Array.prototype.push.apply(errors, this._customErrors);
 
             switch(type) {
             case "image":
@@ -116,7 +114,7 @@
             // return clone of the validity object
             return this._validity.slice(0);
         },
-        setValidity: function(errors, /*INTERNAL*/flag) {
+        setValidity: function(errors, /*INTERNAL*/partial) {
             if (!isArray(errors)) {
                 throw "Errors should be an array";
             }
@@ -125,10 +123,10 @@
 
             this._validity = errors;
 
-            if (!flag) this._customErrors = errors;
+            if (!partial) this._customErrors = errors;
 
             if (!this.isValid() || !oldValid) {
-                this.fire(this.isValid() ? "validation:success" : "validation:fail");
+                this.fire("validation:" + (this.isValid() ? "success" : "fail"));
             }
 
             return this;
@@ -168,25 +166,26 @@
             // return clone of the validity object
             return JSON.parse(JSON.stringify(this._validity));
         },
-        setValidity: function(errors, /*INTERNAL*/flag) {
+        setValidity: function(errors, /*INTERNAL*/partial) {
             if (typeof errors !== "object") {
                 throw "Errors should be an object";
             }
 
             var oldValid = this.isValid();
 
+            // from right to left to display top elements first
             this.get("elements").foldr(function(memo, el) {
-                if (el.get("name")) {
-                    var validity = errors[el.get("name")];
+                var key = el.get("name"), validity;
 
-                    if (validity) el.setValidity(validity, flag);
+                if (key && (validity = errors[key])) {
+                    el.setValidity(validity, partial);
                 }
             }, 0);
 
             this._validity = errors;
 
             if (!this.isValid() || !oldValid) {
-                this.fire(this.isValid() ? "validation:success" : "validation:fail");
+                this.fire("validation:" + (this.isValid() ? "success" : "fail"));
             }
 
             return this;

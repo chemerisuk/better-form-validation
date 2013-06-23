@@ -59,6 +59,10 @@ describe("better-form-validation", function() {
                 expect(input.isValid()).toBe(false);
                 expect(input.getValidity()).toEqual(["msg"]);
 
+                input.set("title", "").fire("input");
+                expect(input.isValid()).toBe(false);
+                expect(input.getValidity()).toEqual(["i18n:pattern-mismatch"]);
+
                 input.set("abc").fire("input");
                 expect(input.isValid()).toBe(true);
             });
@@ -193,6 +197,20 @@ describe("better-form-validation", function() {
                 form.fire("submit");
                 expect(spySuccess).toHaveBeenCalled();
                 expect(spyFail.callCount).toBe(2);
+            });
+        });
+
+        it("should allow to set errors manually", function() {
+            runs(function() {
+                // input.set("required", null);
+                // input._checkValidity();
+                // expect(input.isValid()).toBe(true);
+                // input.setValidity(["error"]);
+                // input._checkValidity();
+                // expect(input.isValid()).toBe(false);
+
+                // invalid arguments check
+                expect(function() { form.setValidity(1); }).toThrow();
             });
         });
     });
