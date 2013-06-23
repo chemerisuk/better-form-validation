@@ -4,4 +4,5 @@ components
 dist
 coverage
 *.log
-build
+reports
+specs.html

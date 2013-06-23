@@ -11,8 +11,8 @@
         rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
         rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
         predefinedPatterns = {number: rNumber, email: rEmail, url: rUrl},
-        hasName = function(el) {
-            return el.get("name") === this;
+        isArray = Array.isArray || function(obj) {
+            return Object.prototype.toString.call(obj) === "[object Array]";
         },
         hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
@@ -22,7 +22,7 @@
 
             for (selector in customValidators) {
                 if (el.is(selector)) {
-                    message = customValidators[selector].fn.call(el);
+                    message = customValidators[selector].call(el);
 
                     if (message) errors.push(message);
                 }
@@ -47,10 +47,12 @@
                         this.set(value.substr(0, maxlength));
                     }
 
-                    this._checkValidity();
+                    this.setValidity(this._checkValidity(), true);
                 });
             } else {
-                this.on("input", this._checkValidity);
+                this.on("input", function() {
+                    this.setValidity(this._checkValidity(), true);
+                });
             }
         },
         _checkValidity: function() {
@@ -59,7 +61,7 @@
                 checked = this.get("checked"),
                 required = this.is("[required]"),
                 errors = checkCustomValidators(this),
-                regexp, valid, event;
+                regexp;
 
             if (this._customError) {
                 errors.push(this._customError);
@@ -81,7 +83,7 @@
                 /* falls through */
             case "checkbox":
                 if (required && !checked) {
-                    errors.push("value-missing");
+                    errors.push("i18n:value-missing");
                 }
                 break;
 
@@ -97,23 +99,15 @@
                         regexp = this.get("pattern");
 
                         if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
-                            errors.push("pattern-mismatch");
+                            errors.push(this.get("title") || "i18n:pattern-mismatch");
                         }
                     }
                 } else if (required) {
-                    errors.push("value-missing");
+                    errors.push("i18n:value-missing");
                 }
             }
 
-            valid = !errors.length;
-
-            if (valid && !this.isValid()) event = "validation:success";
-
-            this._validity = errors;
-
-            if (!valid) event = "validation:fail";
-
-            if (event) this.fire(event);
+            return errors;
         },
         isValid: function() {
             return !this._validity.length;
@@ -122,14 +116,20 @@
             // return clone of the validity object
             return this._validity.slice(0);
         },
-        setValidity: function(error) {
-            if (typeof error !== "string") {
-                throw "Errors should be a string";
+        setValidity: function(errors, /*INTERNAL*/flag) {
+            if (!isArray(errors)) {
+                throw "Errors should be an array";
             }
 
-            this._customError = error;
+            var oldValid = this.isValid();
 
-            this._checkValidity();
+            this._validity = errors;
+
+            if (!flag) this._customErrors = errors;
+
+            if (!this.isValid() || !oldValid) {
+                this.fire(this.isValid() ? "validation:success" : "validation:fail");
+            }
 
             return this;
         }
@@ -141,37 +141,21 @@
 
             this
                 .set("novalidate", "novalidate")
+                .on("reset", validityTooltip, "hide")
                 .on("submit", function() {
-                    this._checkValidity();
-
-                    return this.isValid();
+                    return this.setValidity(this._checkValidity(), true).isValid();
                 });
         },
         _checkValidity: function() {
-            var errors = {},
-                valid, event;
-
-            valid = this.get("elements").foldr(function(valid, el) {
+            return this.get("elements").foldl(function(memo, el) {
                 if (el._checkValidity) {
-                    el._checkValidity();
+                    var errors = el._checkValidity();
                     
-                    if (!el.isValid()) {
-                        errors[el.get("name")] = el.getValidity();
-
-                        valid = valid && el.isValid();
-                    }
+                    if (errors.length) memo[el.get("name")] = errors;
                 }
 
-                return valid;
-            }, true);
-
-            if (valid && !this.isValid()) event = "validation:success";
-
-            this._validity = errors;
-
-            if (!valid) event = "validation:fail";
-
-            if (event) this.fire(event);
+                return memo;
+            }, {});
         },
         isValid: function() {
             for (var key in this._validity) {
@@ -184,20 +168,26 @@
             // return clone of the validity object
             return JSON.parse(JSON.stringify(this._validity));
         },
-        setValidity: function(errors) {
+        setValidity: function(errors, /*INTERNAL*/flag) {
             if (typeof errors !== "object") {
                 throw "Errors should be an object";
             }
 
-            var el, key;
+            var oldValid = this.isValid();
 
-            for (key in errors) {
-                el = this.get("elements").filter(hasName, key);
+            this.get("elements").foldr(function(memo, el) {
+                if (el.get("name")) {
+                    var validity = errors[el.get("name")];
 
-                if (el) el.setValidity(errors[key]);
+                    if (validity) el.setValidity(validity, flag);
+                }
+            }, 0);
+
+            this._validity = errors;
+
+            if (!this.isValid() || !oldValid) {
+                this.fire(this.isValid() ? "validation:success" : "validation:fail");
             }
-
-            this._checkValidity();
 
             return this;
         }
@@ -211,17 +201,16 @@
 
     DOM.on({
         "validation:fail(target,defaultPrevented)": function(target, defaultPrevented) {
-            if (!defaultPrevented && target.get("tagName") !== "form") {
+            if (!defaultPrevented && !target.is("form")) {
                 var offset = target.offset(),
                     message = target.getValidity()[0],
-                    title = target.get("title"),
-                    hasCustomMessage = message === "pattern-mismatch" && title;
+                    i18nMessage = !message.indexOf("i18n:");
 
                 validityTooltip
                     .setStyle({ left: offset.left, top: offset.bottom })
                     .set({
-                        "innerHTML": hasCustomMessage ? title : "",
-                        "data-i18n": hasCustomMessage ? null : message
+                        "innerHTML": i18nMessage ? "" : message,
+                        "data-i18n": i18nMessage ? message.substr(5) : null
                     })
                     .show();
 

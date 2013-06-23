@@ -25,6 +25,8 @@
         "_": true,
         "DOM": true,
         "define": true,
+        "module": true,
+        "require": true,
 
         "beforeEach": true,
         "afterEach": true,
