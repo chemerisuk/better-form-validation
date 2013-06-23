@@ -200,14 +200,50 @@ describe("better-form-validation", function() {
             });
         });
 
-        it("should allow to set errors manually", function() {
+        it("should handle checkboxes and radio buttons", function() {
+            var checkbox = DOM.create("input:checkbox[required name=b]");
+
+            form.append(checkbox).find("input").set("required", null);
+
+            waits(30);
+
             runs(function() {
-                // input.set("required", null);
-                // input._checkValidity();
-                // expect(input.isValid()).toBe(true);
-                // input.setValidity(["error"]);
-                // input._checkValidity();
-                // expect(input.isValid()).toBe(false);
+                form.on("submit", function() { return false; }).fire("submit");
+                expect(form.isValid()).toBe(false);
+
+                checkbox.set("checked", true);
+                form.fire("submit");
+                expect(form.isValid()).toBe(true);
+            });
+        });
+
+        it("should handle checkboxes and radio buttons", function() {
+            var radios = DOM.create("input:radio[required name=c]*3");
+
+            form.append(radios).find("input").set("required", null);
+
+            waits(30);
+
+            runs(function() {
+                form.on("submit", function() { return false; }).fire("submit");
+                expect(form.isValid()).toBe(false);
+
+                radios.find("input[type=radio]").set("checked", true);
+                form.fire("submit");
+                expect(form.isValid()).toBe(true);
+            });
+        });
+
+        it("should allow to set errors manually", function() {
+            form.on("submit", function() { return false; });
+
+            runs(function() {
+                form.find("input").set("required", null).fire("submit");
+                expect(form.isValid()).toBe(true);
+
+                form.setValidity({a: ["test"]});
+                expect(form.isValid()).toBe(false);
+                expect(form.getValidity()).toEqual({a: ["test"]});
 
                 // invalid arguments check
                 expect(function() { form.setValidity(1); }).toThrow();

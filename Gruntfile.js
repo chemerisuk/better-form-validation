@@ -5,15 +5,20 @@ module.exports = function(grunt) {
         watch: {
             jasmine: {
                 files: ["src/*.js", "test/*.spec.js"],
-                tasks: ["jasmine"]
+                tasks: ["jasmine:coverage"]
             }
         },
         jasmine: {
-            all: {
+            options: {
+                vendor: ["components/better-dom/better-dom.js"],
+                specs: "test/*.spec.js"
+            },
+            unit: {
+                src: ["src/*.js"]
+            },
+            coverage: {
                 src: ["src/*.js"],
                 options: {
-                    vendor: ["components/better-dom/better-dom.js"],
-                    specs: "test/*.spec.js",
                     outfile: "specs.html",
                     keepRunner: true,
                     template: require("grunt-template-jasmine-istanbul"),
@@ -48,7 +53,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-plato");
 
-    grunt.registerTask("test", ["jshint", "jasmine"]);
+    grunt.registerTask("test", ["jshint", "jasmine:unit"]);
+    grunt.registerTask("dev", ["test", "watch"]);
 
     grunt.registerTask("default", ["test"]);
 };

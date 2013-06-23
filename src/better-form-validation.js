@@ -47,13 +47,14 @@
                         this.set(value.substr(0, maxlength));
                     }
 
-                    this.setValidity(this._checkValidity(), true);
+                    this._refreshValidity();
                 });
             } else {
-                this.on("input", function() {
-                    this.setValidity(this._checkValidity(), true);
-                });
+                this.on("input", this._refreshValidity);
             }
+        },
+        _refreshValidity: function() {
+            this.setValidity(this._checkValidity(), true);
         },
         _checkValidity: function() {
             var type = this.get("type"),
@@ -141,8 +142,13 @@
                 .set("novalidate", "novalidate")
                 .on("reset", validityTooltip, "hide")
                 .on("submit", function() {
-                    return this.setValidity(this._checkValidity(), true).isValid();
+                    this._refreshValidity();
+
+                    return this.isValid();
                 });
+        },
+        _refreshValidity: function() {
+            this.setValidity(this._checkValidity(), true);
         },
         _checkValidity: function() {
             return this.get("elements").foldl(function(memo, el) {
@@ -206,11 +212,12 @@
                     i18nMessage = !message.indexOf("i18n:");
 
                 validityTooltip
-                    .setStyle({ left: offset.left, top: offset.bottom })
                     .set({
                         "innerHTML": i18nMessage ? "" : message,
                         "data-i18n": i18nMessage ? message.substr(5) : null
                     })
+                    // IMPORTANT: set styles after attributes to fix reflow issues in IE8
+                    .setStyle({ left: offset.left, top: offset.bottom })
                     .show();
 
                 lastCapturedElement = target;
