@@ -38,7 +38,7 @@
         constructor: function() {
             this._customErrors = this._validity = [];
 
-            if (this.is("textarea") && !this.supports("maxLength")) {
+            if (this.is("textarea")) {
                 this.on("input", function() {
                     var maxlength = parseInt(this.get("maxlength"), 10),
                         value = this.get();
@@ -91,7 +91,7 @@
                     regexp = predefinedPatterns[type];
 
                     if (regexp && !regexp.test(value)) {
-                        errors.push(type + "-mismatch");
+                        errors.push("i18n:" + type + "-mismatch");
                     }
 
                     if (type !== "textarea") {
@@ -199,7 +199,7 @@
     });
 
     validityTooltip.on("click", function() {
-        if (lastCapturedElement) lastCapturedElement.fire("focus");
+        if (lastCapturedElement) lastCapturedElement.fire("select");
 
         validityTooltip.hide();
     });

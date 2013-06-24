@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="src/better-form-validation.css">
 </head>
 <body>
+    <h2>Default form validation</h2>
     <form>
         <p>
             <label>Your email<br>
@@ -15,7 +16,7 @@
         </p>
         <p>
             <label>Your password<br>
-                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" title="test">
+                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" title="Only letters, please">
             </label>
         </p>
         <p>
@@ -25,9 +26,46 @@
         </p>
         <button type="submit">Submit</button>
     </form>
+    <h2>Custom form validation</h2>
+    <form id="custom_form">
+        <div id="custom_form_errors" style="color:red"></div>
+        <p>
+            <label>Your email<br>
+                <input type="email" placeholder="my@email.com" name="email" required>
+            </label>
+        </p>
+        <p>
+            <label>Your password<br>
+                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" required title="Password can contain only letters">
+            </label>
+        </p>
+        <button type="submit">Submit</button>
+    </form>
     <script src="components/better-dom/better-dom.js" data-htc="components/better-dom/better-dom.htc"></script>
     <script src="src/better-form-validation.js"></script>
     <script src="i18n/better-form-validation.en.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
+    <script type="text/javascript">
+        DOM.find("#custom_form").on("validation:fail", function() {
+            var errors = DOM.find("#custom_form_errors").set(""),
+                validity, message, name, i, n;
+
+            for (name in this.getValidity()) {
+                validity = this.getValidity()[name];
+
+                for (i = 0, n = validity.length; i < n; ++i) {
+                    message = validity[i];
+
+                    if (!message.indexOf("i18n:")) {
+                        errors.append("p[data-i18n=" + message.substr(5) + "]");
+                    } else {
+                        errors.append("<p>" + message + "</p>");
+                    }
+                }
+            }
+            // prevent default behaviour
+            return false;
+        });
+    </script>
 </body>
 </html>

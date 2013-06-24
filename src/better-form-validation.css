@@ -1,4 +1,9 @@
-/* validity tooltip */
+/*!
+ * better-form-validation (https://github.com/chemerisuk/better-form-validation)
+ * form validation for better-dom (https://github.com/chemerisuk/better-form-validation)
+ *
+ * Copyright (c) 2013 Maksim Chemerisuk
+ */
 .better-form-validation-tooltip {
     position: absolute;
     z-index: 9999;
