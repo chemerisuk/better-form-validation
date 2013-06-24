@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
-components
+components/jasmine
+components/lodash
 dist
 coverage
 *.log
