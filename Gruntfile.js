@@ -38,20 +38,12 @@ module.exports = function(grunt) {
             options: {
                 jshintrc: ".jshintrc"
             }
-        },
-        plato: {
-            all: {
-                files: {
-                    reports: ["src/*.js"]
-                }
-            }
         }
     });
 
     grunt.loadNpmTasks("grunt-contrib-jasmine");
     grunt.loadNpmTasks("grunt-contrib-jshint");
     grunt.loadNpmTasks("grunt-contrib-watch");
-    grunt.loadNpmTasks("grunt-plato");
 
     grunt.registerTask("test", ["jshint", "jasmine:unit"]);
     grunt.registerTask("dev", ["test", "watch"]);
