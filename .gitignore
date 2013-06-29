@@ -5,5 +5,5 @@ dist
 coverage
 *.log
 reports
-specs.html
 .grunt
+_SpecRunner.html

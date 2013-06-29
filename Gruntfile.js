@@ -19,7 +19,6 @@ module.exports = function(grunt) {
             coverage: {
                 src: ["src/*.js"],
                 options: {
-                    outfile: "specs.html",
                     keepRunner: true,
                     template: require("grunt-template-jasmine-istanbul"),
                     templateOptions: {

@@ -1,6 +1,6 @@
 {
     "name": "better-form-validation",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": [
         "src/better-form-validation.js",
         "src/better-form-validation.css",
@@ -12,6 +12,5 @@
     ],
     "dependencies": {
         "better-dom": "~1.0.0"
-    },
-    "devDependencies": {}
+    }
 }
