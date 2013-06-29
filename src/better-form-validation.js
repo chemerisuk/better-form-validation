@@ -7,7 +7,9 @@
 (function() {
     "use strict";
 
-    var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
+    var VALUE_MISSING = "i18n:value-missing",
+        PATTERN_MISMATCH = "i18n:pattern-mismatch",
+        rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
         rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
         rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
         predefinedPatterns = {number: rNumber, email: rEmail, url: rUrl},
@@ -59,7 +61,6 @@
         _checkValidity: function() {
             var type = this.get("type"),
                 value = this.get("value"),
-                checked = this.get("checked"),
                 required = this.is("[required]"),
                 errors = checkCustomValidators(this),
                 regexp;
@@ -70,19 +71,17 @@
             case "image":
             case "submit":
             case "button":
-                return;
-
             case "select-one":
             case "select-multiple":
-                // for a select only check custom error case
-                break;
+                // only check custom error case
+                return errors;
                 
             case "radio":
-                if (checked || this.get("form").get("elements").some(hasCheckedRadio, this)) break;
+                if (!required || this.get("form").get("elements").some(hasCheckedRadio, this)) break;
                 /* falls through */
             case "checkbox":
-                if (required && !checked) {
-                    errors.push("i18n:value-missing");
+                if (required && !this.get("checked")) {
+                    errors.push(VALUE_MISSING);
                 }
                 break;
 
@@ -98,11 +97,11 @@
                         regexp = this.get("pattern");
 
                         if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
-                            errors.push(this.get("title") || "i18n:pattern-mismatch");
+                            errors.push(this.get("title") || PATTERN_MISMATCH);
                         }
                     }
                 } else if (required) {
-                    errors.push("i18n:value-missing");
+                    errors.push(VALUE_MISSING);
                 }
             }
 

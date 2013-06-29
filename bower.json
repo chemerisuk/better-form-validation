@@ -1,19 +1,16 @@
 {
-    "name": "better-forms",
-    "version": "0.0.1",
+    "name": "better-form-validation",
+    "version": "1.0.1",
     "main": [
-        "better-forms.js"
+        "src/better-form-validation.js",
+        "src/better-form-validation.css",
+        "i18n/better-form-validation.en.js"
     ],
     "ignore": [
         ".*",
-        "test",
-        "src"
+        "test"
     ],
     "dependencies": {
         "better-dom": "~1.0.0"
-    },
-    "devDependencies": {
-        "lodash": "1.2.1",
-        "jasmine": "1.3.1"
     }
 }
