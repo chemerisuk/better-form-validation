@@ -4,7 +4,8 @@
     "main": [
         "src/better-form-validation.js",
         "src/better-form-validation.css",
-        "i18n/better-form-validation.en.js"
+        "i18n/better-form-validation.en.js",
+        "i18n/better-form-validation.ru.js"
     ],
     "ignore": [
         ".*",
