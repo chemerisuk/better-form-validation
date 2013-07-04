@@ -41,7 +41,7 @@
         </p>
         <button type="submit">Submit</button>
     </form>
-    <script src="components/better-dom/better-dom.js" data-htc="components/better-dom/better-dom.htc"></script>
+    <script src="bower_components/better-dom/better-dom.js" data-htc="bower_components/better-dom/better-dom.htc"></script>
     <script src="src/better-form-validation.js"></script>
     <script src="i18n/better-form-validation.en.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
@@ -57,10 +57,12 @@
                     message = validity[i];
 
                     if (!message.indexOf("i18n:")) {
-                        errors.append("p[data-i18n=" + message.substr(5) + "]");
+                        message = "p[data-i18n=" + message.substr(5) + "]";
                     } else {
-                        errors.append("<p>" + message + "</p>");
+                        message = "<p>" + message + "</p>";
                     }
+
+                    errors.append(message);
                 }
             }
             // prevent default behaviour
