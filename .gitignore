@@ -1,9 +1,8 @@
 .DS_Store
 node_modules
-components
+bower_components
 dist
 coverage
 *.log
-reports
 .grunt
 _SpecRunner.html

@@ -4,7 +4,13 @@
  *
  * Copyright (c) 2013 Maksim Chemerisuk
  */
-(function() {
+(function(factory) {
+    if (typeof define === "function" && define.amd) {
+        define(["DOM"], factory);
+    } else {
+        factory(window.DOM);
+    }
+})(function(DOM) {
     "use strict";
 
     var VALUE_MISSING = "i18n:value-missing",
@@ -238,5 +244,4 @@
 
         customValidators[selector] = fn;
     };
-
-}());
+});
