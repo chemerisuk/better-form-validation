@@ -1,4 +1,4 @@
-better-form-validation
+better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master)](http://travis-ci.org/chemerisuk/better-form-validation)
 ======================
 > Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
