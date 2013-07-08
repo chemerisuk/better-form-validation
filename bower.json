@@ -2,16 +2,20 @@
     "name": "better-form-validation",
     "version": "1.0.2",
     "main": [
-        "src/better-form-validation.js",
-        "src/better-form-validation.css",
+        "better-form-validation.js",
+        "better-form-validation.css",
         "i18n/better-form-validation.en.js",
         "i18n/better-form-validation.ru.js"
     ],
     "ignore": [
         ".*",
+        "src",
         "test"
     ],
+    "keywords": [
+        "better-dom"
+    ],
     "dependencies": {
-        "better-dom": "~1.0.0"
+        "better-dom": "~1.1.0"
     }
 }

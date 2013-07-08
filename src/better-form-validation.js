@@ -1,16 +1,12 @@
-/*!
- * better-form-validation (https://github.com/chemerisuk/better-form-validation)
- * form validation for better-dom (https://github.com/chemerisuk/better-form-validation)
- *
- * Copyright (c) 2013 Maksim Chemerisuk
+/**
+ * @file <%= pkg.name %>.js
+ * @version <%= pkg.version %> <%= grunt.template.today('isoDateTime') %>
+ * @overview <%= pkg.description %>
+ * @copyright <%= pkg.author %> <%= grunt.template.today('yyyy') %>
+ * @license <%= pkg.license %>
+ * @see <%= pkg.repository.url %>
  */
-(function(factory) {
-    if (typeof define === "function" && define.amd) {
-        define(["DOM"], factory);
-    } else {
-        factory(window.DOM);
-    }
-})(function(DOM) {
+(function(DOM) {
     "use strict";
 
     var VALUE_MISSING = "i18n:value-missing",
@@ -29,7 +25,7 @@
             var errors = [], selector, message;
 
             for (selector in customValidators) {
-                if (el.is(selector)) {
+                if (el.matches(selector)) {
                     message = customValidators[selector].call(el);
 
                     if (message) errors.push(message);
@@ -46,7 +42,7 @@
         constructor: function() {
             this._customErrors = this._validity = [];
 
-            if (this.is("textarea")) {
+            if (this.matches("textarea")) {
                 this.on("input", function() {
                     var maxlength = parseInt(this.get("maxlength"), 10),
                         value = this.get();
@@ -67,7 +63,7 @@
         _checkValidity: function() {
             var type = this.get("type"),
                 value = this.get("value"),
-                required = this.is("[required]"),
+                required = this.matches("[required]"),
                 errors = checkCustomValidators(this),
                 regexp;
 
@@ -211,7 +207,7 @@
 
     DOM.on({
         "validation:fail(target,defaultPrevented)": function(target, defaultPrevented) {
-            if (!defaultPrevented && !target.is("form")) {
+            if (!defaultPrevented && !target.matches("form")) {
                 var offset = target.offset(),
                     message = target.getValidity()[0],
                     i18nMessage = !message.indexOf("i18n:");
@@ -244,4 +240,5 @@
 
         customValidators[selector] = fn;
     };
-});
+
+}(window.DOM));
