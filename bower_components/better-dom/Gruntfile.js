@@ -70,7 +70,7 @@ module.exports = function(grunt) {
                         "test/lib/benchmine/benchmine-env.js",
                         "test/lib/karma-benchmine-adapter.js",
                         "test/lib/benchmine/benchmine-report-karma.js",
-                        "components/jquery/jquery.js",
+                        "bower_components/jquery/jquery.js",
                         "build/*.js",
                         "test/speed/<%= pkg.speed.task %>.suite.js"
                     ]
@@ -199,11 +199,11 @@ module.exports = function(grunt) {
                 include: [
                     "Node.supports", "Node.find", "Node.data", "Node.contains", "Node.events",
                     "SelectorMatcher", "EventHandler", "Element.classes", "Element.clone",
-                    "Element.manipulation", "Element.is", "Element.offset", "Element.get",
-                    "Element.set", "Element.styles", "Element.traversing",
-                    "Element.bind", "Element.visibility", "Collection", "NullElement", "DOM.watch",
+                    "Element.manipulation", "Element.matches", "Element.offset", "Element.get",
+                    "Element.set", "Element.styles", "Element.traversing", "Element.bind",
+                    "Element.visibility", "Element.collection", "CompositeElement", "DOM.watch",
                     "DOM.create", "DOM.extend", "DOM.parsetemplate", "DOM.importstyles", "DOM.ready",
-                    "DOM.mock", "DOM.importstrings"
+                    "DOM.mock", "DOM.importstrings", "DOM.title"
                 ],
                 onBuildWrite: function(id, path, contents) {
                     return contents.replace(/^define\(.*?\{\s*"use strict";[\r\n]*([.\s\S]+)\}\);\s*$/m, "$1");
@@ -223,13 +223,6 @@ module.exports = function(grunt) {
                     }
                 }
             }
-        },
-        plato: {
-            all: {
-                files: {
-                    reports: ["src/*.js"]
-                }
-            }
         }
     });
 
@@ -237,8 +230,8 @@ module.exports = function(grunt) {
 
     grunt.registerTask("dev", [
         "test",
-        "connect", // start web server
-        "watch" // watch for a file changes
+        "connect",
+        "watch"
     ]);
 
     grunt.registerTask("test", [
@@ -259,7 +252,7 @@ module.exports = function(grunt) {
         "copy:dist",
         "uglify",
         "shell:rollbackPublished",
-        "clean"
+        "clean:dist"
     ]);
 
     grunt.registerTask("docs", [
@@ -303,8 +296,7 @@ module.exports = function(grunt) {
             "docs",
             "shell:checkoutDocs",
             "bumpDocsBuild",
-            "shell:updateDocs",
-            "plato"
+            "shell:updateDocs"
         ]);
     });
 };
