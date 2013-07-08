@@ -1,7 +1,7 @@
 {
     "name": "better-form-validation",
     "description": "Form validation for better-dom",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "author": "Maksim Chemerisuk",
     "license": "MIT",
     "repository": {
