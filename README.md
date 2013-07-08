@@ -15,7 +15,7 @@ Then append the following script on your page:
 ```html
 <html>
 <head>
-    <link rel="stylesheet" href="bower_components/better-form-validation/src/better-form-validation.css"/>
+    <link rel="stylesheet" href="bower_components/better-form-validation/better-form-validation.css"/>
 </head>
 <body>
     ...
