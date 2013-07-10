@@ -1,7 +1,7 @@
 {
     "name": "better-form-validation",
     "description": "Form validation polyfill for better-dom",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "author": "Maksim Chemerisuk",
     "license": "MIT",
     "repository": {
