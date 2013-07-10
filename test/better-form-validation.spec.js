@@ -2,77 +2,62 @@ describe("better-form-validation", function() {
     "use strict";
 
     describe("elements", function() {
-        var input, textarea;
+        var input;
 
         beforeEach(function() {
-            input = DOM.create("input[required]");
-            textarea = DOM.create("textarea[maxlength=3]");
-
-            DOM.find("body").append(input).append(textarea);
-
-            waits(30);
-        });
-
-        afterEach(function() {
-            input.remove();
-            textarea.remove();
+            input = DOM.mock("input[required]");
         });
 
         it("should validate predefined types", function() {
-            runs(function() {
-                // email
-                input.set("type", "email");
-                input.set("123").fire("input");
-                expect(input.isValid()).toBe(false);
-                input.set("test@").fire("input");
-                expect(input.isValid()).toBe(false);
-                input.set("test@test.by").fire("input");
-                expect(input.isValid()).toBe(true);
+            input.set("type", "email");
+            input.set("123").fire("input");
+            expect(input.isValid()).toBe(false);
+            input.set("test@").fire("input");
+            expect(input.isValid()).toBe(false);
+            input.set("test@test.by").fire("input");
+            expect(input.isValid()).toBe(true);
 
-                // url
-                input.set("type", "url");
-                input.set("123").fire("input");
-                expect(input.isValid()).toBe(false);
-                input.set("https://test.html").fire("input");
-                expect(input.isValid()).toBe(true);
-                input.set("http://test.by#a2").fire("input");
-                expect(input.isValid()).toBe(true);
+            // url
+            input.set("type", "url");
+            input.set("123").fire("input");
+            expect(input.isValid()).toBe(false);
+            input.set("https://test.html").fire("input");
+            expect(input.isValid()).toBe(true);
+            input.set("http://test.by#a2").fire("input");
+            expect(input.isValid()).toBe(true);
 
-                // number
-                input.set("type", "number");
-                input.set("123").fire("input");
-                expect(input.isValid()).toBe(true);
-                input.set("-43434.45").fire("input");
-                expect(input.isValid()).toBe(true);
-                input.set("abs").fire("input");
-                expect(input.isValid()).toBe(false);
-            });
+            // number
+            input.set("type", "number");
+            input.set("123").fire("input");
+            expect(input.isValid()).toBe(true);
+            input.set("-43434.45").fire("input");
+            expect(input.isValid()).toBe(true);
+            input.set("abs").fire("input");
+            expect(input.isValid()).toBe(false);
         });
 
         it("should validate by pattern attribute and use title for tooltip", function() {
-            runs(function() {
-                input.set("required", null).fire("input");
-                expect(input.isValid()).toBe(true);
+            input.set("required", null).fire("input");
+            expect(input.isValid()).toBe(true);
 
-                input.set({pattern: "[a-z]+", title: "msg"});
-                input.set("123").fire("input");
-                expect(input.isValid()).toBe(false);
-                expect(input.getValidity()).toEqual(["msg"]);
+            input.set({pattern: "[a-z]+", title: "msg"});
+            input.set("123").fire("input");
+            expect(input.isValid()).toBe(false);
+            expect(input.getValidity()).toEqual(["msg"]);
 
-                input.set("title", "").fire("input");
-                expect(input.isValid()).toBe(false);
-                expect(input.getValidity()).toEqual(["i18n:pattern-mismatch"]);
+            input.set("title", "").fire("input");
+            expect(input.isValid()).toBe(false);
+            expect(input.getValidity()).toEqual(["i18n:pattern-mismatch"]);
 
-                input.set("abc").fire("input");
-                expect(input.isValid()).toBe(true);
-            });
+            input.set("abc").fire("input");
+            expect(input.isValid()).toBe(true);
         });
 
         it("should polyfill maxlength attribute for textarea", function() {
-            runs(function() {
-                textarea.set("error").fire("input");
-                //expect(textarea.get()).toBe("err");
-            });
+            var textarea = DOM.create("textarea[maxlength=3]");
+            
+            textarea.set("error").fire("input");
+            //expect(textarea.get()).toBe("err");
         });
 
         it("should support custom validators", function() {
@@ -81,173 +66,137 @@ describe("better-form-validation", function() {
             DOM.registerValidator("[data-test1]", function() { return "error"; });
             DOM.registerValidator("[data-test2]", function() { return ""; });
 
-            runs(function() {
-                input.fire("input");
-                expect(input.isValid()).toBe(false);
-                input.set("123").fire("input");
-                expect(input.isValid()).toBe(true);
-                input.set("data-test1", "123").fire("input");
-                expect(input.isValid()).toBe(false);
-                input.set("data-test2", "321").fire("input");
-                expect(input.isValid()).toBe(false);
-                expect(input.getValidity()).toEqual(["error"]);
-            });
+            input.fire("input");
+            expect(input.isValid()).toBe(false);
+            input.set("123").fire("input");
+            expect(input.isValid()).toBe(true);
+            input.set("data-test1", "123").fire("input");
+            expect(input.isValid()).toBe(false);
+            input.set("data-test2", "321").fire("input");
+            expect(input.isValid()).toBe(false);
+            expect(input.getValidity()).toEqual(["error"]);
 
             // registering validator twice check
             expect(function() { DOM.registerValidator("[data-test1]", function() {}); }).toThrow();
         });
 
         it("should allow to set errors manually", function() {
-            runs(function() {
-                input.set("required", null);
-                input._checkValidity();
-                expect(input.isValid()).toBe(true);
-                input.setValidity(["error"]);
-                input._checkValidity();
-                expect(input.isValid()).toBe(false);
+            input.set("required", null);
+            input._checkValidity();
+            expect(input.isValid()).toBe(true);
+            input.setValidity(["error"]);
+            input._checkValidity();
+            expect(input.isValid()).toBe(false);
 
-                // invalid arguments check
-                expect(function() { input.setValidity(1); }).toThrow();
-            });
+            // invalid arguments check
+            expect(function() { input.setValidity(1); }).toThrow();
         });
 
         it("should provide additional public methods", function() {
-            runs(function() {
-                expect(input.getValidity).toBeDefined();
-                expect(input.setValidity).toBeDefined();
-                expect(input.isValid).toBeDefined();
-            });
+            expect(input.getValidity).toBeDefined();
+            expect(input.setValidity).toBeDefined();
+            expect(input.isValid).toBeDefined();
         });
 
         it("should send event on success/fail", function() {
             var spyFail = jasmine.createSpy("fail"),
                 spySuccess = jasmine.createSpy("success");
 
-            DOM.on({"validation:fail": spyFail, "validation:success": spySuccess});
+            input.on({"validation:fail": spyFail, "validation:success": spySuccess});
 
-            runs(function() {
-                input.fire("input");
-                expect(spyFail).toHaveBeenCalled();
-                expect(spySuccess).not.toHaveBeenCalled();
+            input.fire("input");
+            expect(spyFail).toHaveBeenCalled();
+            expect(spySuccess).not.toHaveBeenCalled();
 
-                input.set("required", null).fire("input");
-                expect(spySuccess).toHaveBeenCalled();
-                expect(spyFail.callCount).toBe(1);
+            input.set("required", null).fire("input");
+            expect(spySuccess).toHaveBeenCalled();
+            expect(spyFail.callCount).toBe(1);
 
-                input.set("1232").fire("input");
-                expect(spySuccess.callCount).toBe(1);
-                expect(spyFail.callCount).toBe(1);
-            });
+            input.set("1232").fire("input");
+            expect(spySuccess.callCount).toBe(1);
+            expect(spyFail.callCount).toBe(1);
         });
     });
 
     describe("forms", function() {
-        var form, index = 0;
-
-        beforeEach(function() {
-            form = DOM.create("form#form" + (++index) + ">input[name=a required]+textarea+button");
-
-            DOM.find("body").append(form);
-
-            waits(30);
-        });
-
-        afterEach(function() {
-            form.remove();
-        });
-
         it("should hide all messages on form reset", function() {
 
         });
 
         it("should block form submit if it's invalid", function() {
-            runs(function() {
-                var spy = jasmine.createSpy("spy");
+            var form = DOM.mock("form>input[name=a required]+textarea+button"),
+                spy = jasmine.createSpy("spy");
 
-                DOM.on("submit(defaultPrevented) #form2", spy.andCallFake(function(defaultPrevented) {
-                    expect(defaultPrevented).toBe(true);
-                    expect(form.isValid()).toBe(false);
-                    expect(form.getValidity()).toEqual({a: ["i18n:value-missing"]});
-                    // prevent submitting even if the test fails
-                    return false;
-                }));
+            form.on("submit(defaultPrevented)", spy.andCallFake(function(defaultPrevented) {
+                expect(defaultPrevented).toBe(true);
+                expect(form.isValid()).toBe(false);
+                expect(form.getValidity()).toEqual({a: ["i18n:value-missing"]});
+                // prevent submitting even if the test fails
+                return false;
+            }));
 
-                form.fire("submit");
-                expect(spy).toHaveBeenCalled();
-            });
+            form.fire("submit");
+            expect(spy).toHaveBeenCalled();
         });
 
         it("should send event on success/fail", function() {
-            var spyFail = jasmine.createSpy("fail"),
+            var form = DOM.mock("form>input[name=a required]"),
+                spyFail = jasmine.createSpy("fail"),
                 spySuccess = jasmine.createSpy("success");
 
             form.on("submit", function() { return false; });
 
-            DOM.on({
-                "validation:fail #form3": spyFail,
-                "validation:success #form3": spySuccess
+            form.on({
+                "validation:fail": spyFail,
+                "validation:success": spySuccess
             });
 
-            runs(function() {
-                form.fire("submit");
-                expect(spyFail).toHaveBeenCalled();
-                expect(spySuccess).not.toHaveBeenCalled();
+            form.fire("submit");
+            expect(spyFail).toHaveBeenCalled();
+            expect(spySuccess).not.toHaveBeenCalled();
 
-                form.find("input").set("required", null);
-                form.fire("submit");
-                expect(spySuccess).toHaveBeenCalled();
-                expect(spyFail.callCount).toBe(2);
-            });
+            form.find("input").set("required", null);
+            form.fire("submit");
+            expect(spySuccess).toHaveBeenCalled();
+            expect(spyFail.callCount).toBe(1);
         });
 
         it("should handle checkboxes and radio buttons", function() {
-            var checkbox = DOM.create("input:checkbox[required name=b]");
+            var form = DOM.mock("form>input:checkbox[required name=b]");
 
-            form.append(checkbox).find("input").set("required", null);
+            form.on("submit", function() { return false; }).fire("submit");
+            expect(form.isValid()).toBe(false);
 
-            waits(30);
-
-            runs(function() {
-                form.on("submit", function() { return false; }).fire("submit");
-                expect(form.isValid()).toBe(false);
-
-                checkbox.set("checked", true);
-                form.fire("submit");
-                expect(form.isValid()).toBe(true);
-            });
+            form.find("input").set("checked", true);
+            form.fire("submit");
+            expect(form.isValid()).toBe(true);
         });
 
         it("should handle checkboxes and radio buttons", function() {
-            var radios = DOM.create("input:radio[required name=c]*3");
+            var form = DOM.mock("form>input:radio[required name=c]*3");
 
-            form.append(radios).find("input").set("required", null);
+            form.on("submit", function() { return false; }).fire("submit");
+            expect(form.isValid()).toBe(false);
 
-            waits(30);
-
-            runs(function() {
-                form.on("submit", function() { return false; }).fire("submit");
-                expect(form.isValid()).toBe(false);
-
-                radios.find("input[type=radio]").set("checked", true);
-                form.fire("submit");
-                expect(form.isValid()).toBe(true);
-            });
+            form.find("input").set("checked", true);
+            form.fire("submit");
+            expect(form.isValid()).toBe(true);
         });
 
         it("should allow to set errors manually", function() {
+            var form = DOM.mock("form>input[name=a required]");
+
             form.on("submit", function() { return false; });
 
-            runs(function() {
-                form.find("input").set("required", null).fire("submit");
-                expect(form.isValid()).toBe(true);
+            form.find("input").set("required", null).fire("submit");
+            expect(form.isValid()).toBe(true);
 
-                form.setValidity({a: ["test"]});
-                expect(form.isValid()).toBe(false);
-                expect(form.getValidity()).toEqual({a: ["test"]});
+            form.setValidity({a: ["test"]});
+            expect(form.isValid()).toBe(false);
+            expect(form.getValidity()).toEqual({a: ["test"]});
 
-                // invalid arguments check
-                expect(function() { form.setValidity(1); }).toThrow();
-            });
+            // invalid arguments check
+            expect(function() { form.setValidity(1); }).toThrow();
         });
     });
 });

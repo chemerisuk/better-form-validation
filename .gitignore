@@ -1,7 +1,8 @@
 .DS_Store
 *.sublime-workspace
 node_modules
-dist
+bower_components
+build
 coverage
 *.log
 reports

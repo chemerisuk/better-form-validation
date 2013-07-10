@@ -1,6 +1,6 @@
-better-form-validation
+better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master)](http://travis-ci.org/chemerisuk/better-form-validation)
 ======================
-> Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
+> Form validation polyfill for [better-dom](https://github.com/chemerisuk/better-dom)
 
 Installing
 ----------
@@ -15,7 +15,9 @@ Then append the following script on your page:
 ```html
 <html>
 <head>
-    <link rel="stylesheet" href="bower_components/better-form-validation/src/better-form-validation.css"/>
+    ...
+    <link rel="stylesheet" href="bower_components/better-form-validation/better-form-validation.css"/>
+    <!--[if IE]><script src="bower_components/html5shiv/dist/html5shiv.js"></script><![endif]-->
 </head>
 <body>
     ...
