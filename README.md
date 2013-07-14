@@ -2,6 +2,8 @@ better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/bet
 ======================
 > Form validation polyfill for [better-dom](https://github.com/chemerisuk/better-dom)
 
+Demo: http://chemerisuk.github.io/better-form-validation/
+
 Installing
 ----------
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
@@ -27,7 +29,3 @@ Then append the following script on your page:
 </body>
 </html>
 ```
-
-Demo
-----
-http://chemerisuk.github.io/better-form-validation/
