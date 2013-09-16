@@ -1,11 +1,9 @@
-better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master)](http://travis-ci.org/chemerisuk/better-form-validation)
-======================
+# better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master)](http://travis-ci.org/chemerisuk/better-form-validation)
 > Form validation polyfill for [better-dom](https://github.com/chemerisuk/better-dom)
 
-Demo: http://chemerisuk.github.io/better-form-validation/
+[LIVE DEMO](http://chemerisuk.github.io/better-form-validation/)
 
-Installing
-----------
+## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
     bower install better-form-validation
@@ -29,3 +27,9 @@ Then append the following script on your page:
 </body>
 </html>
 ```
+## Browser support
+* Chrome
+* Safari 4+
+* Firefox 16+
+* Opera 12.10+
+* IE8+

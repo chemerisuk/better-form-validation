@@ -55,7 +55,7 @@ describe("better-form-validation", function() {
 
         it("should polyfill maxlength attribute for textarea", function() {
             var textarea = DOM.create("textarea[maxlength=3]");
-            
+
             textarea.set("error").fire("input");
             //expect(textarea.get()).toBe("err");
         });
@@ -127,7 +127,7 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button"),
                 spy = jasmine.createSpy("spy");
 
-            form.on("submit(defaultPrevented)", spy.andCallFake(function(defaultPrevented) {
+            form.on("submit", spy.andCallFake(function(target, defaultPrevented) {
                 expect(defaultPrevented).toBe(true);
                 expect(form.isValid()).toBe(false);
                 expect(form.getValidity()).toEqual({a: ["i18n:value-missing"]});
