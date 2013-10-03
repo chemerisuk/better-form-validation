@@ -1,7 +1,6 @@
 .DS_Store
 *.sublime-workspace
 node_modules
-bower_components
 build
 coverage
 *.log
