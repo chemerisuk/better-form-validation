@@ -1,6 +1,6 @@
 /**
  * @file better-form-validation.js
- * @version 1.1.0 2013-10-04T01:04:34
+ * @version 1.1.0 2013-10-04T01:08:48
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
