@@ -1,17 +1,7 @@
-/**
- * @file <%= pkg.name %>.js
- * @version <%= pkg.version %> <%= grunt.template.today('isoDateTime') %>
- * @overview <%= pkg.description %>
- * @copyright <%= pkg.author %> <%= grunt.template.today('yyyy') %>
- * @license <%= pkg.license %>
- * @see <%= pkg.repository.url %>
- */
 (function(DOM) {
     "use strict";
 
-    var VALUE_MISSING = "i18n:value-missing",
-        PATTERN_MISMATCH = "i18n:pattern-mismatch",
-        rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
+    var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
         rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
         rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
         predefinedPatterns = {number: rNumber, email: rEmail, url: rUrl},
@@ -35,7 +25,7 @@
             return errors;
         },
         customValidators = {},
-        validityTooltip = DOM.create("div[hidden].better-form-validation-tooltip"),
+        validityTooltip = DOM.create("div.better-form-validation-tooltip").hide(),
         lastCapturedElement;
 
     DOM.extend("input,textarea,select", {
@@ -77,14 +67,12 @@
             case "select-multiple":
                 // only check custom error case
                 return errors;
-                
+
             case "radio":
                 if (!required || this.get("form").get("elements").some(hasCheckedRadio, this)) break;
                 /* falls through */
             case "checkbox":
-                if (required && !this.get("checked")) {
-                    errors.push(VALUE_MISSING);
-                }
+                if (required && !this.get("checked")) errors.push("i18n:value-missing");
                 break;
 
             default:
@@ -99,11 +87,11 @@
                         regexp = this.get("pattern");
 
                         if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
-                            errors.push(this.get("title") || PATTERN_MISMATCH);
+                            errors.push(this.get("title") || "i18n:pattern-mismatch");
                         }
                     }
                 } else if (required) {
-                    errors.push(VALUE_MISSING);
+                    errors.push("i18n:value-missing");
                 }
             }
 
@@ -152,10 +140,10 @@
             this.setValidity(this._checkValidity(), true);
         },
         _checkValidity: function() {
-            return this.get("elements").foldl(function(memo, el) {
+            return this.get("elements").reduce(function(memo, el) {
                 if (el._checkValidity) {
                     var errors = el._checkValidity();
-                    
+
                     if (errors.length) memo[el.get("name")] = errors;
                 }
 
@@ -174,14 +162,12 @@
             return JSON.parse(JSON.stringify(this._validity));
         },
         setValidity: function(errors, /*INTERNAL*/partial) {
-            if (typeof errors !== "object") {
-                throw "Errors should be an object";
-            }
+            if (typeof errors !== "object") throw "Errors should be an object";
 
             var oldValid = this.isValid();
 
             // from right to left to display top elements first
-            this.get("elements").foldr(function(memo, el) {
+            this.get("elements").reduceRight(function(memo, el) {
                 var key = el.get("name"), validity;
 
                 if (key && (validity = errors[key])) {
@@ -206,8 +192,8 @@
     });
 
     DOM.on({
-        "validation:fail(target,defaultPrevented)": function(target, defaultPrevented) {
-            if (!defaultPrevented && !target.matches("form")) {
+        "validation:fail": function(target, cancel) {
+            if (!cancel && !target.matches("form")) {
                 var offset = target.offset(),
                     message = target.getValidity()[0],
                     i18nMessage = !message.indexOf("i18n:");
@@ -218,14 +204,14 @@
                         "data-i18n": i18nMessage ? message.substr(5) : null
                     })
                     // IMPORTANT: set styles after attributes to fix reflow issues in IE8
-                    .setStyle({ left: offset.left, top: offset.bottom })
+                    .style({ left: offset.left, top: offset.bottom })
                     .show();
 
                 lastCapturedElement = target;
             }
         },
-        "validation:success(defaultPrevented)": function(defaultPrevented) {
-            if (!defaultPrevented) validityTooltip.hide();
+        "validation:success": function(target, cancel) {
+            if (!cancel) validityTooltip.hide();
         }
     });
 
@@ -240,5 +226,4 @@
 
         customValidators[selector] = fn;
     };
-
 }(window.DOM));
