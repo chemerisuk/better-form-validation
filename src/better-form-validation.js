@@ -204,7 +204,7 @@
                         "data-i18n": i18nMessage ? message.substr(5) : null
                     })
                     // IMPORTANT: set styles after attributes to fix reflow issues in IE8
-                    .setStyle({ left: offset.left, top: offset.bottom })
+                    .style({ left: offset.left, top: offset.bottom })
                     .show();
 
                 lastCapturedElement = target;
