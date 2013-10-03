@@ -1,6 +1,6 @@
 /**
  * @file better-form-validation.css
- * @version 1.0.4 2013-07-10T22:00:17
+ * @version 1.1.0 2013-10-04T01:04:34
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
@@ -10,21 +10,21 @@
     position: absolute;
     z-index: 9999;
     cursor: default;
-    
+
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    
+
     color: #FFF;
     text-transform: uppercase;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     background: #DA3E5A;
-    
+
     margin-top: 5px;
     padding: 0.3em 0.5em;
     font-size: 0.75em;
-    
+
     border-radius: 5px;
     box-shadow: 0 0 5px #AAA;
 }
@@ -36,7 +36,7 @@
     border-width: 5px;
     height: 0;
     width: 0;
-    
+
     display: block;
     position: absolute;
     left: 10px;
