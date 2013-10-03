@@ -16,7 +16,7 @@ Then append the following script on your page:
 <html>
 <head>
     ...
-    <link rel="stylesheet" href="bower_components/better-form-validation/better-form-validation.css"/>
+    <link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css"/>
     <!--[if IE]>
         <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc"/>
         <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
@@ -25,7 +25,7 @@ Then append the following script on your page:
 <body>
     ...
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
-    <script src="bower_components/better-form-validation/better-form-validation.js"></script>
+    <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
     <script src="bower_components/better-form-validation/i18n/better-form-validation.en.js"></script>
 </body>
 </html>
