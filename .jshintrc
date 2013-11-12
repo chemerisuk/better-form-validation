@@ -1,6 +1,7 @@
 {
     "browser": true,
     "onevar": true,
+    "eqnull": true,
 
     "quotmark": "double",
     "indent": 4,

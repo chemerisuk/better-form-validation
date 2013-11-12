@@ -1,10 +1,10 @@
 (function(DOM) {
     "use strict";
 
-    var rNumber = /^-?[0-9]*(\.[0-9]+)?$/,
-        rEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
-        rUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
-        predefinedPatterns = {number: rNumber, email: rEmail, url: rUrl},
+    var reNumber = /^-?[0-9]*(\.[0-9]+)?$/,
+        reEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
+        reUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
+        predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl},
         isArray = Array.isArray || function(obj) {
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
@@ -34,7 +34,7 @@
 
             if (this.matches("textarea")) {
                 this.on("input", function() {
-                    var maxlength = parseInt(this.get("maxlength"), 10),
+                    var maxlength = parseFloat(this.get("maxlength")),
                         value = this.get();
 
                     if (maxlength && value.length > maxlength) {
@@ -69,7 +69,7 @@
                 return errors;
 
             case "radio":
-                if (!required || this.get("form").get("elements").some(hasCheckedRadio, this)) break;
+                if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
                 /* falls through */
             case "checkbox":
                 if (required && !this.get("checked")) errors.push("i18n:value-missing");
@@ -140,7 +140,7 @@
             this.setValidity(this._checkValidity(), true);
         },
         _checkValidity: function() {
-            return this.get("elements").reduce(function(memo, el) {
+            return this.findAll("[name]").reduce(function(memo, el) {
                 if (el._checkValidity) {
                     var errors = el._checkValidity();
 
@@ -167,7 +167,7 @@
             var oldValid = this.isValid();
 
             // from right to left to display top elements first
-            this.get("elements").reduceRight(function(memo, el) {
+            this.findAll("[name]").reduceRight(function(memo, el) {
                 var key = el.get("name"), validity;
 
                 if (key && (validity = errors[key])) {
@@ -199,11 +199,8 @@
                     i18nMessage = !message.indexOf("i18n:");
 
                 validityTooltip
-                    .set({
-                        "innerHTML": i18nMessage ? "" : message,
-                        "data-i18n": i18nMessage ? message.substr(5) : null
-                    })
-                    // IMPORTANT: set styles after attributes to fix reflow issues in IE8
+                    .i18n(i18nMessage ? message.substr(5) : "")
+                    .set(i18nMessage ? "" : message)
                     .style({ left: offset.left, top: offset.bottom })
                     .show();
 

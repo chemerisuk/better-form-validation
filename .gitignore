@@ -4,6 +4,9 @@ node_modules
 build
 coverage
 *.log
+<<<<<<< HEAD
 reports
 .grunt
 _SpecRunner.html
+=======
+>>>>>>> master

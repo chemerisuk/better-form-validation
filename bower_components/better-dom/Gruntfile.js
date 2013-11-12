@@ -31,8 +31,7 @@ module.exports = function(grunt) {
                 options: {
                     destination: "jsdoc",
                     template: "node_modules/ink-docstrap/template",
-                    configure: "extra/jsdoc.conf.json",
-                    tutorials: "extra/tutorials"
+                    configure: "extra/jsdoc.conf.json"
                 }
             }
         },
@@ -41,7 +40,7 @@ module.exports = function(grunt) {
                 configFile: "test/lib/karma.conf.js"
             },
             all: {
-                browsers: ["PhantomJS", "Chrome", "Opera", "Safari", "Firefox"],
+                browsers: ["PhantomJS", "Chrome", "ChromeCanary", "Opera", "Safari", "Firefox"],
                 singleRun: true
             },
             coverage: {
@@ -169,13 +168,14 @@ module.exports = function(grunt) {
                 skipPragmas: true,
                 skipModuleInsertion: true,
                 include: [
-                    "Node.supports", "Node.find", "Node.data", "Node.contains", "Node.events",
+                    "Node.find", "Node.data", "Node.contains", "Node.events", "Node.functional",
+                    "Node.get", "Node.set",
                     "SelectorMatcher", "EventHandler", "Element.classes", "Element.clone",
                     "Element.manipulation", "Element.matches", "Element.offset", "Element.get",
-                    "Element.set", "Element.style", "Element.traversing",
-                    "Element.visibility", "Element.collection", "CompositeElement",
+                    "Element.set", "Element.style", "Element.traversing", "Element.visibility",
+                    "Element.i18n", "CompositeElement",
                     "DOM.create", "DOM.extend", "DOM.template", "DOM.importstyles", "DOM.watch",
-                    "DOM.ready", "DOM.importscripts", "DOM.importstrings", "DOM.title"
+                    "DOM.ready", "DOM.importscripts", "DOM.importstrings"
                 ],
                 onBuildWrite: function(id, path, contents) {
                     return contents.replace(/^define\(.*?\{\s*"use strict";[\r\n]*([.\s\S]+)\}\);\s*$/m, "$1");
