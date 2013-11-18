@@ -28,7 +28,7 @@
         validityTooltip = DOM.create("div.better-form-validation-tooltip").hide(),
         lastCapturedElement;
 
-    DOM.extend("input,textarea,select", {
+    DOM.extend("input,textarea,select,button", {
         constructor: function() {
             this._customErrors = this._validity = [];
 
