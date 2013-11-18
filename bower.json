@@ -2,8 +2,8 @@
     "name": "better-form-validation",
     "version": "1.1.1",
     "main": [
-        "better-form-validation.js",
-        "better-form-validation.css",
+        "dist/better-form-validation.js",
+        "dist/better-form-validation.css",
         "i18n/better-form-validation.en.js",
         "i18n/better-form-validation.ru.js"
     ],
@@ -16,6 +16,6 @@
         "better-dom"
     ],
     "dependencies": {
-        "better-dom": "~1.5.1"
+        "better-dom": "~1.5.5"
     }
 }
