@@ -4,7 +4,8 @@
     var reNumber = /^-?[0-9]*(\.[0-9]+)?$/,
         reEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
         reUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
-        predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl},
+        reTel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/,
+        predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl, tel: reTel},
         isArray = Array.isArray || function(obj) {
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
