@@ -15,7 +15,13 @@
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var validityTooltip = DOM.create("div.validity-tooltip").hide();
+            var validityTooltip = DOM.create("div.validity-tooltip").hide(),
+                type = this.get("type"),
+                eventName = "change";
+
+            if (type === "checkbox" || type === "radio") {
+                eventName = "click";
+            }
 
             if (this.matches("textarea")) {
                 this.on("input", function() {
@@ -31,7 +37,7 @@
             validityTooltip.on("click", validityTooltip.hide);
 
             this
-                .on("blur", this.handleBlur)
+                .on(eventName, this.handleValidity)
                 .data("validity-tooltip", validityTooltip)
                 .after(validityTooltip);
         },
@@ -90,14 +96,13 @@
 
             return validity.length ? validity : "";
         },
-        handleBlur: function() {
+        handleValidity: function() {
             var invalid = this.invalid();
 
             if (invalid) {
                 this.fire("validity:fail", invalid);
             } else {
                 this.data("validity-tooltip").hide();
-                //this.fire("validity:success");
             }
         }
     });
@@ -106,7 +111,45 @@
         constructor: function() {
             // disable native validation
             this
-                .set("novalidate", "novalidate");
+                .set("novalidate", "novalidate")
+                .on("submit", this.handleFormSubmit);
+        },
+        invalid: function(value) {
+            if (arguments.length) return this.data("validity", value);
+
+            var validity = this.data("validity");
+
+            if (typeof validity === "function") {
+                validity = validity();
+            }
+
+            if (!validity) {
+                validity = this.findAll("[name]").reduce(function(memo, el) {
+                    var invalid = el.invalid();
+
+                    if (invalid) memo[el.get("name")] = invalid;
+
+                    return memo;
+                }, {});
+            }
+
+            return validity;
+        },
+        handleFormSubmit: function() {
+            var invalid = this.invalid(), name, cancel;
+
+            for (name in invalid) {
+                this.find("[name=" + name + "]").fire("validity:fail", invalid[name]);
+
+                cancel = true;
+            }
+
+            if (cancel) {
+                // fire event on form level
+                this.fire("validity:fail", invalid);
+
+                return false;
+            }
         }
     });
 
