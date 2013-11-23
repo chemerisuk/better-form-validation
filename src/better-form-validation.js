@@ -21,11 +21,10 @@
                 type = this.get("type"),
                 eventName = "change";
 
-            if (type === "checkbox" || type === "radio") {
-                eventName = "click";
-            }
+            if (type === "checkbox" || type === "radio") eventName = "click";
 
             if (this.matches("textarea")) {
+                // maxlength fix for textarea
                 this.on("input", function() {
                     var maxlength = parseFloat(this.get("maxlength")),
                         value = this.get();
@@ -55,9 +54,9 @@
 
             if (typeof errors === "function") errors = errors();
 
-            if (!errors || !errors.length) {
-                errors = [];
+            errors = errors || [];
 
+            if (!errors.length) {
                 switch(type) {
                 case "image":
                 case "submit":
@@ -78,9 +77,7 @@
                     if (value) {
                         regexp = predefinedPatterns[type];
 
-                        if (regexp && !regexp.test(value)) {
-                            errors.push(I18N_MISMATCH[type]);
-                        }
+                        if (regexp && !regexp.test(value)) errors.push(I18N_MISMATCH[type]);
 
                         if (type !== "textarea") {
                             regexp = this.get("pattern");
@@ -101,7 +98,7 @@
             var errors = this.validity();
 
             if (errors.length) {
-                this.fire("validity:fail", errors);
+                this.fire("invalid", errors);
             } else {
                 this.data(VALIDITY_TOOLTIP_KEY).hide();
             }
@@ -122,26 +119,32 @@
 
             if (typeof errors === "function") errors = errors();
 
-            return errors || this.findAll("[name]").reduce(function(memo, el) {
-                var errors = el.validity();
+            errors = errors || {};
 
-                if (errors.length) memo[el.get("name")] = errors;
+            return this.findAll("[name]").reduce(function(memo, el) {
+                var name = el.get("name"), errors;
+
+                if (!memo[name]) {
+                    errors = el.validity();
+
+                    if (errors.length) memo[el.get("name")] = errors;
+                }
 
                 return memo;
-            }, {});
+            }, errors);
         },
         handleFormSubmit: function() {
             var errors = this.validity(), name, cancel;
 
             for (name in errors) {
-                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+                this.find("[name=" + name + "]").fire("invalid", errors[name]);
 
                 cancel = true;
             }
 
             if (cancel) {
                 // fire event on form level
-                this.fire("validity:fail", errors);
+                this.fire("invalid", errors);
 
                 return false;
             }
@@ -153,7 +156,10 @@
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            target.data(VALIDITY_TOOLTIP_KEY).i18n(errors).show();
+            var tooltip = target.data(VALIDITY_TOOLTIP_KEY).hide();
+
+            // display error with a small delay if a message already exists
+            setTimeout(function() { tooltip.i18n(errors).show() }, tooltip.i18n() ? 100 : 0);
         }
     });
 }(window.DOM, {

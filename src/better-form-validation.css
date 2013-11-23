@@ -17,6 +17,21 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    opacity: 1;
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+
+    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+}
+
+.validity-tooltip[aria-hidden=true] {
+    display: block;
+
+    opacity: 0;
+    -webkit-transform: scale(3, 3);
+    transform: scale(3, 3);
 }
 
 .validity-tooltip:after {
