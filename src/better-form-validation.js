@@ -1,4 +1,4 @@
-(function(DOM) {
+(function(DOM, I18N_MISMATCH) {
     "use strict";
 
     var reNumber = /^-?[0-9]*(\.[0-9]+)?$/,
@@ -6,32 +6,16 @@
         reUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
         reTel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/,
         predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl, tel: reTel},
-        isArray = Array.isArray || function(obj) {
-            return Object.prototype.toString.call(obj) === "[object Array]";
-        },
         hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
-        checkCustomValidators = function(el) {
-            var errors = [], selector, message;
+        isArray = Array.isArray || function(obj) {
+            return Object.prototype.toString.call(obj) === "[object Array]";
+        };
 
-            for (selector in customValidators) {
-                if (el.matches(selector)) {
-                    message = customValidators[selector].call(el);
-
-                    if (message) errors.push(message);
-                }
-            }
-
-            return errors;
-        },
-        customValidators = {},
-        validityTooltip = DOM.create("div.better-form-validation-tooltip").hide(),
-        lastCapturedElement;
-
-    DOM.extend("input,textarea,select,button", {
+    DOM.extend("input,select,textarea", {
         constructor: function() {
-            this._customErrors = this._validity = [];
+            var validityTooltip = DOM.create("div.validity-tooltip").hide();
 
             if (this.matches("textarea")) {
                 this.on("input", function() {
@@ -41,187 +25,100 @@
                     if (maxlength && value.length > maxlength) {
                         this.set(value.substr(0, maxlength));
                     }
-
-                    this._refreshValidity();
                 });
-            } else {
-                this.on("input", this._refreshValidity);
             }
+
+            validityTooltip.on("click", validityTooltip.hide);
+
+            this
+                .on("blur", this.handleBlur)
+                .data("validity-tooltip", validityTooltip)
+                .after(validityTooltip);
         },
-        _refreshValidity: function() {
-            this.setValidity(this._checkValidity(), true);
-        },
-        _checkValidity: function() {
-            var type = this.get("type"),
+        invalid: function(value) {
+            if (arguments.length) return this.data("validity", value);
+
+            var validity = this.data("validity"),
+                type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
-                errors = checkCustomValidators(this),
                 regexp;
 
-            Array.prototype.push.apply(errors, this._customErrors);
+            if (typeof validity === "function") {
+                validity = validity();
+            }
 
-            switch(type) {
-            case "image":
-            case "submit":
-            case "button":
-            case "select-one":
-            case "select-multiple":
-                // only check custom error case
-                return errors;
+            if (!validity) {
+                validity = [];
 
-            case "radio":
-                if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
-                /* falls through */
-            case "checkbox":
-                if (required && !this.get("checked")) errors.push("i18n:value-missing");
-                break;
+                switch(type) {
+                case "image":
+                case "submit":
+                case "button":
+                case "select-one":
+                case "select-multiple":
+                    // only check custom error case
+                    return validity;
 
-            default:
-                if (value) {
-                    regexp = predefinedPatterns[type];
+                case "radio":
+                    if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
+                    /* falls through */
+                case "checkbox":
+                    if (required && !this.get("checked")) validity.push("can't be empty");
+                    break;
 
-                    if (regexp && !regexp.test(value)) {
-                        errors.push("i18n:" + type + "-mismatch");
-                    }
+                default:
+                    if (value) {
+                        regexp = predefinedPatterns[type];
 
-                    if (type !== "textarea") {
-                        regexp = this.get("pattern");
-
-                        if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
-                            errors.push(this.get("title") || "i18n:pattern-mismatch");
+                        if (regexp && !regexp.test(value)) {
+                            validity.push(I18N_MISMATCH[type]);
                         }
+
+                        if (type !== "textarea") {
+                            regexp = this.get("pattern");
+
+                            if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
+                                validity.push(this.get("title") || "illegal value format");
+                            }
+                        }
+                    } else if (required) {
+                        validity.push("can't be empty");
                     }
-                } else if (required) {
-                    errors.push("i18n:value-missing");
                 }
             }
 
-            return errors;
+            return validity.length ? validity : "";
         },
-        isValid: function() {
-            return !this._validity.length;
-        },
-        getValidity: function() {
-            // return clone of the validity object
-            return this._validity.slice(0);
-        },
-        setValidity: function(errors, /*INTERNAL*/partial) {
-            if (!isArray(errors)) {
-                throw "Errors should be an array";
+        handleBlur: function() {
+            var invalid = this.invalid();
+
+            if (invalid) {
+                this.fire("validity:fail", invalid);
+            } else {
+                this.data("validity-tooltip").hide();
+                //this.fire("validity:success");
             }
-
-            var oldValid = this.isValid();
-
-            this._validity = errors;
-
-            if (!partial) this._customErrors = errors;
-
-            if (!this.isValid() || !oldValid) {
-                this.fire("validation:" + (this.isValid() ? "success" : "fail"));
-            }
-
-            return this;
         }
     });
 
     DOM.extend("form", {
         constructor: function() {
-            this._validity = {};
-
+            // disable native validation
             this
-                .set("novalidate", "novalidate")
-                .on("reset", validityTooltip, "hide")
-                .on("submit", function() {
-                    this._refreshValidity();
-
-                    return this.isValid();
-                });
-        },
-        _refreshValidity: function() {
-            this.setValidity(this._checkValidity(), true);
-        },
-        _checkValidity: function() {
-            return this.findAll("[name]").reduce(function(memo, el) {
-                if (el._checkValidity) {
-                    var errors = el._checkValidity();
-
-                    if (errors.length) memo[el.get("name")] = errors;
-                }
-
-                return memo;
-            }, {});
-        },
-        isValid: function() {
-            for (var key in this._validity) {
-                if (this._validity[key].length) return false;
-            }
-
-            return true;
-        },
-        getValidity: function() {
-            // return clone of the validity object
-            return JSON.parse(JSON.stringify(this._validity));
-        },
-        setValidity: function(errors, /*INTERNAL*/partial) {
-            if (typeof errors !== "object") throw "Errors should be an object";
-
-            var oldValid = this.isValid();
-
-            // from right to left to display top elements first
-            this.findAll("[name]").reduceRight(function(memo, el) {
-                var key = el.get("name"), validity;
-
-                if (key && (validity = errors[key])) {
-                    el.setValidity(validity, partial);
-                }
-            }, 0);
-
-            this._validity = errors;
-
-            if (!this.isValid() || !oldValid) {
-                this.fire("validation:" + (this.isValid() ? "success" : "fail"));
-            }
-
-            return this;
+                .set("novalidate", "novalidate");
         }
     });
 
-    validityTooltip.on("click", function() {
-        if (lastCapturedElement) lastCapturedElement.fire("select");
+    DOM.on("validity:fail", function(invalid, target, cancel) {
+        if (!cancel && invalid && invalid.length) {
+            if (isArray(invalid)) invalid = invalid.join("<br>");
 
-        validityTooltip.hide();
-    });
-
-    DOM.on({
-        "validation:fail": function(target, cancel) {
-            if (!cancel && !target.matches("form")) {
-                var offset = target.offset(),
-                    message = target.getValidity()[0],
-                    i18nMessage = !message.indexOf("i18n:");
-
-                validityTooltip
-                    .i18n(i18nMessage ? message.substr(5) : "")
-                    .set(i18nMessage ? "" : message)
-                    .style({ left: offset.left, top: offset.bottom })
-                    .show();
-
-                lastCapturedElement = target;
-            }
-        },
-        "validation:success": function(target, cancel) {
-            if (!cancel) validityTooltip.hide();
+            target.data("validity-tooltip").i18n(invalid).show();
         }
     });
-
-    DOM.ready(function() {
-        DOM.find("body").prepend(validityTooltip);
-    });
-
-    DOM.registerValidator = function(selector, fn) {
-        if (selector in customValidators) {
-            throw "Can't register validator for the same selector twice!";
-        }
-
-        customValidators[selector] = fn;
-    };
-}(window.DOM));
+}(window.DOM, {
+    url: "should be a valid URL",
+    email: "should be a valid email",
+    tel: "should be a valid phone number"
+}));

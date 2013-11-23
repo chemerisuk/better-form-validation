@@ -1,29 +1,28 @@
-.better-form-validation-tooltip {
+.validity-tooltip {
     position: absolute;
-    z-index: 9999;
     cursor: default;
-
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
 
     color: #FFF;
     text-transform: uppercase;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     background: #DA3E5A;
-
-    margin-top: 5px;
-    padding: 0.3em 0.5em;
     font-size: 0.75em;
+
+    padding: 0.3em 0.5em;
 
     border-radius: 5px;
     box-shadow: 0 0 5px #AAA;
+
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-.better-form-validation-tooltip:after {
+.validity-tooltip:after {
     content: '';
-    border-color: transparent transparent #DA3E5A;
+    border-color: transparent;
+    border-bottom-color: #DA3E5A;
     border-style: solid;
     border-width: 5px;
     height: 0;
