@@ -11,7 +11,9 @@
         },
         isArray = Array.isArray || function(obj) {
             return Object.prototype.toString.call(obj) === "[object Array]";
-        };
+        },
+        VALIDITY_KEY = "validity",
+        VALIDITY_TOOLTIP_KEY = "validity-tooltip";
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
@@ -38,24 +40,23 @@
 
             this
                 .on(eventName, this.handleValidity)
-                .data("validity-tooltip", validityTooltip)
+                .data(VALIDITY_TOOLTIP_KEY, validityTooltip)
                 .after(validityTooltip);
         },
-        invalid: function(value) {
-            if (arguments.length) return this.data("validity", value);
+        validity: function(errors) {
+            if (arguments.length) return this.data(VALIDITY_KEY, errors);
 
-            var validity = this.data("validity"),
-                type = this.get("type"),
+            var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
                 regexp;
 
-            if (typeof validity === "function") {
-                validity = validity();
-            }
+            errors = this.data(VALIDITY_KEY);
 
-            if (!validity) {
-                validity = [];
+            if (typeof errors === "function") errors = errors();
+
+            if (!errors || !errors.length) {
+                errors = [];
 
                 switch(type) {
                 case "image":
@@ -64,13 +65,13 @@
                 case "select-one":
                 case "select-multiple":
                     // only check custom error case
-                    return validity;
+                    break;
 
                 case "radio":
                     if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
                     /* falls through */
                 case "checkbox":
-                    if (required && !this.get("checked")) validity.push("can't be empty");
+                    if (required && !this.get("checked")) errors.push("can't be empty");
                     break;
 
                 default:
@@ -78,31 +79,31 @@
                         regexp = predefinedPatterns[type];
 
                         if (regexp && !regexp.test(value)) {
-                            validity.push(I18N_MISMATCH[type]);
+                            errors.push(I18N_MISMATCH[type]);
                         }
 
                         if (type !== "textarea") {
                             regexp = this.get("pattern");
 
                             if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
-                                validity.push(this.get("title") || "illegal value format");
+                                errors.push(this.get("title") || "illegal value format");
                             }
                         }
                     } else if (required) {
-                        validity.push("can't be empty");
+                        errors.push("can't be empty");
                     }
                 }
             }
 
-            return validity.length ? validity : "";
+            return errors;
         },
         handleValidity: function() {
-            var invalid = this.invalid();
+            var errors = this.validity();
 
-            if (invalid) {
-                this.fire("validity:fail", invalid);
+            if (errors.length) {
+                this.fire("validity:fail", errors);
             } else {
-                this.data("validity-tooltip").hide();
+                this.data(VALIDITY_TOOLTIP_KEY).hide();
             }
         }
     });
@@ -114,50 +115,45 @@
                 .set("novalidate", "novalidate")
                 .on("submit", this.handleFormSubmit);
         },
-        invalid: function(value) {
-            if (arguments.length) return this.data("validity", value);
+        validity: function(errors) {
+            if (arguments.length) return this.data(VALIDITY_KEY, errors);
 
-            var validity = this.data("validity");
+            errors = this.data(VALIDITY_KEY);
 
-            if (typeof validity === "function") {
-                validity = validity();
-            }
+            if (typeof errors === "function") errors = errors();
 
-            if (!validity) {
-                validity = this.findAll("[name]").reduce(function(memo, el) {
-                    var invalid = el.invalid();
+            return errors || this.findAll("[name]").reduce(function(memo, el) {
+                var errors = el.validity();
 
-                    if (invalid) memo[el.get("name")] = invalid;
+                if (errors.length) memo[el.get("name")] = errors;
 
-                    return memo;
-                }, {});
-            }
-
-            return validity;
+                return memo;
+            }, {});
         },
         handleFormSubmit: function() {
-            var invalid = this.invalid(), name, cancel;
+            var errors = this.validity(), name, cancel;
 
-            for (name in invalid) {
-                this.find("[name=" + name + "]").fire("validity:fail", invalid[name]);
+            for (name in errors) {
+                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
 
                 cancel = true;
             }
 
             if (cancel) {
                 // fire event on form level
-                this.fire("validity:fail", invalid);
+                this.fire("validity:fail", errors);
 
                 return false;
             }
         }
     });
 
-    DOM.on("validity:fail", function(invalid, target, cancel) {
-        if (!cancel && invalid && invalid.length) {
-            if (isArray(invalid)) invalid = invalid.join("<br>");
+    DOM.on("invalid", function(errors, target, cancel) {
+        // errors could be string, array, object
+        if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
+            if (isArray(errors)) errors = errors.join("<br>");
 
-            target.data("validity-tooltip").i18n(invalid).show();
+            target.data(VALIDITY_TOOLTIP_KEY).i18n(errors).show();
         }
     });
 }(window.DOM, {
