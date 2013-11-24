@@ -1,23 +1,23 @@
 {
-    "name": "better-form-validation",
-    "description": "Form validation polyfill for better-dom",
-    "version": "1.1.1",
-    "author": "Maksim Chemerisuk",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/chemerisuk/better-form-validation"
-    },
-    "scripts": {
-        "test": "grunt test"
-    },
-    "devDependencies": {
-        "grunt": "0.4.1",
-        "grunt-contrib-jshint": "0.5.4",
-        "grunt-contrib-watch": "0.4.3",
-        "grunt-karma": "0.7.1",
-        "karma-coverage": "0.1.0",
-        "grunt-github-publish": "~0.1.1",
-        "grunt-shell": "~0.6.0"
-    }
+  "name": "better-form-validation",
+  "description": "Form validation polyfill for better-dom",
+  "version": "1.2.0-rc.1",
+  "author": "Maksim Chemerisuk",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chemerisuk/better-form-validation"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "0.4.1",
+    "grunt-contrib-jshint": "0.5.4",
+    "grunt-contrib-watch": "0.4.3",
+    "grunt-karma": "0.7.1",
+    "karma-coverage": "0.1.0",
+    "grunt-github-publish": "~0.1.1",
+    "grunt-shell": "~0.6.0"
+  }
 }
