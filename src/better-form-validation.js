@@ -19,7 +19,7 @@
         constructor: function() {
             var validityTooltip = DOM.create("div.validity-tooltip").hide(),
                 type = this.get("type"),
-                eventName = "change";
+                eventName = "blur";
 
             if (type === "checkbox" || type === "radio") eventName = "click";
 
@@ -124,10 +124,10 @@
             return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name"), errors;
 
-                if (!memo[name]) {
+                if (!(name in memo)) {
                     errors = el.validity();
 
-                    if (errors.length) memo[el.get("name")] = errors;
+                    if (errors.length) memo[name] = errors;
                 }
 
                 return memo;

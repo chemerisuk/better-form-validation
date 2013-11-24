@@ -4,14 +4,15 @@
 
     color: #FFF;
     text-transform: uppercase;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
     background: #DA3E5A;
     font-size: 0.75em;
+    line-height: 1;
 
-    padding: 0.3em 0.5em;
+    padding: 0.5em;
 
-    border-radius: 5px;
-    box-shadow: 0 0 5px #AAA;
+    border-radius: 0.25em;
+    box-shadow: 0 0 3px #777;
 
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -39,12 +40,12 @@
     border-color: transparent;
     border-bottom-color: #DA3E5A;
     border-style: solid;
-    border-width: 5px;
+    border-width: 0.5em;
     height: 0;
     width: 0;
 
     display: block;
     position: absolute;
-    left: 10px;
-    top: -10px;
+    left: 0.5em;
+    top: -0.85em;
 }
