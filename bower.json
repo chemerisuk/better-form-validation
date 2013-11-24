@@ -1,20 +1,20 @@
 {
-    "name": "better-form-validation",
-    "version": "1.1.1",
-    "main": [
-        "dist/better-form-validation.js",
-        "dist/better-form-validation.css",
-        "i18n/better-form-validation.ru.js"
-    ],
-    "ignore": [
-        ".*",
-        "src",
-        "test"
-    ],
-    "keywords": [
-        "better-dom"
-    ],
-    "dependencies": {
-        "better-dom": "~1.6.0"
-    }
+  "name": "better-form-validation",
+  "version": "1.2.0-rc.1",
+  "main": [
+    "dist/better-form-validation.js",
+    "dist/better-form-validation.css",
+    "i18n/better-form-validation.ru.js"
+  ],
+  "ignore": [
+    ".*",
+    "src",
+    "test"
+  ],
+  "keywords": [
+    "better-dom"
+  ],
+  "dependencies": {
+    "better-dom": "~1.6.0"
+  }
 }
