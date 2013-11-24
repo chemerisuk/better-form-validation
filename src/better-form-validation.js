@@ -13,7 +13,8 @@
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
         VALIDITY_KEY = "validity",
-        VALIDITY_TOOLTIP_KEY = "validity-tooltip";
+        VALIDITY_TOOLTIP_KEY = "validity-tooltip",
+        VALIDITY_TOOLTIP_DELAY = 100;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
@@ -132,11 +133,16 @@
             }, errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name;
+            var errors = this.validity(),
+                delay = 0,
+                showTooltip = function(el) {
+                    setTimeout(function() { el.fire("validity:fail", errors[name]) }, delay);
 
-            for (name in errors) {
-                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
-            }
+                    delay += VALIDITY_TOOLTIP_DELAY;
+                },
+                name;
+
+            for (name in errors) showTooltip(this.find("[name=" + name + "]"));
 
             if (errors.length) {
                 // fire event on form level
@@ -174,7 +180,7 @@
 
             if (validityTooltip.hide().i18n()) {
                 // display error with a small delay if a message already exists
-                setTimeout(function() { validityTooltip.i18n(errors).show() }, 100);
+                setTimeout(function() { validityTooltip.i18n(errors).show() }, VALIDITY_TOOLTIP_DELAY);
             } else {
                 validityTooltip.i18n(errors).show();
             }
