@@ -28,9 +28,15 @@
                 <textarea placeholder="say what you think..." name="comment" maxlength="10"></textarea>
             </label>
         </p>
+        <p>Select gender:</p>
+        <ul>
+            <li><label><input type="radio" name="gender" value="male" required>Male</label></li>
+            <li><label><input type="radio" name="gender" value="female" required>Female</label></li>
+        </ul>
         <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
     </form>
-    <h2>Custom form validation</h2>
+    <h2>Custom validation example:</h2>
     <form id="custom_form">
         <div id="custom_form_errors" style="color:red"></div>
         <p>
@@ -40,37 +46,31 @@
         </p>
         <p>
             <label>Your password<br>
-                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" required title="Password can contain only letters">
+                <input type="password" placeholder="secret" name="password" required>
+            </label>
+        </p>
+        <p>
+            <label>Reply your password<br>
+                <input type="password" placeholder="secret" name="reply_password" required>
             </label>
         </p>
         <button type="submit">Submit</button>
+        <button type="reset">Reset</button>
     </form>
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
     <script src="src/better-form-validation.js"></script>
-    <script src="i18n/better-form-validation.en.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
     <script type="text/javascript">
-        DOM.find("#custom_form").on("validation:fail", function() {
-            var errors = DOM.find("#custom_form_errors").set(""),
-                validity, message, name, i, n;
+        DOM.ready(function() {
+            var form = DOM.find("#custom_form"),
+                password = form.find("[name=password]"),
+                replyPassword = form.find("[name=reply_password]");
 
-            for (name in this.getValidity()) {
-                validity = this.getValidity()[name];
-
-                for (i = 0, n = validity.length; i < n; ++i) {
-                    message = validity[i];
-
-                    if (!message.indexOf("i18n:")) {
-                        message = "p[data-i18n=" + message.substr(5) + "]";
-                    } else {
-                        message = "<p>" + message + "</p>";
-                    }
-
-                    errors.append(message);
+            replyPassword.validity(function() {
+                if (password.get() !== replyPassword.get()) {
+                    return "passwords should match";
                 }
-            }
-            // prevent default behaviour
-            return false;
+            });
         });
     </script>
 </body>
