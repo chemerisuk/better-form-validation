@@ -2,10 +2,15 @@ describe("better-form-validation", function() {
     "use strict";
 
     describe("elements", function() {
-        var input;
+        var input, body = DOM.find("body");
 
         beforeEach(function() {
             input = DOM.mock("input[required]");
+            body.append(input);
+        });
+
+        afterEach(function() {
+            input.remove();
         });
 
         it("should validate predefined types", function() {
@@ -77,7 +82,20 @@ describe("better-form-validation", function() {
 
             expect(input.validity().length).not.toBe(0);
 
-            input.on("invalid", spy).handleValidity();
+            input.on("invalid", spy).onCheckValidity();
+            expect(spy).toHaveBeenCalled();
+        });
+
+        it("should show/hide error message when it's needed", function() {
+            var validityTooltip = input.data("validity-tooltip"),
+                spy = spyOn(validityTooltip, "show");
+
+            expect(validityTooltip.matches(":hidden")).toBe(true);
+            input.onCheckValidity();
+            expect(spy).toHaveBeenCalled();
+
+            spy = spyOn(validityTooltip, "hide");
+            input.set("123").onCheckValidity();
             expect(spy).toHaveBeenCalled();
         });
     });

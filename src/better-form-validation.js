@@ -38,7 +38,7 @@
             validityTooltip.on("click", validityTooltip.hide);
 
             this
-                .on(eventName, this.handleValidity)
+                .on(eventName, this.onCheckValidity)
                 .data(VALIDITY_TOOLTIP_KEY, validityTooltip)
                 .after(validityTooltip);
         },
@@ -94,13 +94,13 @@
 
             return errors;
         },
-        handleValidity: function() {
+        onCheckValidity: function() {
             var errors = this.validity();
 
             if (errors.length) {
                 this.fire("invalid", errors);
             } else {
-                this.data(VALIDITY_TOOLTIP_KEY).hide();
+                this.data(VALIDITY_TOOLTIP_KEY).i18n("").hide();
             }
         }
     });
@@ -121,29 +121,29 @@
             if (typeof errors === "function") errors = errors();
 
             errors = errors || {};
+            errors.length = 0;
 
             return this.findAll("[name]").reduce(function(memo, el) {
-                var name = el.get("name"), errors;
+                var name = el.get("name"),
+                    errors = name in memo ? memo[name] : el.validity();
 
-                if (!(name in memo)) {
-                    errors = el.validity();
+                if (errors.length) {
+                    memo[name] = errors;
 
-                    if (errors.length) memo[name] = errors;
+                    memo.length += errors.length;
                 }
 
                 return memo;
             }, errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name, cancel;
+            var errors = this.validity(), name;
 
             for (name in errors) {
                 this.find("[name=" + name + "]").fire("invalid", errors[name]);
-
-                cancel = true;
             }
 
-            if (cancel) {
+            if (errors.length) {
                 // fire event on form level
                 this.fire("invalid", errors);
 
@@ -164,8 +164,12 @@
 
             var tooltip = target.data(VALIDITY_TOOLTIP_KEY).hide();
 
-            // display error with a small delay if a message already exists
-            setTimeout(function() { tooltip.i18n(errors).show() }, tooltip.i18n() ? 100 : 0);
+            if (tooltip.i18n()) {
+                // display error with a small delay if a message already exists
+                setTimeout(function() { tooltip.i18n(errors).show() }, 100);
+            } else {
+                tooltip.i18n(errors).show();
+            }
         }
     });
 }(window.DOM, {
