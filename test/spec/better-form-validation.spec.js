@@ -70,13 +70,17 @@ describe("better-form-validation", function() {
             expect(input.validity().length).toBe(0);
         });
 
-        it("should fire invalid event on fail", function() {
-            var spy = jasmine.createSpy("invalid");
+        it("should fire validity:fail event on fail", function() {
+            var failSpy = jasmine.createSpy("validity:fail"),
+                successSpy = jasmine.createSpy("validity:success");
 
             expect(input.validity().length).not.toBe(0);
 
-            input.on("invalid", spy).onCheckValidity();
-            expect(spy).toHaveBeenCalled();
+            input.on("validity:fail", failSpy).onCheckValidity();
+            expect(failSpy).toHaveBeenCalled();
+
+            input.set("123").on("validity:success", successSpy).onCheckValidity();
+            expect(successSpy).toHaveBeenCalled();
         });
 
         it("should show/hide error message when it's needed", function() {
@@ -96,9 +100,9 @@ describe("better-form-validation", function() {
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
             var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name=b]"),
-                spy = jasmine.createSpy("invalid");
+                spy = jasmine.createSpy("validity:fail");
 
-            form.on("invalid", spy).fire("submit");
+            form.on("validity:fail", spy).fire("submit");
             expect(spy).toHaveBeenCalledWith({length: 2, a: ["can't be empty"], b: ["can't be empty"]}, form, false);
         });
 

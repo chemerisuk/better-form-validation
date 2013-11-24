@@ -64,13 +64,17 @@
         DOM.ready(function() {
             var form = DOM.find("#custom_form"),
                 password = form.find("[name=password]"),
-                replyPassword = form.find("[name=reply_password]");
+                replyPassword = form.find("[name=reply_password]"),
+                button = DOM.find("[type=submit]");
 
             replyPassword.validity(function() {
                 if (password.get() !== replyPassword.get()) {
                     return "passwords should match";
                 }
             });
+
+            button.fire("validity:fail", "TIP: toggle tooltips via custom events");
+            setTimeout(function() { button.fire("validity:success") }, 3000);
         });
     </script>
 </body>

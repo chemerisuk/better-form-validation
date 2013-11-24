@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.0-rc.1 2013-11-24T15:27:46
+ * @version 1.2.0-rc.2 2013-11-24T17:03:29
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
@@ -21,15 +21,13 @@
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
         VALIDITY_KEY = "validity",
-        VALIDITY_TOOLTIP_KEY = "validity-tooltip";
+        VALIDITY_TOOLTIP_KEY = "validity-tooltip",
+        VALIDITY_TOOLTIP_DELAY = 100;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var validityTooltip = DOM.create("div.validity-tooltip").hide(),
-                type = this.get("type"),
-                eventName = "blur";
-
-            if (type === "checkbox" || type === "radio") eventName = "click";
+            var validityTooltip = DOM.create("div.better-validity-tooltip").hide().on("click", "hide"),
+                type = this.get("type");
 
             if (this.matches("textarea")) {
                 // maxlength fix for textarea
@@ -43,10 +41,8 @@
                 });
             }
 
-            validityTooltip.on("click", validityTooltip.hide);
-
             this
-                .on(eventName, this.onCheckValidity)
+                .on(type === "checkbox" || type === "radio" ? "click" : "blur", this.onCheckValidity)
                 .data(VALIDITY_TOOLTIP_KEY, validityTooltip)
                 .after(validityTooltip);
         },
@@ -106,9 +102,9 @@
             var errors = this.validity();
 
             if (errors.length) {
-                this.fire("invalid", errors);
+                this.fire("validity:fail", errors);
             } else {
-                this.data(VALIDITY_TOOLTIP_KEY).hide();
+                this.fire("validity:success");
             }
         }
     });
@@ -145,15 +141,20 @@
             }, errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name;
+            var errors = this.validity(),
+                delay = 0,
+                showTooltip = function(el) {
+                    setTimeout(function() { el.fire("validity:fail", errors[name]) }, delay);
 
-            for (name in errors) {
-                this.find("[name=" + name + "]").fire("invalid", errors[name]);
-            }
+                    delay += VALIDITY_TOOLTIP_DELAY;
+                },
+                name;
+
+            for (name in errors) showTooltip(this.find("[name=" + name + "]"));
 
             if (errors.length) {
                 // fire event on form level
-                this.fire("invalid", errors);
+                this.fire("validity:fail", errors);
 
                 return false;
             }
@@ -165,18 +166,31 @@
         }
     });
 
-    DOM.on("invalid", function(errors, target, cancel) {
+    DOM.on("validity:success", function(target, cancel) {
+        if (!cancel) {
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+
+            if (validityTooltip) validityTooltip.hide();
+        }
+    });
+
+    DOM.on("validity:fail", function(errors, target, cancel) {
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            var tooltip = target.data(VALIDITY_TOOLTIP_KEY).hide();
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
-            if (tooltip.i18n()) {
+            if (!validityTooltip) {
+                validityTooltip = DOM.create("div.better-validity-tooltip").on("click", "hide");
+                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
+            }
+
+            if (validityTooltip.hide().i18n()) {
                 // display error with a small delay if a message already exists
-                setTimeout(function() { tooltip.i18n(errors).show() }, 100);
+                setTimeout(function() { validityTooltip.i18n(errors).show() }, VALIDITY_TOOLTIP_DELAY);
             } else {
-                tooltip.i18n(errors).show();
+                validityTooltip.i18n(errors).show();
             }
         }
     });

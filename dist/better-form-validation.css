@@ -1,12 +1,12 @@
 /**
  * @file src/better-form-validation.css
- * @version 1.2.0-rc.1 2013-11-24T15:27:46
+ * @version 1.2.0-rc.2 2013-11-24T17:03:29
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-.validity-tooltip {
+.better-validity-tooltip {
     position: absolute;
     cursor: default;
 
@@ -35,7 +35,7 @@
     transition: all 0.3s ease-in-out;
 }
 
-.validity-tooltip[aria-hidden=true] {
+.better-validity-tooltip[aria-hidden=true] {
     display: block;
 
     opacity: 0;
@@ -43,7 +43,7 @@
     transform: scale(3, 3);
 }
 
-.validity-tooltip:after {
+.better-validity-tooltip:after {
     content: '';
     border-color: transparent;
     border-bottom-color: #DA3E5A;

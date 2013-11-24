@@ -1,4 +1,4 @@
-.validity-tooltip {
+.better-validity-tooltip {
     position: absolute;
     cursor: default;
 
@@ -27,7 +27,7 @@
     transition: all 0.3s ease-in-out;
 }
 
-.validity-tooltip[aria-hidden=true] {
+.better-validity-tooltip[aria-hidden=true] {
     display: block;
 
     opacity: 0;
@@ -35,7 +35,7 @@
     transform: scale(3, 3);
 }
 
-.validity-tooltip:after {
+.better-validity-tooltip:after {
     content: '';
     border-color: transparent;
     border-bottom-color: #DA3E5A;
