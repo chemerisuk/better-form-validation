@@ -110,7 +110,8 @@
             // disable native validation
             this
                 .set("novalidate", "novalidate")
-                .on("submit", this.handleFormSubmit);
+                .on("submit", this.onFormSubmit)
+                .on("reset", this.onFormReset);
         },
         validity: function(errors) {
             if (arguments.length) return this.data(VALIDITY_KEY, errors);
@@ -133,7 +134,7 @@
                 return memo;
             }, errors);
         },
-        handleFormSubmit: function() {
+        onFormSubmit: function() {
             var errors = this.validity(), name, cancel;
 
             for (name in errors) {
@@ -148,6 +149,11 @@
 
                 return false;
             }
+        },
+        onFormReset: function() {
+            this.findAll("[name]").each(function(el) {
+                el.data(VALIDITY_TOOLTIP_KEY).hide();
+            });
         }
     });
 
