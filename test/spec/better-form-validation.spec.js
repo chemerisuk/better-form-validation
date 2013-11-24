@@ -101,69 +101,58 @@ describe("better-form-validation", function() {
     });
 
     describe("forms", function() {
-    //     it("should hide all messages on form reset", function() {
+        // it("should send invalid event when validation fails", function() {
+        //     var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]");
 
-    //     });
+        //     form.fire("submit");
 
-    //     it("should block form submit if it's invalid", function() {
-    //         var form = DOM.mock("form>input[name=a required]+textarea+button"),
-    //             spy = jasmine.createSpy("spy");
+        // });
 
-    //         form.on("submit", spy.andCallFake(function(target, defaultPrevented) {
-    //             expect(defaultPrevented).toBe(true);
-    //             expect(form.isValid()).toBe(false);
-    //             expect(form.getValidity()).toEqual({a: ["i18n:value-missing"]});
-    //             // prevent submitting even if the test fails
-    //             return false;
-    //         }));
+        it("should hide all messages on form reset", function() {
+            var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
+                inputs = form.findAll("[name]"),
+                spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
 
-    //         form.fire("submit");
-    //         expect(spy).toHaveBeenCalled();
-    //     });
+            form.onFormReset();
+            while (spys.length) expect(spys.pop()).toHaveBeenCalled();
+        });
 
-    //     it("should send event on success/fail", function() {
-    //         var form = DOM.mock("form>input[name=a required]"),
-    //             spyFail = jasmine.createSpy("fail"),
-    //             spySuccess = jasmine.createSpy("success");
+        it("should block form submit if it's invalid", function() {
+            var form = DOM.mock("form>input[name=a required]+textarea+button"),
+                spy = jasmine.createSpy("spy");
 
-    //         form.on("submit", function() { return false; });
+            form.on("submit", spy.andCallFake(function(target, cancel) {
+                expect(cancel).toBe(true);
+                expect(form.validity().length).not.toBeFalsy();
+                // prevent submitting even if the test fails
+                return false;
+            }));
 
-    //         form.on({
-    //             "validation:fail": spyFail,
-    //             "validation:success": spySuccess
-    //         });
+            form.fire("submit");
+            expect(spy).toHaveBeenCalled();
+        });
 
-    //         form.fire("submit");
-    //         expect(spyFail).toHaveBeenCalled();
-    //         expect(spySuccess).not.toHaveBeenCalled();
+        it("should handle checkboxes", function() {
+            var form = DOM.mock("form>input[type=checkbox required name=b]");
 
-    //         form.find("input").set("required", null);
-    //         form.fire("submit");
-    //         expect(spySuccess).toHaveBeenCalled();
-    //         expect(spyFail.callCount).toBe(1);
-    //     });
+            form.on("submit", function() { return false; }).fire("submit");
+            expect(form.validity().length).not.toBeFalsy();
 
-    //     it("should handle checkboxes and radio buttons", function() {
-    //         var form = DOM.mock("form>input:checkbox[required name=b]");
+            form.find("input").set("checked", true);
+            form.fire("submit");
+            expect(form.validity().length).toBeFalsy();
+        });
 
-    //         form.on("submit", function() { return false; }).fire("submit");
-    //         expect(form.isValid()).toBe(false);
+        it("should handle checkboxes and radio buttons", function() {
+            var form = DOM.mock("form>input[type=radio required name=c]*3");
 
-    //         form.find("input").set("checked", true);
-    //         form.fire("submit");
-    //         expect(form.isValid()).toBe(true);
-    //     });
+            form.on("submit", function() { return false; }).fire("submit");
+            expect(form.validity().length).not.toBeFalsy();
 
-    //     it("should handle checkboxes and radio buttons", function() {
-    //         var form = DOM.mock("form>input:radio[required name=c]*3");
-
-    //         form.on("submit", function() { return false; }).fire("submit");
-    //         expect(form.isValid()).toBe(false);
-
-    //         form.find("input").set("checked", true);
-    //         form.fire("submit");
-    //         expect(form.isValid()).toBe(true);
-    //     });
+            form.find("input").set("checked", true);
+            form.fire("submit");
+            expect(form.validity().length).toBeFalsy();
+        });
 
     //     it("should allow to set errors manually", function() {
     //         var form = DOM.mock("form>input[name=a required]");
