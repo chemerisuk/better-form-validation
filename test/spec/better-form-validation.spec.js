@@ -59,13 +59,6 @@ describe("better-form-validation", function() {
             expect(input.validity().length).toBe(0);
         });
 
-    //     it("should polyfill maxlength attribute for textarea", function() {
-    //         var textarea = DOM.create("textarea[maxlength=3]");
-
-    //         textarea.set("error").fire("input");
-    //         //expect(textarea.get()).toBe("err");
-    //     });
-
         it("should support custom validators", function() {
             input.validity(function() { return ["error"] });
             expect(input.validity()).toEqual(["error"]);
@@ -101,12 +94,13 @@ describe("better-form-validation", function() {
     });
 
     describe("forms", function() {
-        // it("should send invalid event when validation fails", function() {
-        //     var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]");
+        it("should send invalid event when validation fails", function() {
+            var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name=b]"),
+                spy = jasmine.createSpy("invalid");
 
-        //     form.fire("submit");
-
-        // });
+            form.on("invalid", spy).fire("submit");
+            expect(spy).toHaveBeenCalledWith({length: 2, a: ["can't be empty"], b: ["can't be empty"]}, form, false);
+        });
 
         it("should hide all messages on form reset", function() {
             var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
@@ -154,20 +148,13 @@ describe("better-form-validation", function() {
             expect(form.validity().length).toBeFalsy();
         });
 
-    //     it("should allow to set errors manually", function() {
-    //         var form = DOM.mock("form>input[name=a required]");
+        it("should allow to add custom validation", function() {
+            var form = DOM.mock("form>input[type=text name=d]");
 
-    //         form.on("submit", function() { return false; });
+            expect(form.validity().length).toBeFalsy();
 
-    //         form.find("input").set("required", null).fire("submit");
-    //         expect(form.isValid()).toBe(true);
-
-    //         form.setValidity({a: ["test"]});
-    //         expect(form.isValid()).toBe(false);
-    //         expect(form.getValidity()).toEqual({a: ["test"]});
-
-    //         // invalid arguments check
-    //         expect(function() { form.setValidity(1); }).toThrow();
-    //     });
+            form.validity(function() { return form.find("input").get() ? "" : {d: ["FAIL"]} });
+            expect(form.validity().length).not.toBeFalsy();
+        });
     });
 });

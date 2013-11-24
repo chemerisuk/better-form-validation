@@ -100,7 +100,7 @@
             if (errors.length) {
                 this.fire("invalid", errors);
             } else {
-                this.data(VALIDITY_TOOLTIP_KEY).i18n("").hide();
+                this.data(VALIDITY_TOOLTIP_KEY).hide();
             }
         }
     });
