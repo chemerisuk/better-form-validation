@@ -12,6 +12,19 @@
         isArray = Array.isArray || function(obj) {
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
+        attachValidityTooltip = function(el) {
+            var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+
+            validityTooltip.on("click", function() {
+                validityTooltip.hide();
+                // focus to the invalid input
+                el.fire("focus");
+            });
+
+            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
+
+            return validityTooltip;
+        },
         VALIDITY_KEY = "validity",
         VALIDITY_TOOLTIP_KEY = "validity-tooltip",
         VALIDITY_TOOLTIP_DELAY = 100,
@@ -20,8 +33,7 @@
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var validityTooltip = DOM.create("div.better-validity-tooltip").hide().on("click", "hide"),
-                type = this.get("type");
+            var type = this.get("type");
 
             if (this.matches("textarea")) {
                 // maxlength fix for textarea
@@ -35,10 +47,9 @@
                 });
             }
 
-            this
-                .on(type === "checkbox" || type === "radio" ? "click" : "blur", this.onCheckValidity)
-                .data(VALIDITY_TOOLTIP_KEY, validityTooltip)
-                .after(validityTooltip);
+            this.on(type === "checkbox" || type === "radio" ? "click" : "blur", this.onCheckValidity);
+
+            attachValidityTooltip(this);
         },
         validity: function(errors) {
             if (arguments.length) return this.data(VALIDITY_KEY, errors);
@@ -166,12 +177,7 @@
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
-
-            if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip").on("click", "hide");
-                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
-            }
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 
             // use a small delay if several tooltips are going to be displayed
             if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
