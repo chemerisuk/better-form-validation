@@ -28,21 +28,12 @@
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var type = this.get("type");
+            var type = this.get("type"),
+                events = type === "checkbox" || type === "radio" ? ["click", "click"] : ["input", "change"];
 
-            if (this.matches("textarea")) {
-                // maxlength fix for textarea
-                this.on("input", function() {
-                    var maxlength = parseFloat(this.get("maxlength")),
-                        value = this.get();
-
-                    if (maxlength && value.length > maxlength) {
-                        this.set(value.substr(0, maxlength));
-                    }
-                });
-            }
-
-            this.on(type === "checkbox" || type === "radio" ? "click" : "blur", this.onCheckValidity);
+            this
+                .on(events[0], this.onPositiveValidityCheck)
+                .on(events[1], this.onNegativeValidityCheck);
 
             attachValidityTooltip(this);
         },
@@ -102,14 +93,23 @@
 
             return errors;
         },
-        onCheckValidity: function() {
+        onPositiveValidityCheck: function() {
+            // maxlength fix for textarea
+            if (this.matches("textarea")) {
+                var maxlength = parseFloat(this.get("maxlength")),
+                    value = this.get();
+
+                if (maxlength && value.length > maxlength) {
+                    this.set(value.substr(0, maxlength));
+                }
+            }
+
+            if (!this.validity().length) this.fire("validity:ok");
+        },
+        onNegativeValidityCheck: function() {
             var errors = this.validity();
 
-            if (errors.length) {
-                this.fire("validity:fail", errors);
-            } else {
-                this.fire("validity:success");
-            }
+            if (errors.length) this.fire("validity:fail", errors);
         }
     });
 
@@ -163,7 +163,7 @@
         }
     });
 
-    DOM.on("validity:success", function(target, cancel) {
+    DOM.on("validity:ok", function(target, cancel) {
         if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 

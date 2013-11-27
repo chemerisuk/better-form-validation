@@ -9,7 +9,7 @@
 * validity tooltips are fully customizable via css
 * validity messages are fully custumizable (value of the `title` attribute for `[pattern]` elements is supported as well)
 * programmatic configuration via new `validity` method for inputs and forms
-* `validity:success` and `validity:fail` events for advanced interaction
+* `validity:ok` and `validity:fail` events for advanced interaction
 * `maxlength` attribute fix for `<textarea>`
 * i18n support for any message text
 

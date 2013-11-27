@@ -32,6 +32,7 @@
         "jasmine": true,
         "waits": true,
         "runs": true,
-        "spyOn": true
+        "spyOn": true,
+        "waitsFor": true
     }
 }
