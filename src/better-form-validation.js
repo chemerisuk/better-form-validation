@@ -14,7 +14,9 @@
         },
         VALIDITY_KEY = "validity",
         VALIDITY_TOOLTIP_KEY = "validity-tooltip",
-        VALIDITY_TOOLTIP_DELAY = 100;
+        VALIDITY_TOOLTIP_DELAY = 100,
+        lastTooltipTimestamp = new Date(),
+        delay = 0;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
@@ -133,16 +135,11 @@
             }, errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity(),
-                delay = 0,
-                showTooltip = function(el) {
-                    setTimeout(function() { el.fire("validity:fail", errors[name]) }, delay);
+            var errors = this.validity(), name;
 
-                    delay += VALIDITY_TOOLTIP_DELAY;
-                },
-                name;
-
-            for (name in errors) showTooltip(this.find("[name=" + name + "]"));
+            for (name in errors) {
+                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+            }
 
             if (errors.length) {
                 // fire event on form level
@@ -169,16 +166,23 @@
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
-                i18n = validityTooltip ? validityTooltip.i18n() : true;
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
             if (!validityTooltip) {
                 validityTooltip = DOM.create("div.better-validity-tooltip").on("click", "hide");
                 target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
             }
 
-            // show error with a small delay if the tooltip was already displayed
-            validityTooltip.hide().i18n(errors).show(i18n && VALIDITY_TOOLTIP_DELAY);
+            // use a small delay if several tooltips are going to be displayed
+            if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
+                delay += VALIDITY_TOOLTIP_DELAY;
+            } else {
+                delay = VALIDITY_TOOLTIP_DELAY;
+            }
+
+            validityTooltip.hide().i18n(errors).show(delay);
+
+            lastTooltipTimestamp = new Date();
         }
     });
 }(window.DOM, {
