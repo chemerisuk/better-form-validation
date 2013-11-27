@@ -6,12 +6,12 @@
 ## Features
 * polyfills HTML5 form validation markup support for browsers
 * [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
-* validaty tooltips are fully customizable via css
-* validaty messages are fully custumizable (`title` for `pattern` is supported as well)
-* custom programmatic API via new `validity` method for inputs and forms
+* validity tooltips are fully customizable via css
+* validity messages are fully custumizable (value of the `title` attribute for `[pattern]` elements is supported as well)
+* programmatic configuration via new `validity` method for inputs and forms
 * `validity:success` and `validity:fail` events for advanced interaction
 * `maxlength` attribute fix for `<textarea>`
-* i18n support
+* i18n support for any message text
 
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
