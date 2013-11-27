@@ -1,12 +1,7 @@
-(function(DOM, I18N_MISMATCH) {
+(function(DOM, PATTERN, I18N_MISMATCH) {
     "use strict";
 
-    var reNumber = /^-?[0-9]*(\.[0-9]+)?$/,
-        reEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
-        reUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
-        reTel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/,
-        predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl, tel: reTel},
-        hasCheckedRadio = function(el) {
+    var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
         isArray = Array.isArray || function(obj) {
@@ -84,14 +79,18 @@
 
                 default:
                     if (value) {
-                        regexp = predefinedPatterns[type];
+                        regexp = PATTERN[type];
 
                         if (regexp && !regexp.test(value)) errors.push(I18N_MISMATCH[type]);
 
-                        if (type !== "textarea") {
-                            regexp = this.get("pattern");
+                        if (type !== "textarea" && (type = this.get("pattern"))) {
+                            type = "^(?:" + type + ")$";
 
-                            if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
+                            if (!(regexp = PATTERN[type])) {
+                                regexp = PATTERN[type] = new RegExp(type);
+                            }
+
+                            if (!regexp.test(value)) {
                                 errors.push(this.get("title") || "illegal value format");
                             }
                         }
@@ -192,7 +191,12 @@
         }
     });
 }(window.DOM, {
-    url: "should be a valid URL",
+    email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
+    url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
+    tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
+    number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
+}, {
     email: "should be a valid email",
+    url: "should be a valid URL",
     tel: "should be a valid phone number"
 }));
