@@ -6,7 +6,7 @@
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
-    bower install better-form-validation
+    bower install better-form-validation --save
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 
@@ -26,7 +26,6 @@ Then append the following script on your page:
     ...
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
     <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
-    <script src="bower_components/better-form-validation/i18n/better-form-validation.en.js"></script>
 </body>
 </html>
 ```

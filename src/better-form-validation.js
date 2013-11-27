@@ -152,9 +152,7 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) {
-                el.data(VALIDITY_TOOLTIP_KEY).hide();
-            });
+            this.findAll("[name]").each(function(el) { el.data(VALIDITY_TOOLTIP_KEY).hide() });
         }
     });
 
@@ -171,19 +169,16 @@
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
+                i18n = validityTooltip ? validityTooltip.i18n() : true;
 
             if (!validityTooltip) {
                 validityTooltip = DOM.create("div.better-validity-tooltip").on("click", "hide");
                 target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
             }
 
-            if (validityTooltip.hide().i18n()) {
-                // display error with a small delay if a message already exists
-                setTimeout(function() { validityTooltip.i18n(errors).show() }, VALIDITY_TOOLTIP_DELAY);
-            } else {
-                validityTooltip.i18n(errors).show();
-            }
+            // show error with a small delay if the tooltip was already displayed
+            validityTooltip.hide().i18n(errors).show(i18n && VALIDITY_TOOLTIP_DELAY);
         }
     });
 }(window.DOM, {
