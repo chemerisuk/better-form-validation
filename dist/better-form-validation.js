@@ -1,50 +1,49 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.0-rc.2 2013-11-24T17:03:29
+ * @version 1.2.0-rc.3 2013-11-28T20:08:04
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-(function(DOM, I18N_MISMATCH) {
+(function(DOM, PATTERN, I18N_MISMATCH) {
     "use strict";
 
-    var reNumber = /^-?[0-9]*(\.[0-9]+)?$/,
-        reEmail = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i,
-        reUrl = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i,
-        reTel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/,
-        predefinedPatterns = {number: reNumber, email: reEmail, url: reUrl, tel: reTel},
-        hasCheckedRadio = function(el) {
+    var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
         isArray = Array.isArray || function(obj) {
             return Object.prototype.toString.call(obj) === "[object Array]";
         },
+        attachValidityTooltip = function(el) {
+            var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+
+            validityTooltip.on("click", function() {
+                validityTooltip.hide();
+                // focus to the invalid input
+                el.fire("focus");
+            });
+
+            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
+
+            return validityTooltip;
+        },
         VALIDITY_KEY = "validity",
         VALIDITY_TOOLTIP_KEY = "validity-tooltip",
-        VALIDITY_TOOLTIP_DELAY = 100;
+        VALIDITY_TOOLTIP_DELAY = 100,
+        lastTooltipTimestamp = new Date(),
+        delay = 0;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var validityTooltip = DOM.create("div.better-validity-tooltip").hide().on("click", "hide"),
-                type = this.get("type");
-
-            if (this.matches("textarea")) {
-                // maxlength fix for textarea
-                this.on("input", function() {
-                    var maxlength = parseFloat(this.get("maxlength")),
-                        value = this.get();
-
-                    if (maxlength && value.length > maxlength) {
-                        this.set(value.substr(0, maxlength));
-                    }
-                });
-            }
+            var type = this.get("type"),
+                events = type === "checkbox" || type === "radio" ? ["click", "click"] : ["input", "change"];
 
             this
-                .on(type === "checkbox" || type === "radio" ? "click" : "blur", this.onCheckValidity)
-                .data(VALIDITY_TOOLTIP_KEY, validityTooltip)
-                .after(validityTooltip);
+                .on(events[0], this.onPositiveValidityCheck)
+                .on(events[1], this.onNegativeValidityCheck);
+
+            attachValidityTooltip(this);
         },
         validity: function(errors) {
             if (arguments.length) return this.data(VALIDITY_KEY, errors);
@@ -79,14 +78,18 @@
 
                 default:
                     if (value) {
-                        regexp = predefinedPatterns[type];
+                        regexp = PATTERN[type];
 
                         if (regexp && !regexp.test(value)) errors.push(I18N_MISMATCH[type]);
 
-                        if (type !== "textarea") {
-                            regexp = this.get("pattern");
+                        if (type !== "textarea" && (type = this.get("pattern"))) {
+                            type = "^(?:" + type + ")$";
 
-                            if (regexp && !new RegExp("^(?:" + regexp + ")$").test(value)) {
+                            if (!(regexp = PATTERN[type])) {
+                                regexp = PATTERN[type] = new RegExp(type);
+                            }
+
+                            if (!regexp.test(value)) {
                                 errors.push(this.get("title") || "illegal value format");
                             }
                         }
@@ -98,14 +101,23 @@
 
             return errors;
         },
-        onCheckValidity: function() {
+        onPositiveValidityCheck: function() {
+            // maxlength fix for textarea
+            if (this.matches("textarea")) {
+                var maxlength = parseFloat(this.get("maxlength")),
+                    value = this.get();
+
+                if (maxlength && value.length > maxlength) {
+                    this.set(value.substr(0, maxlength));
+                }
+            }
+
+            if (!this.validity().length) this.fire("validity:ok");
+        },
+        onNegativeValidityCheck: function() {
             var errors = this.validity();
 
-            if (errors.length) {
-                this.fire("validity:fail", errors);
-            } else {
-                this.fire("validity:success");
-            }
+            if (errors.length) this.fire("validity:fail", errors);
         }
     });
 
@@ -141,16 +153,11 @@
             }, errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity(),
-                delay = 0,
-                showTooltip = function(el) {
-                    setTimeout(function() { el.fire("validity:fail", errors[name]) }, delay);
+            var errors = this.validity(), name;
 
-                    delay += VALIDITY_TOOLTIP_DELAY;
-                },
-                name;
-
-            for (name in errors) showTooltip(this.find("[name=" + name + "]"));
+            for (name in errors) {
+                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+            }
 
             if (errors.length) {
                 // fire event on form level
@@ -160,13 +167,11 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) {
-                el.data(VALIDITY_TOOLTIP_KEY).hide();
-            });
+            this.findAll("[name]").each(function(el) { el.data(VALIDITY_TOOLTIP_KEY).hide() });
         }
     });
 
-    DOM.on("validity:success", function(target, cancel) {
+    DOM.on("validity:ok", function(target, cancel) {
         if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
@@ -179,23 +184,27 @@
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 
-            if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip").on("click", "hide");
-                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
-            }
-
-            if (validityTooltip.hide().i18n()) {
-                // display error with a small delay if a message already exists
-                setTimeout(function() { validityTooltip.i18n(errors).show() }, VALIDITY_TOOLTIP_DELAY);
+            // use a small delay if several tooltips are going to be displayed
+            if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
+                delay += VALIDITY_TOOLTIP_DELAY;
             } else {
-                validityTooltip.i18n(errors).show();
+                delay = VALIDITY_TOOLTIP_DELAY;
             }
+
+            validityTooltip.hide().i18n(errors).show(delay);
+
+            lastTooltipTimestamp = new Date();
         }
     });
 }(window.DOM, {
-    url: "should be a valid URL",
+    email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
+    url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
+    tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
+    number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
+}, {
     email: "should be a valid email",
+    url: "should be a valid URL",
     tel: "should be a valid phone number"
 }));
