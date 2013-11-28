@@ -70,30 +70,45 @@ describe("better-form-validation", function() {
             expect(input.validity().length).toBe(0);
         });
 
-        it("should fire validity:fail event on fail", function() {
-            var failSpy = jasmine.createSpy("validity:fail"),
-                successSpy = jasmine.createSpy("validity:success");
+        it("should fire validity:fail and validity:ok", function() {
+            var spy = spyOn(input.data("validity-tooltip"), "show").andCallThrough(),
+                failSpy = jasmine.createSpy("validity:fail"),
+                successSpy = jasmine.createSpy("validity:ok");
 
             expect(input.validity().length).not.toBe(0);
 
-            input.on("validity:fail", failSpy).onCheckValidity();
+            input.on("validity:fail", failSpy);
+            input.onNegativeValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
-            input.set("123").on("validity:success", successSpy).onCheckValidity();
-            expect(successSpy).toHaveBeenCalled();
+            waitsFor((function(input) {
+                return function() {
+                    if (spy.callCount === 1) {
+                        input.set("123").on("validity:ok", successSpy);
+                        input.onPositiveValidityCheck();
+                        return successSpy.callCount === 1;
+                    }
+                };
+            })(input));
         });
 
         it("should show/hide error message when it's needed", function() {
             var validityTooltip = input.data("validity-tooltip"),
-                spy = spyOn(validityTooltip, "show");
+                spy = spyOn(validityTooltip, "show").andCallThrough();
 
             expect(validityTooltip.matches(":hidden")).toBe(true);
-            input.onCheckValidity();
+            input.onNegativeValidityCheck();
             expect(spy).toHaveBeenCalled();
 
-            spy = spyOn(validityTooltip, "hide");
-            input.set("123").onCheckValidity();
-            expect(spy).toHaveBeenCalled();
+            waitsFor((function(input) {
+                return function() {
+                    if (spy.callCount === 1) {
+                        spy = spyOn(validityTooltip, "hide");
+                        input.set("123").onPositiveValidityCheck();
+                        return spy.callCount === 1;
+                    }
+                };
+            })(input));
         });
     });
 
