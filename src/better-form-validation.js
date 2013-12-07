@@ -4,9 +4,6 @@
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
-        isArray = Array.isArray || function(obj) {
-            return Object.prototype.toString.call(obj) === "[object Array]";
-        },
         attachValidityTooltip = function(el) {
             var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
 
@@ -164,6 +161,8 @@
     });
 
     DOM.on("validity:ok", function(target, cancel) {
+        target.removeClass("invalid").addClass("valid");
+
         if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
@@ -172,9 +171,11 @@
     });
 
     DOM.on("validity:fail", function(errors, target, cancel) {
+        target.removeClass("valid").addClass("invalid");
+
         // errors could be string, array, object
-        if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
-            if (isArray(errors)) errors = errors.join("<br>");
+        if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
+            if (Array.isArray(errors)) errors = errors.join("<br>");
 
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 
