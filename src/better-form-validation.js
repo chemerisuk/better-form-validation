@@ -165,6 +165,8 @@
 
     DOM.on("validity:ok", function(target, cancel) {
         if (!cancel) {
+            target.removeClass("invalid").addClass("valid");
+
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
             if (validityTooltip) validityTooltip.hide();
@@ -175,6 +177,8 @@
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
+
+            target.removeClass("valid").addClass("invalid");
 
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 
