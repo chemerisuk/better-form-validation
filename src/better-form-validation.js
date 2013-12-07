@@ -164,9 +164,9 @@
     });
 
     DOM.on("validity:ok", function(target, cancel) {
-        if (!cancel) {
-            target.removeClass("invalid").addClass("valid");
+        target.removeClass("invalid").addClass("valid");
 
+        if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
             if (validityTooltip) validityTooltip.hide();
@@ -174,11 +174,11 @@
     });
 
     DOM.on("validity:fail", function(errors, target, cancel) {
+        target.removeClass("valid").addClass("invalid");
+
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || isArray(errors)) && errors.length) {
             if (isArray(errors)) errors = errors.join("<br>");
-
-            target.removeClass("valid").addClass("invalid");
 
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 

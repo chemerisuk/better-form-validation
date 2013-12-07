@@ -43,7 +43,7 @@
     </form>
     <h2>Custom validation example:</h2>
     <form id="custom_form">
-        <div id="custom_form_errors" style="color:red"></div>
+        <ul id="custom_form_errors" style="color:red"></ul>
         <p>
             <label>Your email<br>
                 <input type="email" placeholder="my@email.com" name="email" required>
@@ -70,7 +70,8 @@
             var form = DOM.find("#custom_form"),
                 password = form.find("[name=password]"),
                 replyPassword = form.find("[name=reply_password]"),
-                button = DOM.find("[type=submit]");
+                button = DOM.find("[type=submit]"),
+                customErrors = DOM.find("#custom_form_errors");
 
             replyPassword.validity(function() {
                 if (password.get() !== replyPassword.get()) {
@@ -78,8 +79,24 @@
                 }
             });
 
+            form.on("validity:fail", function(errors, target) {
+                if (target !== form) return false;
+
+                customErrors.set(function() {
+                    var result = "";
+
+                    for (var field in errors) {
+                        if (field !== "length") {
+                            result += "<li>" + field + ": " + errors[field] + "</li>";
+                        }
+                    }
+
+                    return result;
+                });
+            });
+
             button.fire("validity:fail", "TIP: toggle tooltips via custom events");
-            setTimeout(function() { button.fire("validity:ok") }, 3000);
+            setTimeout(function() { button.fire("validity:ok") }, 5000);
         });
     </script>
 </body>
