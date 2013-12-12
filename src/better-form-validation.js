@@ -26,11 +26,13 @@
     DOM.extend("input,select,textarea", {
         constructor: function() {
             var type = this.get("type"),
-                events = type === "checkbox" || type === "radio" ? ["click", "click"] : ["input", "change"];
+                events = ~type.indexOf("checkbox radio") ? ["click", "click"] : ["input", "change"];
+
+            if (this.matches("textarea")) this.on("input", this.onTextareaInput);
 
             this
-                .on(events[0], this.onPositiveValidityCheck)
-                .on(events[1], this.onNegativeValidityCheck);
+                .on(events[0], this.onOptimisticValidityCheck)
+                .on(events[1], this.onPesimisticValidityCheck);
 
             attachValidityTooltip(this);
         },
@@ -90,23 +92,26 @@
 
             return errors;
         },
-        onPositiveValidityCheck: function() {
-            // maxlength fix for textarea
-            if (this.matches("textarea")) {
-                var maxlength = parseFloat(this.get("maxlength")),
-                    value = this.get();
-
-                if (maxlength && value.length > maxlength) {
-                    this.set(value.substr(0, maxlength));
-                }
-            }
-
+        onOptimisticValidityCheck: function() {
             if (!this.validity().length) this.fire("validity:ok");
         },
-        onNegativeValidityCheck: function() {
+        onPesimisticValidityCheck: function() {
             var errors = this.validity();
 
-            if (errors.length) this.fire("validity:fail", errors);
+            if (errors.length) {
+                this.fire("validity:fail", errors);
+            } else {
+                this.fire("validity:ok");
+            }
+        },
+        onTextareaInput: function() {
+            // maxlength fix for textarea
+            var maxlength = parseFloat(this.get("maxlength")),
+                value = this.get();
+
+            if (maxlength && value.length > maxlength) {
+                this.set(value.substr(0, maxlength));
+            }
         }
     });
 
