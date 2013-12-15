@@ -12,6 +12,15 @@
     <style type="text/css">
     input, textarea {
         font-size: 1em;
+        margin: 0;
+    }
+
+    #custom_form {
+        width: 450px;
+    }
+
+    #custom_form_errors {
+        float: right;
     }
 
     #custom_form input {
@@ -35,7 +44,7 @@
         </p>
         <p>
             <label>Your password<br>
-                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" title="Only letters, please">
+                <input type="password" placeholder="secret" name="password" pattern="[a-z]+" title="оnly letters, please">
             </label>
         </p>
         <p>
@@ -92,17 +101,15 @@
             form.on("validity:fail", function(errors, target) {
                 if (target !== form) return false;
 
-                customErrors.set(function() {
-                    var result = "";
+                customErrors.set("");
 
-                    for (var field in errors) {
-                        if (field !== "length") {
-                            result += "<li>" + field + ": " + errors[field] + "</li>";
-                        }
+                for (var field in errors) {
+                    if (field !== "length") {
+                        customErrors
+                            .append(DOM.create("li>{${name}: }+span", {name: field})
+                                .child(0).i18n(errors[field][0]).parent());
                     }
-
-                    return result;
-                });
+                }
             });
 
             button.fire("validity:fail", "TIP: toggle tooltips via custom events");

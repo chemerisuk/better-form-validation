@@ -78,14 +78,14 @@ describe("better-form-validation", function() {
             expect(input.validity().length).not.toBe(0);
 
             input.on("validity:fail", failSpy);
-            input.onNegativeValidityCheck();
+            input.onValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
             waitsFor((function(input) {
                 return function() {
                     if (spy.callCount === 1) {
                         input.set("123").on("validity:ok", successSpy);
-                        input.onPositiveValidityCheck();
+                        input.onValidityCheck();
                         return successSpy.callCount === 1;
                     }
                 };
@@ -97,14 +97,14 @@ describe("better-form-validation", function() {
                 spy = spyOn(validityTooltip, "show").andCallThrough();
 
             expect(validityTooltip.matches(":hidden")).toBe(true);
-            input.onNegativeValidityCheck();
+            input.onValidityCheck();
             expect(spy).toHaveBeenCalled();
 
             waitsFor((function(input) {
                 return function() {
                     if (spy.callCount === 1) {
                         spy = spyOn(validityTooltip, "hide");
-                        input.set("123").onPositiveValidityCheck();
+                        input.set("123").onValidityCheck();
                         return spy.callCount === 1;
                     }
                 };
