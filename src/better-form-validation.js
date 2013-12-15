@@ -182,7 +182,13 @@
         if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
             if (Array.isArray(errors)) errors = errors[0]; // display only the first error
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
+                offset = target.offset();
+
+            validityTooltip.style({
+                "margin-top": offset.height,
+                "margin-left": -offset.width
+            });
 
             // use a small delay if several tooltips are going to be displayed
             if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
