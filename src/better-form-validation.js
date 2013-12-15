@@ -135,7 +135,7 @@
 
             return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name"),
-                    errors = name in memo ? memo[name] : el.validity();
+                    errors = name in memo ? memo[name] : (el.validity ? el.validity() : []);
 
                 if (errors.length) {
                     memo[name] = errors;
@@ -180,7 +180,7 @@
 
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
-            if (Array.isArray(errors)) errors = errors.join("<br>");
+            if (Array.isArray(errors)) errors = errors[0]; // display only the first error
 
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
 
