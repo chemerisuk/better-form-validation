@@ -1,12 +1,12 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.0 2013-12-08T02:58:15
+ * @version 1.2.1 2013-12-16T01:05:53
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-(function(DOM, PATTERN, I18N_MISMATCH) {
+(function(DOM, VALID_CLASS, INVALID_CLASS, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
     "use strict";
 
     var hasCheckedRadio = function(el) {
@@ -25,20 +25,20 @@
 
             return validityTooltip;
         },
-        VALIDITY_KEY = "validity",
-        VALIDITY_TOOLTIP_KEY = "validity-tooltip",
-        VALIDITY_TOOLTIP_DELAY = 100,
         lastTooltipTimestamp = new Date(),
         delay = 0;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var type = this.get("type"),
-                events = type === "checkbox" || type === "radio" ? ["click", "click"] : ["input", "change"];
+            var type = this.get("type");
 
-            this
-                .on(events[0], this.onPositiveValidityCheck)
-                .on(events[1], this.onNegativeValidityCheck);
+            if (type === "checkbox" || type === "radio") {
+                this.on("click", this.onValidityCheck);
+            } else {
+                if (type === "textarea") this.on("input", this.onTextareaInput);
+
+                this.on("input", this.onValidityCheck);
+            }
 
             attachValidityTooltip(this);
         },
@@ -98,23 +98,23 @@
 
             return errors;
         },
-        onPositiveValidityCheck: function() {
-            // maxlength fix for textarea
-            if (this.matches("textarea")) {
-                var maxlength = parseFloat(this.get("maxlength")),
-                    value = this.get();
-
-                if (maxlength && value.length > maxlength) {
-                    this.set(value.substr(0, maxlength));
-                }
-            }
-
-            if (!this.validity().length) this.fire("validity:ok");
-        },
-        onNegativeValidityCheck: function() {
+        onValidityCheck: function() {
             var errors = this.validity();
 
-            if (errors.length) this.fire("validity:fail", errors);
+            if (errors.length) {
+                if (!this.hasClass(INVALID_CLASS)) this.fire("validity:fail", errors);
+            } else {
+                if (!this.hasClass(VALID_CLASS)) this.fire("validity:ok");
+            }
+        },
+        onTextareaInput: function() {
+            // maxlength fix for textarea
+            var maxlength = parseFloat(this.get("maxlength")),
+                value = this.get();
+
+            if (maxlength && value.length > maxlength) {
+                this.set(value.substr(0, maxlength));
+            }
         }
     });
 
@@ -138,7 +138,7 @@
 
             return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name"),
-                    errors = name in memo ? memo[name] : el.validity();
+                    errors = name in memo ? memo[name] : (el.validity ? el.validity() : []);
 
                 if (errors.length) {
                     memo[name] = errors;
@@ -169,7 +169,7 @@
     });
 
     DOM.on("validity:ok", function(target, cancel) {
-        target.removeClass("invalid").addClass("valid");
+        target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
         if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
@@ -179,13 +179,19 @@
     });
 
     DOM.on("validity:fail", function(errors, target, cancel) {
-        target.removeClass("valid").addClass("invalid");
+        target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
-            if (Array.isArray(errors)) errors = errors.join("<br>");
+            if (Array.isArray(errors)) errors = errors[0]; // display only the first error
 
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target);
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
+                offset = target.offset();
+
+            validityTooltip.style({
+                "margin-top": offset.height,
+                "margin-left": -offset.width
+            });
 
             // use a small delay if several tooltips are going to be displayed
             if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
@@ -199,7 +205,7 @@
             lastTooltipTimestamp = new Date();
         }
     });
-}(window.DOM, {
+}(window.DOM, "valid", "invalid", "validity", "validity-tooltip", 100, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
