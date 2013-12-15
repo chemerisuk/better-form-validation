@@ -1,4 +1,4 @@
-(function(DOM, PATTERN, I18N_MISMATCH) {
+(function(DOM, VALID_CLASS, INVALID_CLASS, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
     "use strict";
 
     var hasCheckedRadio = function(el) {
@@ -17,22 +17,20 @@
 
             return validityTooltip;
         },
-        VALIDITY_KEY = "validity",
-        VALIDITY_TOOLTIP_KEY = "validity-tooltip",
-        VALIDITY_TOOLTIP_DELAY = 100,
         lastTooltipTimestamp = new Date(),
         delay = 0;
 
     DOM.extend("input,select,textarea", {
         constructor: function() {
-            var type = this.get("type"),
-                events = ~type.indexOf("checkbox radio") ? ["click", "click"] : ["input", "change"];
+            var type = this.get("type");
 
-            if (this.matches("textarea")) this.on("input", this.onTextareaInput);
+            if (type === "checkbox" || type === "radio") {
+                this.on("click", this.onValidityCheck);
+            } else {
+                if (type === "textarea") this.on("input", this.onTextareaInput);
 
-            this
-                .on(events[0], this.onOptimisticValidityCheck)
-                .on(events[1], this.onPesimisticValidityCheck);
+                this.on("input", this.onValidityCheck);
+            }
 
             attachValidityTooltip(this);
         },
@@ -92,16 +90,13 @@
 
             return errors;
         },
-        onOptimisticValidityCheck: function() {
-            if (!this.validity().length) this.fire("validity:ok");
-        },
-        onPesimisticValidityCheck: function() {
+        onValidityCheck: function() {
             var errors = this.validity();
 
             if (errors.length) {
-                this.fire("validity:fail", errors);
+                if (!this.hasClass(INVALID_CLASS)) this.fire("validity:fail", errors);
             } else {
-                this.fire("validity:ok");
+                if (!this.hasClass(VALID_CLASS)) this.fire("validity:ok");
             }
         },
         onTextareaInput: function() {
@@ -166,7 +161,7 @@
     });
 
     DOM.on("validity:ok", function(target, cancel) {
-        target.removeClass("invalid").addClass("valid");
+        target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
         if (!cancel) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
@@ -176,7 +171,7 @@
     });
 
     DOM.on("validity:fail", function(errors, target, cancel) {
-        target.removeClass("valid").addClass("invalid");
+        target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
         if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
@@ -202,7 +197,7 @@
             lastTooltipTimestamp = new Date();
         }
     });
-}(window.DOM, {
+}(window.DOM, "valid", "invalid", "validity", "validity-tooltip", 100, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
