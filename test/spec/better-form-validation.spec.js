@@ -5,7 +5,7 @@ describe("better-form-validation", function() {
         var input, body = DOM.find("body");
 
         beforeEach(function() {
-            input = DOM.mock("input[required]");
+            input = DOM.mock("input[required name=t]");
             body.append(input);
         });
 

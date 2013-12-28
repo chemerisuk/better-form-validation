@@ -20,7 +20,7 @@
         lastTooltipTimestamp = new Date(),
         delay = 0;
 
-    DOM.extend("input,select,textarea", {
+    DOM.extend("[name]", {
         constructor: function() {
             var type = this.get("type");
 
