@@ -13,7 +13,7 @@
                 el.fire("focus");
             });
 
-            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
+            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
 
             return validityTooltip;
         },
@@ -182,7 +182,7 @@
 
             validityTooltip.style({
                 "margin-top": offset.height,
-                "margin-left": -offset.width
+                "z-index": parseFloat("0" + target.style("z-index")) + 1
             });
 
             // use a small delay if several tooltips are going to be displayed
