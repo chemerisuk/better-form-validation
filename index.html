@@ -112,7 +112,7 @@
                 }
             });
 
-            button.fire("validity:fail", "TIP: toggle tooltips via custom events");
+            button.fire("validity:fail", ["TIP: toggle tooltips via custom events"]);
             setTimeout(function() { button.fire("validity:ok") }, 5000);
         });
     </script>

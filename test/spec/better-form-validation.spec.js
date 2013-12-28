@@ -66,6 +66,7 @@ describe("better-form-validation", function() {
             input.validity(function() { return "" });
             expect(input.validity().length).not.toBe(0);
 
+            input.validity(null);
             input.set("123");
             expect(input.validity().length).toBe(0);
         });
@@ -78,7 +79,7 @@ describe("better-form-validation", function() {
             expect(input.validity().length).not.toBe(0);
 
             input.on("validity:fail", failSpy);
-            input.onValidityCheck();
+            input.addClass("valid").onValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
             waitsFor((function(input) {
@@ -97,7 +98,7 @@ describe("better-form-validation", function() {
                 spy = spyOn(validityTooltip, "show").andCallThrough();
 
             expect(validityTooltip.matches(":hidden")).toBe(true);
-            input.onValidityCheck();
+            input.addClass("valid").onValidityCheck();
             expect(spy).toHaveBeenCalled();
 
             waitsFor((function(input) {
@@ -115,10 +116,13 @@ describe("better-form-validation", function() {
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
             var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name=b]"),
-                spy = jasmine.createSpy("validity:fail");
+                spy = jasmine.createSpy("validity:fail"),
+                errors = [];
 
             form.on("validity:fail", spy).fire("submit");
-            expect(spy).toHaveBeenCalledWith({length: 2, a: ["can't be empty"], b: ["can't be empty"]}, form, false);
+            errors.a = ["can't be empty"];
+            errors.b = ["can't be empty"];
+            expect(spy).toHaveBeenCalledWith(errors, form, false);
         });
 
         it("should hide all messages on form reset", function() {
@@ -136,7 +140,7 @@ describe("better-form-validation", function() {
 
             form.on("submit", spy.andCallFake(function(target, cancel) {
                 expect(cancel).toBe(true);
-                expect(form.validity().length).not.toBeFalsy();
+                expect(Object.keys(form.validity()).length).not.toBeFalsy();
                 // prevent submitting even if the test fails
                 return false;
             }));
@@ -149,31 +153,31 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[type=checkbox required name=b]");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(form.validity().length).not.toBeFalsy();
+            expect(Object.keys(form.validity()).length).not.toBeFalsy();
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(form.validity().length).toBeFalsy();
+            expect(Object.keys(form.validity()).length).toBeFalsy();
         });
 
         it("should handle checkboxes and radio buttons", function() {
             var form = DOM.mock("form>input[type=radio required name=c]*3");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(form.validity().length).not.toBeFalsy();
+            expect(Object.keys(form.validity()).length).not.toBeFalsy();
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(form.validity().length).toBeFalsy();
+            expect(Object.keys(form.validity()).length).toBeFalsy();
         });
 
         it("should allow to add custom validation", function() {
             var form = DOM.mock("form>input[type=text name=d]");
 
-            expect(form.validity().length).toBeFalsy();
+            expect(Object.keys(form.validity()).length).toBeFalsy();
 
             form.validity(function() { return form.find("input").get() ? "" : {d: ["FAIL"]} });
-            expect(form.validity().length).not.toBeFalsy();
+            expect(Object.keys(form.validity()).length).not.toBeFalsy();
         });
     });
 });

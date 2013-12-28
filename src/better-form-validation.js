@@ -45,6 +45,7 @@
             errors = this.data(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors();
+            if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
 
@@ -94,9 +95,9 @@
             var errors = this.validity();
 
             if (errors.length) {
-                if (!this.hasClass(INVALID_CLASS)) this.fire("validity:fail", errors);
+                if (!this.hasClass(INVALID_CLASS) && this.hasClass(VALID_CLASS)) this.fire("validity:fail", errors);
             } else {
-                if (!this.hasClass(VALID_CLASS)) this.fire("validity:ok");
+                if (!this.hasClass(VALID_CLASS) && this.hasClass(INVALID_CLASS)) this.fire("validity:ok");
             }
         },
         onTextareaInput: function() {
@@ -124,31 +125,30 @@
             errors = this.data(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors();
+            if (typeof errors === "string") errors = [errors];
 
-            errors = errors || {};
-            errors.length = 0;
+            errors = errors || [];
 
-            return this.findAll("[name]").reduce(function(memo, el) {
-                var name = el.get("name"),
-                    errors = name in memo ? memo[name] : (el.validity ? el.validity() : []);
+            this.findAll("[name]").each(function(el) {
+                var name = el.get("name");
 
-                if (errors.length) {
-                    memo[name] = errors;
+                errors[name] = errors[name] || (el.validity ? el.validity() : []);
 
-                    memo.length += errors.length;
-                }
+                if (!errors[name].length) delete errors[name];
+            });
 
-                return memo;
-            }, errors);
+            return errors;
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name;
+            var errors = this.validity(), name, invalid;
 
             for (name in errors) {
                 this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+
+                invalid = true;
             }
 
-            if (errors.length) {
+            if (invalid) {
                 // fire event on form level
                 this.fire("validity:fail", errors);
 
@@ -174,9 +174,7 @@
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
-        if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
-            if (Array.isArray(errors)) errors = errors[0]; // display only the first error
-
+        if (!cancel && Array.isArray(errors) && errors.length) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
                 offset = target.offset();
 
@@ -192,7 +190,8 @@
                 delay = VALIDITY_TOOLTIP_DELAY;
             }
 
-            validityTooltip.hide().i18n(errors).show(delay);
+            // display only the first error
+            validityTooltip.hide().i18n(errors[0]).show(delay);
 
             lastTooltipTimestamp = new Date();
         }
@@ -205,5 +204,6 @@
 }, {
     email: "should be a valid email",
     url: "should be a valid URL",
-    tel: "should be a valid phone number"
+    tel: "should be a valid phone number",
+    number: "should be a numeric value"
 }));
