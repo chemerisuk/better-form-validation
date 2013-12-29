@@ -127,17 +127,19 @@
             if (typeof errors === "function") errors = errors(this);
             if (typeof errors === "string") errors = [errors];
 
-            errors = errors || [];
-
-            this.findAll("[name]").each(function(el) {
+            return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name");
 
-                errors[name] = errors[name] || (el.validity ? el.validity() : []);
+                if (errors && errors[name]) {
+                    memo[name] = errors[name];
+                } else {
+                    memo[name] = el.validity && el.validity();
+                }
 
-                if (!errors[name].length) delete errors[name];
-            });
+                if (!memo[name] || !memo[name].length) delete memo[name];
 
-            return errors;
+                return memo;
+            }, Array.isArray(errors) ? errors : []);
         },
         onFormSubmit: function() {
             var errors = this.validity(), name, invalid;
@@ -174,7 +176,7 @@
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
-        if (!cancel && Array.isArray(errors) && errors.length) {
+        if (!cancel && errors.length && !target.matches("form")) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
                 offset = target.offset();
 
@@ -191,7 +193,7 @@
             }
 
             // display only the first error
-            validityTooltip.hide().i18n(errors[0]).show(delay);
+            validityTooltip.hide().i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
 
             lastTooltipTimestamp = new Date();
         }
