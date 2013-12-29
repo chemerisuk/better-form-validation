@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.1 2013-12-16T01:05:53
+ * @version 1.2.2 2013-12-30T01:44:36
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2013
  * @license MIT
@@ -21,14 +21,14 @@
                 el.fire("focus");
             });
 
-            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).after(validityTooltip);
+            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
 
             return validityTooltip;
         },
         lastTooltipTimestamp = new Date(),
         delay = 0;
 
-    DOM.extend("input,select,textarea", {
+    DOM.extend("[name]", {
         constructor: function() {
             var type = this.get("type");
 
@@ -52,7 +52,8 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors();
+            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
 
@@ -102,9 +103,9 @@
             var errors = this.validity();
 
             if (errors.length) {
-                if (!this.hasClass(INVALID_CLASS)) this.fire("validity:fail", errors);
+                if (!this.hasClass(INVALID_CLASS) && this.hasClass(VALID_CLASS)) this.fire("validity:fail", errors);
             } else {
-                if (!this.hasClass(VALID_CLASS)) this.fire("validity:ok");
+                if (!this.hasClass(VALID_CLASS) && this.hasClass(INVALID_CLASS)) this.fire("validity:ok");
             }
         },
         onTextareaInput: function() {
@@ -131,32 +132,33 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors();
-
-            errors = errors || {};
-            errors.length = 0;
+            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
-                var name = el.get("name"),
-                    errors = name in memo ? memo[name] : (el.validity ? el.validity() : []);
+                var name = el.get("name");
 
-                if (errors.length) {
-                    memo[name] = errors;
-
-                    memo.length += errors.length;
+                if (errors && errors[name]) {
+                    memo[name] = errors[name];
+                } else {
+                    memo[name] = el.validity && el.validity();
                 }
 
+                if (!memo[name] || !memo[name].length) delete memo[name];
+
                 return memo;
-            }, errors);
+            }, Array.isArray(errors) ? errors : []);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name;
+            var errors = this.validity(), name, invalid;
 
             for (name in errors) {
                 this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+
+                invalid = true;
             }
 
-            if (errors.length) {
+            if (invalid) {
                 // fire event on form level
                 this.fire("validity:fail", errors);
 
@@ -182,15 +184,13 @@
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
-        if (!cancel && (typeof errors === "string" || Array.isArray(errors)) && errors.length) {
-            if (Array.isArray(errors)) errors = errors[0]; // display only the first error
-
+        if (!cancel && errors.length && !target.matches("form")) {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
                 offset = target.offset();
 
             validityTooltip.style({
                 "margin-top": offset.height,
-                "margin-left": -offset.width
+                "z-index": parseFloat("0" + target.style("z-index")) + 1
             });
 
             // use a small delay if several tooltips are going to be displayed
@@ -200,7 +200,8 @@
                 delay = VALIDITY_TOOLTIP_DELAY;
             }
 
-            validityTooltip.hide().i18n(errors).show(delay);
+            // display only the first error
+            validityTooltip.hide().i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
 
             lastTooltipTimestamp = new Date();
         }
@@ -213,5 +214,6 @@
 }, {
     email: "should be a valid email",
     url: "should be a valid URL",
-    tel: "should be a valid phone number"
+    tel: "should be a valid phone number",
+    number: "should be a numeric value"
 }));
