@@ -44,7 +44,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors();
+            if (typeof errors === "function") errors = errors(this);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -124,7 +124,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors();
+            if (typeof errors === "function") errors = errors(this);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];

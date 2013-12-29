@@ -60,7 +60,11 @@ describe("better-form-validation", function() {
         });
 
         it("should support custom validators", function() {
-            input.validity(function() { return ["error"] });
+            input.validity(function(el) {
+                expect(el).toBe(input);
+
+                return ["error"];
+            });
             expect(input.validity()).toEqual(["error"]);
 
             input.validity(function() { return "" });
@@ -176,7 +180,11 @@ describe("better-form-validation", function() {
 
             expect(Object.keys(form.validity()).length).toBeFalsy();
 
-            form.validity(function() { return form.find("input").get() ? "" : {d: ["FAIL"]} });
+            form.validity(function(el) {
+                expect(el).toBe(form);
+
+                return form.find("input").get() ? "" : {d: ["FAIL"]};
+            });
             expect(Object.keys(form.validity()).length).not.toBeFalsy();
         });
     });
