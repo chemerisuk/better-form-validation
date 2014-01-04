@@ -1,32 +1,11 @@
 /**
  * @file src/better-form-validation.css
- * @version 1.2.2 2013-12-30T01:44:36
+ * @version 1.2.3 2014-01-04T23:16:47
  * @overview Form validation polyfill for better-dom
- * @copyright Maksim Chemerisuk 2013
+ * @copyright Maksim Chemerisuk 2014
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-input.valid, input.invalid {
-    background-size: auto 100%;
-    background-position: right center;
-    background-repeat: no-repeat;
-}
-
-input.valid {
-    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iIzQyQjMwMCIgZD0iTTI0IDBjLTEzLjI1NSAwLTI0IDEwLjc0NS0yNCAyNHMxMC43NDUgMjQgMjQgMjQgMjQtMTAuNzQ1IDI0LTI0LTEwLjc0NS0yNC0yNC0yNHpNMTkuNSAzOWwtOS45MzgtMTIuOTM4IDQuNDA2LTQuNTk0IDUuNTMxIDcuMDMxIDE3LjM0NC0xNC4xNTYgMi4xNTYgMi4xNTYtMTkuNSAyMi41eiIvPgo8L3N2Zz4=);
-}
-
-input.invalid {
-    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iI0ZGMzMyOSIgZD0iTTQ4IDM0LjVsLTEzLjUtMzQuNWgtMjFsLTEzLjUgMTMuNXYyMWwxMy41IDEzLjVoMjFsMTMuNS0xMy41di0yMWwtMTMuNS0xMy41ek0yNyAzOWgtNnYtNmg2djZ6TTI3IDI3aC02di0xOGg2djE4eiIvPgo8L3N2Zz4K);
-}
-
-input[type=checkbox].valid,
-input[type=checkbox].invalid,
-input[type=radio].valid,
-input[type=radio].invalid {
-    background-image: none;
-}
-
 .better-validity-tooltip {
     position: absolute;
     cursor: default;
@@ -61,8 +40,37 @@ input[type=radio].invalid {
 
 .better-validity-tooltip[aria-hidden=true] {
     display: inline-block;
+    visibility: hidden;
 
     opacity: 0;
     -webkit-transform: scale(3, 3);
     transform: scale(3, 3);
+}
+
+input.valid, input.invalid {
+    background-size: auto 100%;
+    background-position: right center;
+    background-repeat: no-repeat;
+}
+
+input.valid {
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iIzQyQjMwMCIgZD0iTTI0IDBjLTEzLjI1NSAwLTI0IDEwLjc0NS0yNCAyNHMxMC43NDUgMjQgMjQgMjQgMjQtMTAuNzQ1IDI0LTI0LTEwLjc0NS0yNC0yNC0yNHpNMTkuNSAzOWwtOS45MzgtMTIuOTM4IDQuNDA2LTQuNTk0IDUuNTMxIDcuMDMxIDE3LjM0NC0xNC4xNTYgMi4xNTYgMi4xNTYtMTkuNSAyMi41eiIvPgo8L3N2Zz4=);
+}
+
+input.invalid {
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iI0ZGMzMyOSIgZD0iTTQ4IDM0LjVsLTEzLjUtMzQuNWgtMjFsLTEzLjUgMTMuNXYyMWwxMy41IDEzLjVoMjFsMTMuNS0xMy41di0yMWwtMTMuNS0xMy41ek0yNyAzOWgtNnYtNmg2djZ6TTI3IDI3aC02di0xOGg2djE4eiIvPgo8L3N2Zz4K);
+}
+
+input.valid::-ms-clear,
+input.valid::-ms-reveal,
+input.invalid::-ms-clear,
+input.invalid::-ms-reveal {
+    display: none;
+}
+
+input[type=radio].valid,
+input[type=radio].invalid,
+input[type=checkbox].valid,
+input[type=checkbox].invalid {
+    background-image: none;
 }
