@@ -22,6 +22,10 @@
 
     DOM.extend("[name]", {
         constructor: function() {
+            if (!this.matches("input,select,textarea")) {
+                return delete this.validity;
+            }
+
             var type = this.get("type");
 
             if (type === "checkbox" || type === "radio") {

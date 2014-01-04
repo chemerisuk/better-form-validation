@@ -1,8 +1,8 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.2 2013-12-30T01:44:36
+ * @version 1.2.3 2014-01-04T23:16:47
  * @overview Form validation polyfill for better-dom
- * @copyright Maksim Chemerisuk 2013
+ * @copyright Maksim Chemerisuk 2014
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
@@ -30,6 +30,10 @@
 
     DOM.extend("[name]", {
         constructor: function() {
+            if (!this.matches("input,select,textarea")) {
+                return delete this.validity;
+            }
+
             var type = this.get("type");
 
             if (type === "checkbox" || type === "radio") {
