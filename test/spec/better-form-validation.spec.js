@@ -115,6 +115,12 @@ describe("better-form-validation", function() {
                 };
             })(input));
         });
+
+        it("should skip non-form elements", function() {
+            var div = DOM.mock("div[name=test]");
+
+            expect(div.validity).toBeUndefined();
+        });
     });
 
     describe("forms", function() {
