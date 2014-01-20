@@ -1,6 +1,6 @@
 {
   "name": "better-form-validation",
-  "version": "1.2.3",
+  "version": "1.3.0-beta.1",
   "main": [
     "dist/better-form-validation.js",
     "dist/better-form-validation.css",
