@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.2.3 2014-01-04T23:16:47
+ * @version 1.3.0-beta.1 2014-01-20T21:00:39
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
@@ -15,25 +15,19 @@
         attachValidityTooltip = function(el) {
             var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
 
-            validityTooltip.on("click", function() {
+            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
+
+            return validityTooltip.on("click", function() {
                 validityTooltip.hide();
                 // focus to the invalid input
                 el.fire("focus");
             });
-
-            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
-
-            return validityTooltip;
         },
-        lastTooltipTimestamp = new Date(),
+        lastTooltipTimestamp = Date.now(),
         delay = 0;
 
-    DOM.extend("[name]", {
+    DOM.extend("input[name],select[name],textarea[name]", {
         constructor: function() {
-            if (!this.matches("input,select,textarea")) {
-                return delete this.validity;
-            }
-
             var type = this.get("type");
 
             if (type === "checkbox" || type === "radio") {
@@ -174,7 +168,7 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, cancel) {
+    DOM.on("validity:ok", function(target, currentTarget, cancel) {
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
         if (!cancel) {
@@ -184,7 +178,7 @@
         }
     });
 
-    DOM.on("validity:fail", function(errors, target, cancel) {
+    DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
@@ -198,16 +192,16 @@
             });
 
             // use a small delay if several tooltips are going to be displayed
-            if (new Date() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
+            if (Date.now() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
                 delay += VALIDITY_TOOLTIP_DELAY;
             } else {
                 delay = VALIDITY_TOOLTIP_DELAY;
             }
 
             // display only the first error
-            validityTooltip.hide().i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
 
-            lastTooltipTimestamp = new Date();
+            lastTooltipTimestamp = Date.now();
         }
     });
 }(window.DOM, "valid", "invalid", "validity", "validity-tooltip", 100, {

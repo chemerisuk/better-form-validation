@@ -16,7 +16,7 @@
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
-    bower install better-form-validation --save
+    bower install better-form-validation
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 

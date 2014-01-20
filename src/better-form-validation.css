@@ -31,9 +31,6 @@
 }
 
 .better-validity-tooltip[aria-hidden=true] {
-    display: inline-block;
-    visibility: hidden;
-
     opacity: 0;
     -webkit-transform: scale(3, 3);
     transform: scale(3, 3);
