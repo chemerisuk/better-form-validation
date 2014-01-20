@@ -166,7 +166,7 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, cancel) {
+    DOM.on("validity:ok", function(target, currentTarget, cancel) {
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
         if (!cancel) {
@@ -176,7 +176,7 @@
         }
     });
 
-    DOM.on("validity:fail", function(errors, target, cancel) {
+    DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         // errors could be string, array, object
@@ -197,7 +197,7 @@
             }
 
             // display only the first error
-            validityTooltip.hide().i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
 
             lastTooltipTimestamp = new Date();
         }

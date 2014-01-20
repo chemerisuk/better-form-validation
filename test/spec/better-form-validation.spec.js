@@ -132,7 +132,7 @@ describe("better-form-validation", function() {
             form.on("validity:fail", spy).fire("submit");
             errors.a = ["can't be empty"];
             errors.b = ["can't be empty"];
-            expect(spy).toHaveBeenCalledWith(errors, form, false);
+            expect(spy).toHaveBeenCalledWith(errors, form, form, false);
         });
 
         it("should hide all messages on form reset", function() {
@@ -148,7 +148,7 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button"),
                 spy = jasmine.createSpy("spy");
 
-            form.on("submit", spy.andCallFake(function(target, cancel) {
+            form.on("submit", spy.andCallFake(function(target, currentTarget, cancel) {
                 expect(cancel).toBe(true);
                 expect(Object.keys(form.validity()).length).not.toBeFalsy();
                 // prevent submitting even if the test fails
