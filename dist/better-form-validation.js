@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.3.0-beta.1 2014-01-20T21:00:39
+ * @version 1.3.0-rc.1 2014-01-29T16:43:34
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
@@ -11,17 +11,6 @@
 
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
-        },
-        attachValidityTooltip = function(el) {
-            var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
-
-            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
-
-            return validityTooltip.on("click", function() {
-                validityTooltip.hide();
-                // focus to the invalid input
-                el.fire("focus");
-            });
         },
         lastTooltipTimestamp = Date.now(),
         delay = 0;
@@ -37,8 +26,6 @@
 
                 this.on("input", this.onValidityCheck);
             }
-
-            attachValidityTooltip(this);
         },
         validity: function(errors) {
             if (arguments.length) return this.data(VALIDITY_KEY, errors);
@@ -50,7 +37,10 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "function") {
+                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
+            }
+
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -130,7 +120,10 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "function") {
+                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
+            }
+
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
@@ -169,13 +162,11 @@
     });
 
     DOM.on("validity:ok", function(target, currentTarget, cancel) {
+        var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
-        if (!cancel) {
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
-
-            if (validityTooltip) validityTooltip.hide();
-        }
+        if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
     DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
@@ -183,8 +174,20 @@
 
         // errors could be string, array, object
         if (!cancel && errors.length && !target.matches("form")) {
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
                 offset = target.offset();
+
+            if (!validityTooltip) {
+                validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+
+                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
+
+                validityTooltip.on("click", function() {
+                    validityTooltip.hide();
+                    // focus to the invalid input
+                    target.fire("focus");
+                });
+            }
 
             validityTooltip.style({
                 "margin-top": offset.height,
