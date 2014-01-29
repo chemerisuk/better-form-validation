@@ -4,17 +4,6 @@
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
         },
-        attachValidityTooltip = function(el) {
-            var validityTooltip = DOM.create("div.better-validity-tooltip").hide();
-
-            el.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
-
-            return validityTooltip.on("click", function() {
-                validityTooltip.hide();
-                // focus to the invalid input
-                el.fire("focus");
-            });
-        },
         lastTooltipTimestamp = Date.now(),
         delay = 0;
 
@@ -29,8 +18,6 @@
 
                 this.on("input", this.onValidityCheck);
             }
-
-            attachValidityTooltip(this);
         },
         validity: function(errors) {
             if (arguments.length) return this.data(VALIDITY_KEY, errors);
@@ -175,8 +162,20 @@
 
         // errors could be string, array, object
         if (!cancel && errors.length && !target.matches("form")) {
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY) || attachValidityTooltip(target),
+            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
                 offset = target.offset();
+
+            if (!validityTooltip) {
+                validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+
+                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
+
+                validityTooltip.on("click", function() {
+                    validityTooltip.hide();
+                    // focus to the invalid input
+                    target.fire("focus");
+                });
+            }
 
             validityTooltip.style({
                 "margin-top": offset.height,
