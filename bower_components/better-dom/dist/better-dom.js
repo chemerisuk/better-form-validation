@@ -1,6 +1,6 @@
 /**
  * @file better-dom.js
- * @version 1.7.0-beta.1 2014-01-20T16:53:03
+ * @version 1.7.0-rc.2 2014-01-29T05:14:51
  * @overview Live extension playground
  * @copyright 2013-2014 Maksim Chemerisuk
  * @license MIT
@@ -44,7 +44,7 @@ DOM.create = function(value, vars) {
     return new $Element(value, multiple);
 };
 
-},{"./dom":6,"./element":14,"./utils":34}],2:[function(require,module,exports){
+},{"./dom":6,"./element":14,"./utils":32}],2:[function(require,module,exports){
 // Inspired by trick discovered by Daniel Buchner:
 // https://github.com/csuwldcat/SelectorListener
 
@@ -63,7 +63,7 @@ var _ = require("./utils"),
             var stop;
 
             e = e || window.event;
-            // mark extension as processed via _skip bitmask
+            // mark extension as processed via _.SKIPEXT bitmask
             if (_.CSS3_ANIMATIONS) {
                 stop = e.animationName === animId && e.target === node;
             } else {
@@ -80,21 +80,14 @@ var _ = require("./utils"),
 
         return function(ext, index) {
             // skip previously excluded or mismatched elements
-            if (!skip[index] && ext.accept(node)) {
-                if (_.CSS3_ANIMATIONS) {
-                    node.addEventListener(nativeEventType, stopExt(node, index), false);
-                } else {
-                    node.attachEvent(nativeEventType, stopExt(node, index));
-                }
-                // make a safe call so live extensions can't break each other
-                el.fire(ext);
-            }
+            // make a safe call so live extensions can't break each other
+            if (!skip[index] && ext.accept(node)) el.fire(ext);
         };
     };
 
 if (_.CSS3_ANIMATIONS) {
     nativeEventType = _.WEBKIT_PREFIX ? "webkitAnimationStart" : "animationstart";
-    animId = "DOM" + Date.now();
+    animId = _.makeRandomProp();
 
     importStyles("@" + _.WEBKIT_PREFIX + "keyframes " + animId, "1% {opacity: .99}");
 
@@ -126,23 +119,20 @@ if (_.CSS3_ANIMATIONS) {
 }
 
 /**
- * Define a live extension
+ * Declare a live extension
  * @memberOf DOM
- * @param  {String} selector  extension        css selector
- * @param  {Boolean|Function} [condition=true] condition
- * @param  {Object}           mixins           extension mixins
+ * @param  {String}           selector         css selector of which elements to capture
+ * @param  {Boolean|Function} [condition=true] condition, to define or not
+ * @param  {Object}           mixins           extension declatation
  * @see https://github.com/chemerisuk/better-dom/wiki/Live-extensions
  */
 DOM.extend = function(selector, condition, mixins) {
-    var len = arguments.length,
-        eventHandlers, ext, ctr;
-
-    if (len === 3) {
-        if (typeof condition === "boolean") condition = condition ? returnTrue : returnFalse;
-    } else if (len === 2) {
+    if (arguments.length === 2) {
         mixins = condition;
-        condition = returnTrue;
+        condition = true;
     }
+
+    if (typeof condition === "boolean") condition = condition ? returnTrue : returnFalse;
 
     if (!mixins || typeof mixins !== "object" || typeof condition !== "function") throw _.makeError("extend", true);
 
@@ -150,20 +140,29 @@ DOM.extend = function(selector, condition, mixins) {
         // extending element prototype
         _.extend($Element.prototype, mixins);
     } else {
-        eventHandlers = _.filter(Object.keys(mixins), function(prop) { return !!reRemovableMethod.exec(prop) });
-        ctr = mixins.hasOwnProperty("constructor") && mixins.constructor;
-        ext = function(el, mock) {
-            if (!mock && condition(el) === false) return;
+        var eventHandlers = _.filter(Object.keys(mixins), function(prop) { return !!reRemovableMethod.exec(prop) }),
+            ctr = mixins.hasOwnProperty("constructor") && mixins.constructor,
+            index = extensions.length,
+            ext = function(el, mock) {
+                var node = el._node;
 
-            _.extend(el, mixins);
+                if (_.CSS3_ANIMATIONS) {
+                    node.addEventListener(nativeEventType, stopExt(node, index), false);
+                } else {
+                    node.attachEvent(nativeEventType, stopExt(node, index));
+                }
 
-            try {
-                if (ctr) ctr.call(el);
-            } finally {
-                // remove event handlers from element's interface
-                if (!mock) _.forEach(eventHandlers, function(prop) { delete el[prop] });
-            }
-        };
+                if (mock !== true && condition(el) === false) return;
+
+                _.extend(el, mixins);
+
+                try {
+                    if (ctr) ctr.call(el);
+                } finally {
+                    // remove event handlers from element's interface
+                    if (mock !== true) _.forEach(eventHandlers, function(prop) { delete el[prop] });
+                }
+            };
 
         if (ctr) delete mixins.constructor;
 
@@ -173,24 +172,10 @@ DOM.extend = function(selector, condition, mixins) {
         DOM.ready(function() {
             // initialize extension manually to make sure that all elements
             // have appropriate methods before they are used in other DOM.ready.
-            // Also fixes legacy IE in case when the lib behavior is already attached
-            DOM.findAll(selector).legacy(function(node) {
-                var e;
-
-                if (_.CSS3_ANIMATIONS) {
-                    e = document.createEvent("HTMLEvents");
-                    e.initEvent(nativeEventType, true, true);
-                    e.animationName = animId;
-
-                    node.dispatchEvent(e);
-                } else {
-                    e = document.createEventObject();
-                    e.srcUrn = "dataavailable";
-                    node.fireEvent(nativeEventType, e);
-                }
-            });
-            // make sure that any extension is initialized after DOM.ready
-            // MUST be after DOM.findAll because of legacy IE behavior
+            // Also fixes legacy IEs when the HTC behavior is already attached
+            DOM.findAll(selector).fire(ext);
+            // Any extension should be initialized after DOM.ready
+            // MUST be after DOM.findAll because of legacy IEs behavior
             importStyles(selector, styles, true);
         });
     }
@@ -198,7 +183,7 @@ DOM.extend = function(selector, condition, mixins) {
 
 module.exports = extensions;
 
-},{"./dom":6,"./dom.importstyles":5,"./element":14,"./selectormatcher":33,"./utils":34}],3:[function(require,module,exports){
+},{"./dom":6,"./dom.importstyles":5,"./element":14,"./selectormatcher":31,"./utils":32}],3:[function(require,module,exports){
 var _ = require("./utils"),
     DOM = require("./dom");
 
@@ -232,7 +217,7 @@ DOM.importScripts = function() {
     callback();
 };
 
-},{"./dom":6,"./utils":34}],4:[function(require,module,exports){
+},{"./dom":6,"./utils":32}],4:[function(require,module,exports){
 var _ = require("./utils"),
     DOM = require("./dom"),
     importStyles = require("./dom.importstyles"),
@@ -268,11 +253,12 @@ DOM.importStrings = function(lang, key, value) {
 // by default just show data-i18n string
 importStyles("[data-i18n]:before", "content:attr(data-i18n)");
 
-},{"./dom":6,"./dom.importstyles":5,"./utils":34}],5:[function(require,module,exports){
+},{"./dom":6,"./dom.importstyles":5,"./utils":32}],5:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     DOM = require("./dom"),
-    styleNode = _.docEl.firstChild.appendChild(document.createElement("style")),
+    currentScript = document.scripts[0],
+    styleNode = currentScript.parentNode.insertBefore(document.createElement("style"), currentScript),
     styleSheet = styleNode.sheet || styleNode.styleSheet,
     styleRules = styleSheet.cssRules || styleSheet.rules,
     // normalize pseudoelement selectors or quotes
@@ -318,11 +304,11 @@ module.exports = DOM.importStyles = function(selector, cssText, /*INTENAL*/uniqu
     }
 };
 
-},{"./dom":6,"./element":14,"./utils":34}],6:[function(require,module,exports){
+},{"./dom":6,"./element":14,"./utils":32}],6:[function(require,module,exports){
 var $Node = require("./node"),
     DOM = new $Node(document);
 
-DOM.version = "1.7.0-beta.1";
+DOM.version = "1.7.0-rc.2";
 
 /**
  * Global object to access DOM
@@ -331,7 +317,7 @@ DOM.version = "1.7.0-beta.1";
  */
 module.exports = window.DOM = DOM;
 
-},{"./node":29}],7:[function(require,module,exports){
+},{"./node":28}],7:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     DOM = require("./dom"),
@@ -342,10 +328,11 @@ var _ = require("./utils"),
  * Also exposes private event handler functions that aren't usually presented
  * @memberOf DOM
  * @param  {Mixed} [content] HTMLString, EmmetString
+ * @param  {Object} [vars]  key/value map of variables in emmet template
  * @return {$Element} mocked instance
  */
-DOM.mock = function(content) {
-    var el = content ? DOM.create(content) : new $Element(),
+DOM.mock = function(content, vars) {
+    var el = content ? DOM.create(content, vars) : new $Element(),
         applyWatchers = function(el) {
             _.forEach(extensions, function(ext) { if (ext.accept(el._node)) ext(el, true) });
 
@@ -357,7 +344,7 @@ DOM.mock = function(content) {
     return el;
 };
 
-},{"./dom":6,"./dom.extend":2,"./element":14,"./utils":34}],8:[function(require,module,exports){
+},{"./dom":6,"./dom.extend":2,"./element":14,"./utils":32}],8:[function(require,module,exports){
 var _ = require("./utils"),
     DOM = require("./dom"),
     readyCallbacks = [],
@@ -404,7 +391,7 @@ DOM.ready = function(callback) {
     }
 };
 
-},{"./dom":6,"./utils":34}],9:[function(require,module,exports){
+},{"./dom":6,"./utils":32}],9:[function(require,module,exports){
 var _ = require("./utils"),
     DOM = require("./dom"),
     // operator type / priority object
@@ -415,9 +402,9 @@ var _ = require("./utils"),
     reVar = /\$\{(\w+)\}/g,
     reHtml = /^[\s<]/,
     cache = {},
-    normalizeAttrs = function(term, name, value, a, b, simple) {
+    normalizeAttrs = function(term, attrName, attrValue, a, b, attrBool) {
         // always wrap attribute values with quotes if they don't exist
-        return name + "=" + (simple || !value ? "\"" + (value || "") + "\"" : value);
+        return attrName + "=" + (attrBool || !attrValue ? "\"" + (attrValue || attrName) + "\"" : attrValue);
     },
     injectTerm = function(term, first) {
         return function(el) {
@@ -582,7 +569,7 @@ DOM.template = function(template, vars) {
     return cache[template] = toString(stack[0]).replace(reTextTag, "");
 };
 
-},{"./dom":6,"./utils":34}],10:[function(require,module,exports){
+},{"./dom":6,"./utils":32}],10:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     rclass = /[\n\t\r]/g;
@@ -669,7 +656,7 @@ $Element.prototype.toggleClass = makeClassesMethod("toggle", function(className)
     if (oldClassName === this._node.className) this.removeClass(className);
 });
 
-},{"./element":14,"./utils":34}],11:[function(require,module,exports){
+},{"./element":14,"./utils":32}],11:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element");
 
@@ -700,39 +687,48 @@ $Element.prototype.clone = function(deep) {
     return new $Element(node);
 };
 
-},{"./element":14,"./utils":34}],12:[function(require,module,exports){
+},{"./element":14,"./utils":32}],12:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     hooks = {};
 
 /**
  * Get property or attribute value by name
- * @param  {String} [name] property/attribute name
- * @return {String} property/attribute value
+ * @param  {String|Array} [name] property/attribute name or array of names
+ * @return {Object} property/attribute value
  * @see https://github.com/chemerisuk/better-dom/wiki/Getter-and-setter
  */
 $Element.prototype.get = function(name) {
-    var node = this._node,
+    var el = this,
+        node = this._node,
         hook = hooks[name];
 
     if (!node) return;
 
-    if (name === undefined) {
-        if (node.tagName === "OPTION") {
-            name = node.hasAttribute("value") ? "value" : "text";
-        } else if (node.tagName === "SELECT") {
-            return ~node.selectedIndex ? node.options[node.selectedIndex].value : "";
-        } else {
-            name = node.type && "value" in node ? "value" : "innerHTML";
-        }
-    } else if (typeof name !== "string") {
-        throw _.makeError("get");
+    if (hook || typeof name === "string") {
+        return hook ? hook(node, name) : (name in node ? node[name] : node.getAttribute(name));
     }
 
-    return hook ? hook(node, name) : (name in node ? node[name] : node.getAttribute(name));
+    if (Array.isArray(name)) return _.foldr(name, function(r, name) { return r[name] = el.get(name), r }, {});
+
+    throw _.makeError("get");
 };
 
 // $Element.get hooks
+
+hooks.undefined = function(node) {
+    var name;
+
+    if (node.tagName === "OPTION") {
+        name = node.hasAttribute("value") ? "value" : "text";
+    } else if (node.tagName === "SELECT") {
+        return ~node.selectedIndex ? node.options[node.selectedIndex].value : "";
+    } else {
+        name = node.type && "value" in node ? "value" : "innerHTML";
+    }
+
+    return node[name];
+};
 
 hooks.type = function(node) {
     // some browsers don't recognize input[type=email] etc.
@@ -745,7 +741,7 @@ if (!_.DOM2_EVENTS) {
 
 module.exports = hooks;
 
-},{"./element":14,"./utils":34}],13:[function(require,module,exports){
+},{"./element":14,"./utils":32}],13:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element");
 
@@ -775,7 +771,7 @@ $Element.prototype.i18n = function(value, vars) {
     return this.set("");
 };
 
-},{"./element":14,"./utils":34}],14:[function(require,module,exports){
+},{"./element":14,"./utils":32}],14:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node");
 
@@ -802,7 +798,7 @@ $Element.prototype = new $Node();
 
 module.exports = $Element;
 
-},{"./node":29,"./utils":34}],15:[function(require,module,exports){
+},{"./node":28,"./utils":32}],15:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element");
 
@@ -899,7 +895,7 @@ $Element.prototype.remove = makeManipulationMethod("remove", "", false, function
     node.parentNode.removeChild(node);
 });
 
-},{"./element":14,"./utils":34}],16:[function(require,module,exports){
+},{"./element":14,"./utils":32}],16:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     SelectorMatcher = require("./selectormatcher"),
@@ -933,14 +929,14 @@ hooks[":focus"] = function(node) { return node === document.activeElement };
 
 hooks[":hidden"] = function(node) {
     return node.getAttribute("aria-hidden") === "true" ||
-        window.getComputedStyle(node).display === "none" || !_.docEl.contains(node);
+        _.getComputedStyle(node).display === "none" || !_.docEl.contains(node);
 };
 
 hooks[":visible"] = function(node) { return !hooks[":hidden"](node) };
 
 module.exports = hooks;
 
-},{"./element":14,"./selectormatcher":33,"./utils":34}],17:[function(require,module,exports){
+},{"./element":14,"./selectormatcher":31,"./utils":32}],17:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element");
 /**
@@ -966,11 +962,11 @@ $Element.prototype.offset = function() {
     }
 };
 
-},{"./element":14,"./utils":34}],18:[function(require,module,exports){
+},{"./element":14,"./utils":32}],18:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     hooks = {},
-    fakeClass = "_" + Date.now();
+    fakeClass = _.makeRandomProp();
 
 /**
  * Set property/attribute value by name
@@ -980,64 +976,64 @@ var _ = require("./utils"),
  * @see https://github.com/chemerisuk/better-dom/wiki/Getter-and-setter
  */
 $Element.prototype.set = function(name, value) {
-    var len = arguments.length,
-        originalName = name,
-        originalValue = value,
-        nameType = typeof name;
+    var nameType = typeof name;
+
+    if (arguments.length === 1 && nameType !== "object") {
+        value = name;
+        name = undefined;
+    }
 
     return this.legacy(function(node, el, index, ref) {
-        var hook;
+        var hook = hooks[name],
+            str = value;
 
-        name = originalName;
-        value = originalValue;
+        if (typeof str === "function") str = value(el, index, ref);
 
-        if (len === 1) {
-            if (name == null) {
-                value = "";
-            } else if (nameType === "object") {
-                return _.forOwn(name, function(value, name) { el.set(name, value) });
+        if (hook || nameType === "string") {
+            if (hook) {
+                hook(node, str);
+            } else if (str == null) {
+                node.removeAttribute(name);
+            } else if (name in node) {
+                node[name] = str;
             } else {
-                // handle numbers, booleans etc.
-                value = nameType === "function" ? name : String(name);
+                node.setAttribute(name, str);
             }
-
-            if (node.tagName === "SELECT") {
-                // selectbox has special case
-                if (_.every(node.options, function(o) { return !(o.selected = o.value === value) })) {
-                    node.selectedIndex = -1;
-                }
-
-                return;
-            } else if (node.type && "value" in node) {
-                // for IE use innerText because it doesn't trigger onpropertychange
-                name = _.DOM2_EVENTS ? "value" : "innerText";
-            } else {
-                name = "innerHTML";
-            }
-        } else if (len > 2 || len === 0 || nameType !== "string") {
+        } else if (nameType === "object") {
+            return _.forOwn(name, function(value, name) { el.set(name, value) });
+        } else {
             throw _.makeError("set");
         }
 
-        if (typeof value === "function") value = value(el, index, ref);
-
-        if (hook = hooks[name]) {
-            hook(node, value);
-        } else if (value == null) {
-            node.removeAttribute(name);
-        } else if (name in node) {
-            node[name] = value;
-        } else {
-            node.setAttribute(name, value);
-        }
         // trigger reflow manually in IE8
         if (!_.DOM2_EVENTS) {
-            value = (node.className += " " + fakeClass);
-            node.className = value.replace(" " + fakeClass, "");
+            str = (node.className += " " + fakeClass);
+            node.className = str.replace(" " + fakeClass, "");
         }
     });
 };
 
 // $Element.set hooks
+
+hooks.undefined = function(node, value) {
+    var name;
+    // handle numbers, booleans etc.
+    value = value == null ? "" : String(value);
+
+    if (node.tagName === "SELECT") {
+        // selectbox has special case
+        if (_.every(node.options, function(o) { return !(o.selected = o.value === value) })) {
+            node.selectedIndex = -1;
+        }
+    } else if (node.type && "value" in node) {
+        // for IE use innerText because it doesn't trigger onpropertychange
+        name = _.DOM2_EVENTS ? "value" : "innerText";
+    } else {
+        name = "innerHTML";
+    }
+
+    if (name) node[name] = value;
+};
 
 if (!_.DOM2_EVENTS) {
     hooks.textContent = function(node, value) {
@@ -1047,15 +1043,15 @@ if (!_.DOM2_EVENTS) {
 
 module.exports = hooks;
 
-},{"./element":14,"./utils":34}],19:[function(require,module,exports){
+},{"./element":14,"./utils":32}],19:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     hooks = {get: {}, set: {}},
     reDash = /\-./g,
     reCamel = /[A-Z]/g,
     directions = ["Top", "Right", "Bottom", "Left"],
-    computed = window.getComputedStyle(_.docEl),
-    // In Opera CSSStyleDeclaration objects returned by _getComputedStyle have length 0
+    computed = _.getComputedStyle(_.docEl),
+    // In Opera CSSStyleDeclaration objects returned by _.getComputedStyle have length 0
     props = computed.length ? _.slice(computed) : _.map(Object.keys(computed), function(key) {
         return key.replace(reCamel, function(str) { return "-" + str.toLowerCase() });
     });
@@ -1081,7 +1077,7 @@ $Element.prototype.style = function(name, value) {
                 value = hook ? hook(style) : style[name];
 
                 if (!computed && !value) {
-                    style = window.getComputedStyle(node);
+                    style = _.getComputedStyle(node);
                     value = hook ? hook(style) : style[name];
 
                     computed = true;
@@ -1202,7 +1198,7 @@ _.forOwn({
 
 module.exports = hooks;
 
-},{"./element":14,"./utils":34}],20:[function(require,module,exports){
+},{"./element":14,"./utils":32}],20:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
     SelectorMatcher = require("./selectormatcher");
@@ -1329,17 +1325,64 @@ $Element.prototype.child = makeChildTraversingMethod(false);
  */
 $Element.prototype.children = makeChildTraversingMethod(true);
 
-},{"./element":14,"./selectormatcher":33,"./utils":34}],21:[function(require,module,exports){
+},{"./element":14,"./selectormatcher":31,"./utils":32}],21:[function(require,module,exports){
 var _ = require("./utils"),
     $Element = require("./element"),
-    et = _.WEBKIT_PREFIX ? ["webkitAnimationEnd", "webkitTransitionEnd"] : ["animationend", "transitionend"],
+    eventType = _.WEBKIT_PREFIX ? ["webkitAnimationEnd", "webkitTransitionEnd"] : ["animationend", "transitionend"],
     animationProps = ["transition-duration", "animation-duration", "animation-iteration-count"],
-    prevDisplayValue = "_" + Date.now(),
+    absentStrategy = _.CSS3_ANIMATIONS ? ["position", "absolute"] : ["display", "none"],
+    changeVisibility = function(el, fn, callback) {
+        return function() {
+            el.legacy(function(node, el, index, ref) {
+                var value = typeof fn === "function" ? fn(node) : fn,
+                    styles = el.style(animationProps),
+                    transitionDuration = parseFloat(styles[animationProps[0]]) || 0,
+                    animationDuration = parseFloat(styles[animationProps[1]]) || 0,
+                    iterationCount = parseFloat(styles[animationProps[2]]) || 0,
+                    duration = Math.max(iterationCount * animationDuration, transitionDuration),
+                    hasAnimation = _.CSS3_ANIMATIONS && duration && node.offsetWidth,
+                    completeAnimation = function() {
+                        // fix for quick hide/show when hiding is in progress
+                        if (node.getAttribute("aria-hidden") === "true") {
+                            // hide element and remove it from flow
+                            node.style.visibility = "hidden";
+                            node.style[absentStrategy[0]] = absentStrategy[1];
+                        }
+
+                        if (hasAnimation) node.style.pointerEvents = "";
+
+                        if (callback) callback(el, index, ref);
+                    };
+
+                if (value) {
+                    // store current inline value in a private property
+                    el._display = node.style[absentStrategy[0]];
+                } else {
+                    node.style[absentStrategy[0]] = el._display || "";
+                }
+                // set styles inline to override inherited
+                node.style.visibility = "visible";
+
+                if (hasAnimation) {
+                    // prevent accidental user actions during animation
+                    node.style.pointerEvents = "none";
+                    // choose max delay to determine appropriate event type
+                    el.once(eventType[duration === transitionDuration ? 1 : 0], completeAnimation);
+                }
+                // trigger native CSS animation
+                node.setAttribute("aria-hidden", value);
+                // when there is no animation the completeAnimation call
+                // must be AFTER changing the aria-hidden attribute
+                if (!hasAnimation) el.fire(completeAnimation);
+            });
+        };
+    },
     makeVisibilityMethod = function(name, fn) {
         return function(delay, callback) {
-            var delayType = typeof delay;
+            var len = arguments.length,
+                delayType = typeof delay;
 
-            if (arguments.length === 1 && delayType === "function") {
+            if (len === 1 && delayType === "function") {
                 callback = delay;
                 delay = 0;
             }
@@ -1349,57 +1392,15 @@ var _ = require("./utils"),
                 throw _.makeError(name);
             }
 
-            return this.legacy(function(node, el, index, ref) {
-                var hidden = typeof fn === "function" ? fn(node) : fn,
-                    styles = el.style(animationProps),
-                    transitionDelay = parseFloat(styles[animationProps[0]]),
-                    animationDelay = parseFloat(styles[animationProps[1]]),
-                    iterationCount = parseFloat(styles[animationProps[2]]),
-                    hasAnimation = iterationCount >= 1 && animationDelay || transitionDelay,
-                    completeCallback = function() {
-                        if (hidden) {
-                            // store current display value in private property
-                            el[prevDisplayValue] = node.style.display;
-                            // hide element and remove it from flow
-                            node.style.display = "none";
-                            node.style.visibility = "";
-                        }
+            callback = changeVisibility(this, fn, callback);
 
-                        node.style.pointerEvents = "";
+            if (delay) {
+                setTimeout(callback, delay);
+            } else {
+                callback();
+            }
 
-                        if (callback) setTimeout(function() { callback(el, index, ref) }, 0);
-                    };
-
-                if (hidden) {
-                    // set visibility inline to override inherited from [aria-hidden=true]
-                    node.style.visibility = "visible";
-                } else {
-                    if (!el[prevDisplayValue] || el[prevDisplayValue] === "none") el[prevDisplayValue] = "";
-
-                    node.style.display = el[prevDisplayValue];
-
-                    delete el[prevDisplayValue];
-                }
-
-                // prevent accidental user actions
-                node.style.pointerEvents = "none";
-
-                if (_.CSS3_ANIMATIONS && hasAnimation) {
-                    // choose max delay to determine appropriate event type
-                    el.once(et[iterationCount >= 1 && animationDelay > transitionDelay ? 0 : 1], completeCallback);
-                } else {
-                    // execute completeCallback safely
-                    el.fire(completeCallback);
-                }
-
-                // trigger native CSS animation
-                if (hasAnimation || delay) {
-                    // toggle aria-hidden async to apply inline styles before the animation starts
-                    setTimeout(function() { node.setAttribute("aria-hidden", hidden) }, delay);
-                } else {
-                    node.setAttribute("aria-hidden", hidden);
-                }
-            });
+            return this;
         };
     };
 
@@ -1432,19 +1433,17 @@ $Element.prototype.toggle = makeVisibilityMethod("toggle", function(node) {
     return node.getAttribute("aria-hidden") !== "true";
 });
 
-},{"./element":14,"./utils":34}],22:[function(require,module,exports){
+},{"./element":14,"./utils":32}],22:[function(require,module,exports){
 /*
  * Helper type to create an event handler
  */
 var _ = require("./utils"),
     $Element = require("./element"),
     SelectorMatcher = require("./selectormatcher"),
-    hooks = {},
-    eventHooks = {},
-    debouncedEvents = "scroll mousemove",
-    defaultArgs = ["target", "currentTarget", "defaultPrevented"],
-    requestAnimationFrame = ["r", "webkitR", "mozR", "oR"].reduce(function(memo, name) {
-        return memo || window[name + "equestAnimationFrame"];
+    RAF = ["r", "webkitR", "mozR", "oR"].reduce(function(memo, name) {
+        var prop = name + "equestAnimationFrame";
+
+        return memo || window[prop] && prop;
     }, null),
     createCustomEventWrapper = function(originalHandler, type) {
         var handler = function() { if (window.event.srcUrn === type) originalHandler() };
@@ -1453,19 +1452,22 @@ var _ = require("./utils"),
 
         return handler;
     },
-    createDebouncedEventWrapper = function(originalHandler, debouncing) {
+    createDebouncedEventWrapper = function(originalHandler) {
+        var debouncing;
+
         return function(e) {
             if (!debouncing) {
                 debouncing = true;
 
-                requestAnimationFrame(function() {
+                window[RAF](function() {
                     originalHandler(e);
 
                     debouncing = false;
                 });
             }
         };
-    };
+    },
+    hooks = {};
 
 module.exports = function(type, selector, callback, props, el, once) {
     var hook = hooks[type],
@@ -1480,7 +1482,7 @@ module.exports = function(type, selector, callback, props, el, once) {
                 target = e.target || e.srcElement || document,
                 currentTarget = selector ? target : node,
                 fn = typeof callback === "string" ? el[callback] : callback,
-                args = props || defaultArgs;
+                args = props || ["target", "currentTarget", "defaultPrevented"];
 
             if (typeof fn !== "function") return; // early stop for late binding
 
@@ -1492,6 +1494,23 @@ module.exports = function(type, selector, callback, props, el, once) {
             if (once) el.off(type, callback);
 
             args = _.map(args, function(name) {
+                if (!_.DOM2_EVENTS) {
+                    switch (name) {
+                    case "defaultPrevented":
+                        return e.returnValue === false;
+                    case "which":
+                        return e.keyCode;
+                    case "button":
+                        var button = e.button;
+                        // click: 1 === left; 2 === middle; 3 === right
+                        return button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) );
+                    case "pageX":
+                        return e.pageX || e.clientX + _.docEl.scrollLeft - _.docEl.clientLeft;
+                    case "pageY":
+                        return e.clientY + _.docEl.scrollTop - _.docEl.clientTop;
+                    }
+                }
+
                 switch (name) {
                 case "type":
                     return type;
@@ -1499,13 +1518,12 @@ module.exports = function(type, selector, callback, props, el, once) {
                     return $Element(target);
                 case "currentTarget":
                     return $Element(currentTarget);
+                case "relatedTarget":
+                    return $Element(e.relatedTarget || e[(e.toElement === node ? "from" : "to") + "Element"]);
                 }
 
-                var hook = eventHooks[name];
-
-                return hook ? hook(e, node) : e[name];
+                return e[name];
             });
-
             // prepend extra arguments if they exist
             if (e._args && e._args.length) args = e._args.concat(args);
 
@@ -1519,14 +1537,9 @@ module.exports = function(type, selector, callback, props, el, once) {
             }
         };
 
-    if (hook) hook(handler);
-
-    handler.type = handler._type || type;
-
-    if (~debouncedEvents.indexOf(handler.type)) {
-        handler = createDebouncedEventWrapper(handler);
-    } else if (!_.DOM2_EVENTS && (handler.type === "submit" || !("on" + handler.type in el._node))) {
-        // handle custom events for IE8
+    if (hook) handler = hook(handler, type) || handler;
+    // handle custom events for IE8
+    if (!_.DOM2_EVENTS && !("on" + (handler._type || type) in el._node)) {
         handler = createCustomEventWrapper(handler, type);
     }
 
@@ -1536,33 +1549,11 @@ module.exports = function(type, selector, callback, props, el, once) {
     return handler;
 };
 
-// EventHandler eventHooks
+// EventHandler hooks
 
-if (_.DOM2_EVENTS) {
-    eventHooks.relatedTarget = function(e) { return $Element(e.relatedTarget) };
-} else {
-    eventHooks.relatedTarget = function(e, currentTarget) {
-        return $Element(e[(e.toElement === currentTarget ? "from" : "to") + "Element"]);
-    };
-
-    eventHooks.defaultPrevented = function(e) { return e.returnValue === false };
-
-    eventHooks.which = function(e) { return e.keyCode };
-
-    eventHooks.button = function(e) {
-        var button = e.button;
-        // click: 1 === left; 2 === middle; 3 === right
-        return button & 1 ? 1 : ( button & 2 ? 3 : ( button & 4 ? 2 : 0 ) );
-    };
-
-    eventHooks.pageX = function(e) {
-        return e.clientX + _.docEl.scrollLeft - _.docEl.clientLeft;
-    };
-
-    eventHooks.pageY = function(e) {
-        return e.clientY + _.docEl.scrollTop - _.docEl.clientTop;
-    };
-}
+_.forEach(["scroll", "mousemove"], function(name) {
+    hooks[name] = createDebouncedEventWrapper;
+});
 
 if ("onfocusin" in _.docEl) {
     _.forOwn({focus: "focusin", blur: "focusout"}, function(value, prop) {
@@ -1576,10 +1567,16 @@ if ("onfocusin" in _.docEl) {
 if (document.createElement("input").validity) {
     hooks.invalid = function(handler) { handler.capturing = true };
 }
+// fix non-bubbling submit event for IE8
+if (!_.DOM2_EVENTS) {
+    _.forEach(["submit", "change", "reset"], function(name) {
+        hooks[name] = createCustomEventWrapper;
+    });
+}
 
 module.exports.hooks = hooks;
 
-},{"./element":14,"./selectormatcher":33,"./utils":34}],23:[function(require,module,exports){
+},{"./element":14,"./selectormatcher":31,"./utils":32}],23:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node"),
     $Element = require("./element");
@@ -1597,15 +1594,15 @@ $Node.prototype.contains = function(element) {
     if (node) return element.every(function(el) { return node.contains(el._node) });
 };
 
-},{"./element":14,"./node":29,"./utils":34}],24:[function(require,module,exports){
+},{"./element":14,"./node":28,"./utils":32}],24:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node");
 
 /**
  * Getter/setter of a data entry value. Tries to read the appropriate
  * HTML5 data-* attribute if it exists
- * @param  {String|Object}  key     data key or key/value object
- * @param  {Object}         [value] data value to store
+ * @param  {String|Object|Array}  key(s)  data key or key/value object or array of keys
+ * @param  {Object}               [value] data value to store
  * @return {Object} data entry value or this in case of setter
  * @see https://github.com/chemerisuk/better-dom/wiki/Data-property
  */
@@ -1635,7 +1632,11 @@ $Node.prototype.data = function(key, value) {
 
             return value;
         } else if (key && keyType === "object") {
-            return _.forEach(this, function(el) { _.extend(el._data, key) });
+            if (Array.isArray(key)) {
+                return _.foldr(key, function(r, key) { return r[key] = data[key], r; }, {});
+            } else {
+                return _.forEach(this, function(el) { _.extend(el._data, key) });
+            }
         }
     } else if (len === 2 && keyType === "string") {
         return _.forEach(this, function(el) { el._data[key] = value });
@@ -1644,7 +1645,7 @@ $Node.prototype.data = function(key, value) {
     throw _.makeError("data", this);
 };
 
-},{"./node":29,"./utils":34}],25:[function(require,module,exports){
+},{"./node":28,"./utils":32}],25:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node"),
     $Element = require("./element");
@@ -1655,7 +1656,7 @@ var _ = require("./utils"),
 var rquickExpr = document.getElementsByClassName ? /^(?:(\w+)|\.([\w\-]+))$/ : /^(?:(\w+))$/,
     rsibling = /[\x20\t\r\n\f]*[+~>]/,
     rescape = /'|\\/g,
-    tmpId = "DOM" + Date.now();
+    tmpId = _.makeRandomProp();
 
 /**
  * Find the first matched element by css selector
@@ -1720,7 +1721,7 @@ $Node.prototype.find = function(selector, /*INTERNAL*/multiple) {
 $Node.prototype.findAll = function(selector) {
     return this.find(selector, true);
 };
-},{"./element":14,"./node":29,"./utils":34}],26:[function(require,module,exports){
+},{"./element":14,"./node":28,"./utils":32}],26:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node"),
     EventHandler = require("./eventhandler");
@@ -1734,39 +1735,44 @@ var _ = require("./utils"),
  */
 $Node.prototype.fire = function(type) {
     var args = _.slice(arguments, 1),
-        isSafeCall = typeof type === "function";
+        eventType = typeof type,
+        handler = {}, hook, isSafeCall;
 
-    if (typeof type !== "string" && !isSafeCall) throw _.makeError("fire");
+    if (eventType === "string") {
+        if (hook = EventHandler.hooks[type]) handler = hook(handler) || handler;
+
+        eventType = handler._type || type;
+    } else if (eventType === "function") {
+        isSafeCall = true;
+        eventType = "filterchange";
+    } else {
+        throw _.makeError("fire");
+    }
 
     return _.every(this, function(el, index, ref) {
         var node = el._node,
-            hook = EventHandler.hooks[type.toString()],
-            handler = {},
-            isCustomEvent, eventType, canContinue, e;
+            e, canContinue, flag;
 
-        if (hook) hook(handler);
-
-        eventType = handler._type || type;
-
-        if (isSafeCall) el.once(eventType = "filterchange", function() { type(el, index, ref) });
+        if (isSafeCall) el.once(eventType, function() { canContinue = type(el, index, ref) !== false });
 
         if (_.DOM2_EVENTS) {
             e = document.createEvent("HTMLEvents");
             e.initEvent(eventType, !isSafeCall, !isSafeCall);
             e._args = args;
 
-            canContinue = node.dispatchEvent(e);
+            flag = node.dispatchEvent(e);
+            canContinue = isSafeCall ? !!canContinue : flag;
         } else {
             e = document.createEventObject();
             e._args = args;
 
-            isCustomEvent = eventType === "submit" || !("on" + eventType in node);
+            flag = eventType === "dataavailable" || !("on" + eventType in node);
             // store original event type
-            if (isCustomEvent) e.srcUrn = isSafeCall ? eventType : type;
+            if (flag) e.srcUrn = isSafeCall ? eventType : type;
 
-            node.fireEvent("on" + (isCustomEvent ? "dataavailable" : eventType), e);
+            node.fireEvent("on" + (flag ? "dataavailable" : eventType), e);
 
-            canContinue = e.returnValue !== false;
+            canContinue = isSafeCall ? !!canContinue : e.returnValue !== false;
         }
 
         // Call native method. IE<9 dies on focus/blur to hidden element
@@ -1783,7 +1789,7 @@ $Node.prototype.fire = function(type) {
     });
 };
 
-},{"./eventhandler":22,"./node":29,"./utils":34}],27:[function(require,module,exports){
+},{"./eventhandler":22,"./node":28,"./utils":32}],27:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node");
 
@@ -1878,19 +1884,7 @@ _.extend($Node.prototype, {
     legacy: makeCollectionMethod(_.legacy)
 });
 
-},{"./node":29,"./utils":34}],28:[function(require,module,exports){
-var $Node = require("./node");
-
-/**
- * Get property value by name
- * @param  {String} name property name
- * @return {String} property value
- */
-$Node.prototype.get = function(name) {
-    return this._node[name];
-};
-
-},{"./node":29}],29:[function(require,module,exports){
+},{"./node":28,"./utils":32}],28:[function(require,module,exports){
 /**
  * Used to represent a DOM node
  * @name $Node
@@ -1901,7 +1895,7 @@ function $Node(node) {
     if (node) {
         this._node = node;
         this._data = {};
-        this._listeners = [];
+        this._handlers = [];
 
         this[0] = node.__dom__ = this;
     }
@@ -1909,9 +1903,29 @@ function $Node(node) {
     this.length = node ? 1 : 0;
 }
 
+/**
+ * Get property value by name
+ * @param  {String} name property name
+ * @return {String} property value
+ */
+$Node.prototype.get = function(name) {
+    return this._node[name];
+};
+
+/**
+ * Set property value by name
+ * @param  {String} name  property name
+ * @param  {String} value property value
+ */
+$Node.prototype.set = function(name, value) {
+    this._node[name] = value;
+
+    return this;
+};
+
 module.exports = $Node;
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node");
 
@@ -1926,26 +1940,24 @@ $Node.prototype.off = function(type, callback) {
     if (typeof type !== "string") throw _.makeError("off");
 
     return this.legacy(function(node, el) {
-        _.forEach(el._listeners, function(handler, index, events) {
-            if (handler && type === handler.type && (!callback || callback === handler.callback)) {
-                type = handler._type || handler.type;
+        el._handlers = _.filter(el._handlers, function(handler) {
+            if (type !== handler.type || callback && callback !== handler.callback) return true;
 
-                if (_.DOM2_EVENTS) {
-                    node.removeEventListener(type, handler, !!handler.capturing);
-                } else {
-                    // IE8 doesn't support onscroll on document level
-                    if (el === DOM && type === "scroll") node = window;
+            type = handler._type || handler.type;
 
-                    node.detachEvent("on" + type, handler);
-                }
+            if (_.DOM2_EVENTS) {
+                node.removeEventListener(type, handler, !!handler.capturing);
+            } else {
+                // IE8 doesn't support onscroll on document level
+                if (el === DOM && type === "scroll") node = window;
 
-                delete events[index];
+                node.detachEvent("on" + type, handler);
             }
         });
     });
 };
 
-},{"./node":29,"./utils":34}],31:[function(require,module,exports){
+},{"./node":28,"./utils":32}],30:[function(require,module,exports){
 var _ = require("./utils"),
     $Node = require("./node"),
     EventHandler = require("./eventhandler");
@@ -2000,7 +2012,7 @@ $Node.prototype.on = function(type, callback, props, /*INTERNAL*/once) {
             node.attachEvent("on" + (handler._type || type), handler);
         }
         // store event entry
-        el._listeners.push(handler);
+        el._handlers.push(handler);
     });
 };
 
@@ -2020,21 +2032,7 @@ $Node.prototype.once = function() {
     return this.on.apply(this, args);
 };
 
-},{"./eventhandler":22,"./node":29,"./utils":34}],32:[function(require,module,exports){
-var $Node = require("./node");
-
-/**
- * Set property value by name
- * @param  {String} name  property name
- * @param  {String} value property value
- */
-$Node.prototype.set = function(name, value) {
-    this._node[name] = value;
-
-    return this;
-};
-
-},{"./node":29}],33:[function(require,module,exports){
+},{"./eventhandler":22,"./node":28,"./utils":32}],31:[function(require,module,exports){
 /*
  * Helper for css selectors
  */
@@ -2079,7 +2077,7 @@ module.exports = function(selector) {
     };
 };
 
-},{"./utils":34}],34:[function(require,module,exports){
+},{"./utils":32}],32:[function(require,module,exports){
 var doc = document,
     win = window,
     makeLoopMethod = (function(){
@@ -2105,22 +2103,29 @@ var doc = document,
 
             return Function("a", "cb", "that", "undefined", code);
         };
-    })();
+    })(),
+    makeRandomProp = function() {
+        return "_" + Math.random().toString().split(".")[1];
+    };
 
 module.exports = {
-    docEl: doc.documentElement,
-    CSS3_ANIMATIONS: win.CSSKeyframesRule || !doc.attachEvent,
-    DOM2_EVENTS: !!doc.addEventListener,
-    WEBKIT_PREFIX: win.WebKitAnimationEvent ? "-webkit-" : "",
-
+    makeRandomProp: makeRandomProp,
     makeError: function(method, DOM) {
         var type = DOM ? "DOM" : "$Element";
 
         return "Error: " + type + "." + method + " was called with illegal arguments. Check http://chemerisuk.github.io/better-dom/" + type + ".html#" + method + " to verify the function call";
     },
+    getComputedStyle: function(node) {
+        return window.getComputedStyle ? window.getComputedStyle(node) : node.currentStyle;
+    },
 
-    // OBJECT UTILS
+    // constants
+    docEl: doc.documentElement,
+    CSS3_ANIMATIONS: win.CSSKeyframesRule || !doc.attachEvent,
+    DOM2_EVENTS: !!doc.addEventListener,
+    WEBKIT_PREFIX: win.WebKitAnimationEvent ? "-webkit-" : "",
 
+    // utilites
     forOwn: makeLoopMethod({
         BEFORE: "var keys = Object.keys(a), k",
         COUNT:  "keys.length",
@@ -2131,9 +2136,6 @@ module.exports = {
 
         return obj;
     },
-
-    // COLLECTION UTILS
-
     forEach: makeLoopMethod({
         BODY:   "cb.call(that, a[i], i, a)",
         AFTER:  "return a"
@@ -2177,5 +2179,5 @@ module.exports = {
     }
 };
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34])
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32])
 ;

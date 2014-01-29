@@ -76,8 +76,7 @@ describe("better-form-validation", function() {
         });
 
         it("should fire validity:fail and validity:ok", function() {
-            var spy = spyOn(input.data("validity-tooltip"), "show").andCallThrough(),
-                failSpy = jasmine.createSpy("validity:fail"),
+            var failSpy = jasmine.createSpy("validity:fail"),
                 successSpy = jasmine.createSpy("validity:ok");
 
             expect(input.validity().length).not.toBe(0);
@@ -86,34 +85,23 @@ describe("better-form-validation", function() {
             input.addClass("valid").onValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
-            waitsFor((function(input) {
-                return function() {
-                    if (spy.callCount === 1) {
-                        input.set("123").on("validity:ok", successSpy);
-                        input.onValidityCheck();
-                        return successSpy.callCount === 1;
-                    }
-                };
-            })(input));
+            input.set("123").on("validity:ok", successSpy);
+            input.onValidityCheck();
+            expect(successSpy).toHaveBeenCalled();
         });
 
         it("should show/hide error message when it's needed", function() {
-            var validityTooltip = input.data("validity-tooltip"),
-                spy = spyOn(validityTooltip, "show").andCallThrough();
+            var validityTooltip = input.data("validity-tooltip"), spy;
 
-            expect(validityTooltip.matches(":hidden")).toBe(true);
+            expect(validityTooltip).toBeFalsy();
             input.addClass("valid").onValidityCheck();
-            expect(spy).toHaveBeenCalled();
 
-            waitsFor((function(input) {
-                return function() {
-                    if (spy.callCount === 1) {
-                        spy = spyOn(validityTooltip, "hide");
-                        input.set("123").onValidityCheck();
-                        return spy.callCount === 1;
-                    }
-                };
-            })(input));
+            validityTooltip = input.data("validity-tooltip");
+            expect(validityTooltip).toBeTruthy();
+
+            spy = spyOn(validityTooltip, "hide");
+            input.set("123").onValidityCheck();
+            expect(spy).toHaveBeenCalled();
         });
 
         it("should skip non-form elements", function() {
@@ -135,14 +123,21 @@ describe("better-form-validation", function() {
             expect(spy).toHaveBeenCalledWith(errors, form, form, false);
         });
 
-        it("should hide all messages on form reset", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
-                inputs = form.findAll("[name]"),
-                spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+        // it("should hide all messages on form reset", function() {
+        //     var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
+        //         inputs = form.findAll("[name]"),
+        //         spys;
 
-            form.onFormReset();
-            while (spys.length) expect(spys.pop()).toHaveBeenCalled();
-        });
+        //     form.onFormSubmit();
+        //     spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+
+        //     form.onFormReset();
+        //     spys.forEach(function(spy) {
+        //         expect(spy).toHaveBeenCalled();
+        //     });
+
+        //     // while (spys.length) expect(spys.pop()).toHaveBeenCalled();
+        // });
 
         it("should block form submit if it's invalid", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button"),
