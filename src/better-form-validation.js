@@ -29,7 +29,10 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "function") {
+                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
+            }
+
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -109,7 +112,10 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = errors(this);
+            if (typeof errors === "function") {
+                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
+            }
+
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
@@ -148,13 +154,11 @@
     });
 
     DOM.on("validity:ok", function(target, currentTarget, cancel) {
+        var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
-        if (!cancel) {
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
-
-            if (validityTooltip) validityTooltip.hide();
-        }
+        if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
     DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
