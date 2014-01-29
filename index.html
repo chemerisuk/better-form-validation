@@ -103,16 +103,14 @@
 
                 customErrors.set("");
 
-                for (var field in errors) {
-                    if (field !== "length") {
-                        customErrors
-                            .append(DOM.create("li>{${name}: }+span", {name: field})
-                                .child(0).i18n(errors[field][0]).parent());
-                    }
-                }
+                Object.keys(errors).forEach(function(field) {
+                    customErrors
+                        .append(DOM.create("li>{${name}: }+span", {name: field})
+                            .child(0).i18n(errors[field][0]).parent());
+                });
             });
 
-            button.fire("validity:fail", ["TIP: toggle tooltips via custom events"]);
+            button.fire("validity:fail", "TIP: toggle tooltips via custom events");
             setTimeout(function() { button.fire("validity:ok") }, 5000);
         });
     </script>
