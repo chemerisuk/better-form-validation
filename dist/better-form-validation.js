@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.3.0-rc.1 2014-01-29T16:43:34
+ * @version 1.3.0 2014-02-06T15:11:23
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
@@ -37,10 +37,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") {
-                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
-            }
-
+            if (typeof errors === "function") errors = this.invoke(errors);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -120,10 +117,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") {
-                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
-            }
-
+            if (typeof errors === "function") errors = this.invoke(errors);
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
@@ -202,7 +196,7 @@
             }
 
             // display only the first error
-            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).hide().show(delay);
 
             lastTooltipTimestamp = Date.now();
         }
