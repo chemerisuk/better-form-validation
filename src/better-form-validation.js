@@ -29,10 +29,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") {
-                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
-            }
-
+            if (typeof errors === "function") errors = this.invoke(errors);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -112,10 +109,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") {
-                errors = this.fire(function(el) { errors = errors(el) }) ? errors : [];
-            }
-
+            if (typeof errors === "function") errors = this.invoke(errors);
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
@@ -194,7 +188,7 @@
             }
 
             // display only the first error
-            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).show(delay);
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).hide().show(delay);
 
             lastTooltipTimestamp = Date.now();
         }
