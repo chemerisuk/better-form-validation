@@ -37,7 +37,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.invoke(errors);
+            if (typeof errors === "function") errors = this.dispatch(errors);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -117,7 +117,7 @@
 
             errors = this.data(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.invoke(errors);
+            if (typeof errors === "function") errors = this.dispatch(errors);
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {

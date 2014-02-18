@@ -60,8 +60,8 @@ describe("better-form-validation", function() {
         });
 
         it("should support custom validators", function() {
-            input.validity(function(el) {
-                expect(el).toBe(input);
+            input.validity(function() {
+                expect(this).toBe(input);
 
                 return ["error"];
             });
@@ -143,7 +143,7 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button"),
                 spy = jasmine.createSpy("spy");
 
-            form.on("submit", spy.andCallFake(function(target, currentTarget, cancel) {
+            form.on("submit", spy.and.callFake(function(target, currentTarget, cancel) {
                 expect(cancel).toBe(true);
                 expect(Object.keys(form.validity()).length).not.toBeFalsy();
                 // prevent submitting even if the test fails
@@ -181,8 +181,8 @@ describe("better-form-validation", function() {
 
             expect(Object.keys(form.validity()).length).toBeFalsy();
 
-            form.validity(function(el) {
-                expect(el).toBe(form);
+            form.validity(function() {
+                expect(this).toBe(form);
 
                 return form.find("input").get() ? "" : {d: ["FAIL"]};
             });
