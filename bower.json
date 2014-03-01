@@ -6,10 +6,14 @@
     "dist/better-form-validation.css",
     "i18n/better-form-validation.ru.js"
   ],
-  "ignore": [
+    "ignore": [
     ".*",
+    "test",
     "src",
-    "test"
+    "Gruntfile.js",
+    "package.json",
+    "bower.json",
+    "main.sublime-project"
   ],
   "keywords": [
     "better-dom"

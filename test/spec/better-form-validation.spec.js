@@ -120,6 +120,7 @@ describe("better-form-validation", function() {
             form.on("validity:fail", spy).fire("submit");
             errors.a = ["can't be empty"];
             errors.b = ["can't be empty"];
+            errors.length = 2;
             expect(spy).toHaveBeenCalledWith(errors, form, form, false);
         });
 

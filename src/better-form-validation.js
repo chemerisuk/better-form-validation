@@ -119,6 +119,7 @@
                     memo[name] = errors[name];
                 } else {
                     memo[name] = el.validity && el.validity();
+                    memo.length += memo[name].length;
                 }
 
                 if (!memo[name] || !memo[name].length) delete memo[name];
@@ -127,15 +128,9 @@
             }, Array.isArray(errors) ? errors : []);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name, invalid;
+            var errors = this.validity();
 
-            for (name in errors) {
-                this.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
-
-                invalid = true;
-            }
-
-            if (invalid) {
+            if (errors.length) {
                 // fire event on form level
                 this.fire("validity:fail", errors);
 
@@ -147,7 +142,7 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, currentTarget, cancel) {
+    DOM.on("validity:ok", function(target, _, cancel) {
         var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
@@ -155,11 +150,16 @@
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
-    DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
+    DOM.on("validity:fail", function(errors, target, _, cancel) {
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
-        // errors could be string, array, object
-        if (!cancel && errors.length && !target.matches("form")) {
+        if (cancel || !errors.length) return;
+
+        if (target == "form") {
+            Object.keys(errors).forEach(function(name) {
+                this.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
+            });
+        } else {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
                 offset = target.offset();
 
