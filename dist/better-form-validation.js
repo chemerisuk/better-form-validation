@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.3.0 2014-02-06T15:11:23
+ * @version 1.3.1 2014-03-01T15:35:35
  * @overview Form validation polyfill for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
@@ -123,27 +123,25 @@
             return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name");
 
-                if (errors && errors[name]) {
+                if (errors && name in errors) {
                     memo[name] = errors[name];
                 } else {
                     memo[name] = el.validity && el.validity();
                 }
 
-                if (!memo[name] || !memo[name].length) delete memo[name];
+                if (memo[name] && memo[name].length) {
+                    memo.length += memo[name].length;
+                } else {
+                    delete memo[name];
+                }
 
                 return memo;
             }, Array.isArray(errors) ? errors : []);
         },
         onFormSubmit: function() {
-            var errors = this.validity(), name, invalid;
+            var errors = this.validity();
 
-            for (name in errors) {
-                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
-
-                invalid = true;
-            }
-
-            if (invalid) {
+            if (errors.length) {
                 // fire event on form level
                 this.fire("validity:fail", errors);
 
@@ -155,7 +153,7 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, currentTarget, cancel) {
+    DOM.on("validity:ok", function(target, _, cancel) {
         var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
 
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
@@ -163,11 +161,16 @@
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
-    DOM.on("validity:fail", function(errors, target, currentTarget, cancel) {
+    DOM.on("validity:fail", function(errors, target, _, cancel) {
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
-        // errors could be string, array, object
-        if (!cancel && errors.length && !target.matches("form")) {
+        if (cancel || !errors.length) return;
+
+        if (target == "form") {
+            Object.keys(errors).forEach(function(name) {
+                target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
+            });
+        } else {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
                 offset = target.offset();
 
