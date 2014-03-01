@@ -115,14 +115,17 @@
             return this.findAll("[name]").reduce(function(memo, el) {
                 var name = el.get("name");
 
-                if (errors && errors[name]) {
+                if (errors && name in errors) {
                     memo[name] = errors[name];
                 } else {
                     memo[name] = el.validity && el.validity();
-                    memo.length += memo[name].length;
                 }
 
-                if (!memo[name] || !memo[name].length) delete memo[name];
+                if (memo[name] && memo[name].length) {
+                    memo.length += memo[name].length;
+                } else {
+                    delete memo[name];
+                }
 
                 return memo;
             }, Array.isArray(errors) ? errors : []);

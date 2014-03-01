@@ -113,7 +113,7 @@ describe("better-form-validation", function() {
 
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name='[b]']"),
+            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name='[b]']"),
                 spy = jasmine.createSpy("validity:fail"),
                 errors = [];
 
@@ -141,7 +141,7 @@ describe("better-form-validation", function() {
         // });
 
         it("should block form submit if it's invalid", function() {
-            var form = DOM.mock("form>input[name=a required]+textarea+button"),
+            var form = DOM.mock("form>input[name=a required]+textarea+button[type=submit]"),
                 spy = jasmine.createSpy("spy");
 
             form.on("submit", spy.and.callFake(function(target, currentTarget, cancel) {
@@ -178,16 +178,27 @@ describe("better-form-validation", function() {
         });
 
         it("should allow to add custom validation", function() {
-            var form = DOM.mock("form>input[type=text name=d]");
+            var form = DOM.mock("form>input[type=text name=d]"),
+                result = [];
 
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            expect(form.validity().length).toBe(0);
 
             form.validity(function() {
                 expect(this).toBe(form);
 
-                return form.find("input").get() ? "" : {d: ["FAIL"]};
+                return "FAIL";
             });
-            expect(Object.keys(form.validity()).length).not.toBeFalsy();
+            expect(form.validity()).toEqual(["FAIL"]);
+
+            form.validity(function() {
+                expect(this).toBe(form);
+
+                return {d: ["FAIL"]};
+            });
+
+            result.d = ["FAIL"];
+            result.length = 1;
+            expect(form.validity()).toEqual(result);
         });
     });
 });
