@@ -60,8 +60,8 @@ describe("better-form-validation", function() {
         });
 
         it("should support custom validators", function() {
-            input.validity(function(el) {
-                expect(el).toBe(input);
+            input.validity(function() {
+                expect(this).toBe(input);
 
                 return ["error"];
             });
@@ -109,41 +109,61 @@ describe("better-form-validation", function() {
 
             expect(div.validity).toBeUndefined();
         });
+
+        it("should create tooltip on demand", function() {
+            var spy = jasmine.createSpy("validity:fail"),
+                validity;
+
+            input.on("validity:fail", spy).addClass("valid");
+            expect(input.data("validity-tooltip")).toBeFalsy();
+            input.onValidityCheck();
+            expect(spy).toHaveBeenCalled();
+
+            validity = input.data("validity-tooltip");
+            expect(validity).not.toBeFalsy();
+
+            input.removeClass("invalid").addClass("valid").onValidityCheck();
+            expect(spy.calls.count()).toBe(2);
+            expect(validity).toBe(validity);
+        });
     });
 
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name=b]"),
+            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name='[b]']"),
                 spy = jasmine.createSpy("validity:fail"),
                 errors = [];
 
             form.on("validity:fail", spy).fire("submit");
             errors.a = ["can't be empty"];
             errors.b = ["can't be empty"];
+            errors.length = 2;
             expect(spy).toHaveBeenCalledWith(errors, form, form, false);
         });
 
-        // it("should hide all messages on form reset", function() {
-        //     var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
-        //         inputs = form.findAll("[name]"),
-        //         spys;
+        it("should hide all messages on form reset", function() {
+            var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
+                inputs = form.findAll("[name]"),
+                spys;
 
-        //     form.onFormSubmit();
-        //     spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+            DOM.find("body").append(form);
 
-        //     form.onFormReset();
-        //     spys.forEach(function(spy) {
-        //         expect(spy).toHaveBeenCalled();
-        //     });
+            form.onFormSubmit();
+            spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
 
-        //     // while (spys.length) expect(spys.pop()).toHaveBeenCalled();
-        // });
+            form.onFormReset();
+            spys.forEach(function(spy) {
+                expect(spy).toHaveBeenCalled();
+            });
+
+            form.remove();
+        });
 
         it("should block form submit if it's invalid", function() {
-            var form = DOM.mock("form>input[name=a required]+textarea+button"),
+            var form = DOM.mock("form>input[name=a required]+textarea+button[type=submit]"),
                 spy = jasmine.createSpy("spy");
 
-            form.on("submit", spy.andCallFake(function(target, currentTarget, cancel) {
+            form.on("submit", spy.and.callFake(function(target, currentTarget, cancel) {
                 expect(cancel).toBe(true);
                 expect(Object.keys(form.validity()).length).not.toBeFalsy();
                 // prevent submitting even if the test fails
@@ -177,16 +197,49 @@ describe("better-form-validation", function() {
         });
 
         it("should allow to add custom validation", function() {
-            var form = DOM.mock("form>input[type=text name=d]");
+            var form = DOM.mock("form>input[type=text name=d]"),
+                result = [];
 
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            DOM.find("body").append(form);
 
-            form.validity(function(el) {
-                expect(el).toBe(form);
+            expect(form.validity().length).toBe(0);
 
-                return form.find("input").get() ? "" : {d: ["FAIL"]};
+            form.validity(function() {
+                expect(this).toBe(form);
+
+                return "FAIL";
             });
-            expect(Object.keys(form.validity()).length).not.toBeFalsy();
+            expect(form.validity()).toEqual(["FAIL"]);
+
+            form.validity(function() {
+                expect(this).toBe(form);
+
+                return {d: ["FAIL"]};
+            });
+
+            result.d = ["FAIL"];
+            result.length = 1;
+            expect(form.validity()).toEqual(result);
+        });
+
+        it("should fire validity:fail on invalid elements", function() {
+            var form = DOM.mock("form>input[type=text name=a]"),
+                input = form.find("input"),
+                spy = jasmine.createSpy("validity:fail");
+
+            DOM.find("body").append(form);
+
+            form.validity(function() {
+                expect(this).toBe(form);
+
+                return {a: ["FAIL"]};
+            });
+
+            input.on("validity:fail", spy);
+            form.onFormSubmit();
+            expect(spy).toHaveBeenCalledWith(["FAIL"], input, input, false);
+
+            form.remove();
         });
     });
 });
