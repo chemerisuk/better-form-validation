@@ -141,21 +141,23 @@ describe("better-form-validation", function() {
             expect(spy).toHaveBeenCalledWith(errors, form, form, false);
         });
 
-        // it("should hide all messages on form reset", function() {
-        //     var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
-        //         inputs = form.findAll("[name]"),
-        //         spys;
+        it("should hide all messages on form reset", function() {
+            var form = DOM.mock("form>input[type=checkbox required name=b]+input[type=text required name=c]"),
+                inputs = form.findAll("[name]"),
+                spys;
 
-        //     form.onFormSubmit();
-        //     spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+            DOM.find("body").append(form);
 
-        //     form.onFormReset();
-        //     spys.forEach(function(spy) {
-        //         expect(spy).toHaveBeenCalled();
-        //     });
+            form.onFormSubmit();
+            spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
 
-        //     // while (spys.length) expect(spys.pop()).toHaveBeenCalled();
-        // });
+            form.onFormReset();
+            spys.forEach(function(spy) {
+                expect(spy).toHaveBeenCalled();
+            });
+
+            form.remove();
+        });
 
         it("should block form submit if it's invalid", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button[type=submit]"),
