@@ -109,6 +109,23 @@ describe("better-form-validation", function() {
 
             expect(div.validity).toBeUndefined();
         });
+
+        it("should create tooltip on demand", function() {
+            var spy = jasmine.createSpy("validity:fail"),
+                validity;
+
+            input.on("validity:fail", spy).addClass("valid");
+            expect(input.data("validity-tooltip")).toBeFalsy();
+            input.onValidityCheck();
+            expect(spy).toHaveBeenCalled();
+
+            validity = input.data("validity-tooltip");
+            expect(validity).not.toBeFalsy();
+
+            input.removeClass("invalid").addClass("valid").onValidityCheck();
+            expect(spy.calls.count()).toBe(2);
+            expect(validity).toBe(validity);
+        });
     });
 
     describe("forms", function() {
@@ -181,6 +198,8 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[type=text name=d]"),
                 result = [];
 
+            DOM.find("body").append(form);
+
             expect(form.validity().length).toBe(0);
 
             form.validity(function() {
@@ -199,6 +218,26 @@ describe("better-form-validation", function() {
             result.d = ["FAIL"];
             result.length = 1;
             expect(form.validity()).toEqual(result);
+        });
+
+        it("should fire validity:fail on invalid elements", function() {
+            var form = DOM.mock("form>input[type=text name=a]"),
+                input = form.find("input"),
+                spy = jasmine.createSpy("validity:fail");
+
+            DOM.find("body").append(form);
+
+            form.validity(function() {
+                expect(this).toBe(form);
+
+                return {a: ["FAIL"]};
+            });
+
+            input.on("validity:fail", spy);
+            form.onFormSubmit();
+            expect(spy).toHaveBeenCalledWith(["FAIL"], input, input, false);
+
+            form.remove();
         });
     });
 });

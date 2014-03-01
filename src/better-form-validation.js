@@ -160,7 +160,7 @@
 
         if (target == "form") {
             Object.keys(errors).forEach(function(name) {
-                this.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
+                target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
             });
         } else {
             var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
