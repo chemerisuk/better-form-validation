@@ -130,7 +130,7 @@
             var errors = this.validity(), name, invalid;
 
             for (name in errors) {
-                this.find("[name=" + name + "]").fire("validity:fail", errors[name]);
+                this.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
 
                 invalid = true;
             }

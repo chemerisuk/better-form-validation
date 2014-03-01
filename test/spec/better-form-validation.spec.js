@@ -113,7 +113,7 @@ describe("better-form-validation", function() {
 
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name=b]"),
+            var form = DOM.mock("form>input[type=checkbox required name=a]+input[type=text required name='[b]']"),
                 spy = jasmine.createSpy("validity:fail"),
                 errors = [];
 
