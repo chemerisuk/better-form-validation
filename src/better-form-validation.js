@@ -184,7 +184,7 @@
 
             validityTooltip.style({
                 "margin-top": offset.height,
-                "z-index": parseFloat("0" + target.style("z-index")) + 1
+                "z-index": 1 + (target.style("z-index") | 0)
             });
 
             // use a small delay if several tooltips are going to be displayed
