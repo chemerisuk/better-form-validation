@@ -91,12 +91,12 @@ describe("better-form-validation", function() {
         });
 
         it("should show/hide error message when it's needed", function() {
-            var validityTooltip = input.data("validity-tooltip"), spy;
+            var validityTooltip = input.get("_validitytooltip"), spy;
 
             expect(validityTooltip).toBeFalsy();
             input.addClass("valid").onValidityCheck();
 
-            validityTooltip = input.data("validity-tooltip");
+            validityTooltip = input.get("_validitytooltip");
             expect(validityTooltip).toBeTruthy();
 
             spy = spyOn(validityTooltip, "hide");
@@ -115,11 +115,11 @@ describe("better-form-validation", function() {
                 validity;
 
             input.on("validity:fail", spy).addClass("valid");
-            expect(input.data("validity-tooltip")).toBeFalsy();
+            expect(input.get("_validitytooltip")).toBeFalsy();
             input.onValidityCheck();
             expect(spy).toHaveBeenCalled();
 
-            validity = input.data("validity-tooltip");
+            validity = input.get("_validitytooltip");
             expect(validity).not.toBeFalsy();
 
             input.removeClass("invalid").addClass("valid").onValidityCheck();
@@ -151,7 +151,7 @@ describe("better-form-validation", function() {
             expect(function() { form.onFormReset() }).not.toThrow();
 
             form.onFormSubmit();
-            spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+            spys = inputs.map(function(el) { return spyOn(el.get("_validitytooltip"), "hide") });
 
             form.onFormReset();
             spys.forEach(function(spy) {
