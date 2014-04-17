@@ -148,6 +148,8 @@ describe("better-form-validation", function() {
 
             DOM.find("body").append(form);
 
+            expect(function() { form.onFormReset() }).not.toThrow();
+
             form.onFormSubmit();
             spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
 

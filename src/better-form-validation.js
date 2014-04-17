@@ -141,7 +141,11 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) { el.data(VALIDITY_TOOLTIP_KEY).hide() });
+            this.findAll("[name]").each(function(el) {
+                var tooltip = el.data(VALIDITY_TOOLTIP_KEY);
+
+                if (tooltip) tooltip.hide();
+            });
         }
     });
 
