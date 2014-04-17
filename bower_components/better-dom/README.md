@@ -1,4 +1,4 @@
-# better-dom [![Build Status](https://api.travis-ci.org/chemerisuk/better-dom.png?branch=master)](http://travis-ci.org/chemerisuk/better-dom)
+# better-dom [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 > Live extension playground
 
 jQuery knows a concept called “**live events**”. Using the idea of event delegation they enabled developers to handle existing and future elements. 
@@ -6,16 +6,20 @@ But more flexibility is required in a lot of cases. For example, delegated event
 
 [API DOCUMENTATION](http://chemerisuk.github.io/better-dom/)
 
+## Quick start
+I'd recommend to read articles below that cover the main ideas of the library:
+* [Introduction into the better-dom library in English](http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/) @smashingmagazine.com
+* [Введение в библиотеку better-dom по-русски](http://habrahabr.ru/post/209140/) @habrahabr.ru
+
 ## Features
-* compact size: ~27kb minified and ~6kb gzipped version
-* clean, minimalistic and standards-based (if possible) APIs
+* compact size: ~27kb minified and ~6kb gzipped version ([custom builds](#how-to-make-a-custom-build) are available to reduce file size even more)
+* clear, minimalistic and standards-based (where possible) APIs
 * [live extensions](https://github.com/chemerisuk/better-dom/wiki/Live-extensions)
 * [animations via CSS3](http://jsfiddle.net/C3WeM/5/)
 * [i18n support](https://github.com/chemerisuk/better-dom/wiki/Localization)
 * [microtemplating using the Emmet syntax](https://github.com/chemerisuk/better-dom/wiki/Microtemplating)
-* [custom builds](#how-to-make-a-custom-build)
-* [getter and setter](https://github.com/chemerisuk/better-dom/wiki/Getter-and-setter)
 * [improved event handling](https://github.com/chemerisuk/better-dom/wiki/Event-handling)
+* [getter and setter](https://github.com/chemerisuk/better-dom/wiki/Getter-and-setter)
 
 ## Installation
 The simplest way is to use [bower](http://bower.io/):
@@ -42,20 +46,14 @@ This will clone the latest version of the __better-dom__ with dependencies into 
 ```
 
 ## Documentation
-* [Introduction into the better-dom library in English](http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/) @smashingmagazine.com
-* [Introducing Live Extensions For Better-DOM: What They Are And How They Work](http://coding.smashingmagazine.com/2014/02/05/introducing-live-extensions-better-dom-javascript/) @smashingmagazine.com
-* [Введение в библиотеку better-dom по-русски](http://habrahabr.ru/post/209140/) @habrahabr.ru
-
-Need more?
-
-* read [FAQ](https://github.com/chemerisuk/better-dom/wiki/FAQ)
+* Read the [FAQ](https://github.com/chemerisuk/better-dom/wiki/FAQ)
 * Take a look at the [better-dom wiki](https://github.com/chemerisuk/better-dom/wiki)
-* check [releases tab](https://github.com/chemerisuk/better-dom/releases) for getting the changes log
-* walk through the sorce code of existing [projects that use better-dom](https://github.com/chemerisuk/better-dom/wiki/Projects-that-use-better-dom).
+* Check [releases tab](https://github.com/chemerisuk/better-dom/releases) for getting the changes log
+* Walk through the sorce code of existing [projects that use better-dom](http://bower.io/search/?q=better-dom).
 
 ## Performance
 * [DOM.create vs jquery](http://jsperf.com/dom-create-vs-jquery/26)
-* [DOM.find[All] vs jQuery.find](http://jsperf.com/dom-find-all-vs-jquery-find/9)
+* [DOM.find[All] vs jQuery.find](http://jsperf.com/dom-find-all-vs-jquery-find/10)
 * [DOM getter/setter vs jQuery.attr/prop](http://jsperf.com/dom-getter-setter-vs-jquery-attr-prop/5)
 * [better-dom vs jquery: classes manipulation](http://jsperf.com/better-dom-vs-jquery-classes-manipulation/6)
 * [better-dom vs jquery: array methods](http://jsperf.com/better-dom-vs-jquery-array-methods/4)
@@ -65,17 +63,19 @@ In order to create a custom build make sure that you installed [grunt-cli](https
 
     npm install -g grunt-cli
 
-Then you can print all available modules for customization via the task below:
+Then you can print all available modules for customization via the default task:
+
+    grunt
+
+To create a full build run `build` task without arguments:
 
     grunt build
 
-Pick modules that you want to exclude and pass them to the same task separated by comma:
+Your build will be created inside of the `build` folder including uglified version with source maps. Pick modules that you want to exclude and pass them to the same task separated by comma:
 
-    grunt build:classes,offset,data
+    grunt build:classes,offset,traversing
 
-Look at the [API documentation](http://chemerisuk.github.io/better-dom/) to find which functions are included into a particular module.
-
-Your custom build will be created inside of the `build` folder including uglified version and source maps.
+Look at the [API documentation](http://chemerisuk.github.io/better-dom/) to find which functions are included into a particular module (see *Modules* menu).
 
 ## Notes about old IEs
 For IE8-9 support you have to incude extra files via conditional comment (see [Installation](#installation) section).
@@ -106,3 +106,10 @@ IE requires that the HTC file must be in the same domain with as the HTML page w
 * Chrome for Android
 
 Opera Mini is out of the scope because of lack of support for CSS3 Animations.
+
+[travis-url]: http://travis-ci.org/chemerisuk/better-dom
+[travis-image]: https://api.travis-ci.org/chemerisuk/better-dom.png?branch=master
+
+[coveralls-url]: https://coveralls.io/r/chemerisuk/better-dom
+[coveralls-image]: https://coveralls.io/repos/chemerisuk/better-dom/badge.png?branch=master
+

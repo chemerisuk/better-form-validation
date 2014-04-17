@@ -20,14 +20,14 @@
             }
         },
         validity: function(errors) {
-            if (arguments.length) return this.data(VALIDITY_KEY, errors);
+            if (arguments.length) return this.set(VALIDITY_KEY, errors);
 
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
                 regexp;
 
-            errors = this.data(VALIDITY_KEY);
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = this.dispatch(errors);
             if (typeof errors === "string") errors = [errors];
@@ -105,9 +105,9 @@
                 .on("reset", this.onFormReset);
         },
         validity: function(errors) {
-            if (arguments.length) return this.data(VALIDITY_KEY, errors);
+            if (arguments.length) return this.set(VALIDITY_KEY, errors);
 
-            errors = this.data(VALIDITY_KEY);
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = this.dispatch(errors);
             if (typeof errors === "string") errors = [errors];
@@ -141,12 +141,16 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) { el.data(VALIDITY_TOOLTIP_KEY).hide() });
+            this.findAll("[name]").each(function(el) {
+                var tooltip = el.get(VALIDITY_TOOLTIP_KEY);
+
+                if (tooltip) tooltip.hide();
+            });
         }
     });
 
     DOM.on("validity:ok", function(target, _, cancel) {
-        var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY);
+        var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
 
@@ -163,13 +167,13 @@
                 target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
             });
         } else {
-            var validityTooltip = target.data(VALIDITY_TOOLTIP_KEY),
+            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY),
                 offset = target.offset();
 
             if (!validityTooltip) {
                 validityTooltip = DOM.create("div.better-validity-tooltip").hide();
 
-                target.data(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
+                target.set(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
 
                 validityTooltip.on("click", function() {
                     validityTooltip.hide();
@@ -180,7 +184,7 @@
 
             validityTooltip.style({
                 "margin-top": offset.height,
-                "z-index": parseFloat("0" + target.style("z-index")) + 1
+                "z-index": 1 + (target.style("z-index") | 0)
             });
 
             // use a small delay if several tooltips are going to be displayed
@@ -196,7 +200,7 @@
             lastTooltipTimestamp = Date.now();
         }
     });
-}(window.DOM, "valid", "invalid", "validity", "validity-tooltip", 100, {
+}(window.DOM, "valid", "invalid", "_validity", "_validitytooltip", 100, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),

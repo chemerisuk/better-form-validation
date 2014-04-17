@@ -91,12 +91,12 @@ describe("better-form-validation", function() {
         });
 
         it("should show/hide error message when it's needed", function() {
-            var validityTooltip = input.data("validity-tooltip"), spy;
+            var validityTooltip = input.get("_validitytooltip"), spy;
 
             expect(validityTooltip).toBeFalsy();
             input.addClass("valid").onValidityCheck();
 
-            validityTooltip = input.data("validity-tooltip");
+            validityTooltip = input.get("_validitytooltip");
             expect(validityTooltip).toBeTruthy();
 
             spy = spyOn(validityTooltip, "hide");
@@ -115,16 +115,30 @@ describe("better-form-validation", function() {
                 validity;
 
             input.on("validity:fail", spy).addClass("valid");
-            expect(input.data("validity-tooltip")).toBeFalsy();
+            expect(input.get("_validitytooltip")).toBeFalsy();
             input.onValidityCheck();
             expect(spy).toHaveBeenCalled();
 
-            validity = input.data("validity-tooltip");
+            validity = input.get("_validitytooltip");
             expect(validity).not.toBeFalsy();
 
             input.removeClass("invalid").addClass("valid").onValidityCheck();
             expect(spy.calls.count()).toBe(2);
             expect(validity).toBe(validity);
+        });
+
+        it("should focus input after clicking on the validity tooltip", function() {
+            input.fire("validity:fail", "test");
+
+            var validity = input.get("_validitytooltip"),
+                focusSpy = jasmine.createSpy("focus"),
+                hideSpy = spyOn(validity, "hide");
+
+            input.on("focus", focusSpy);
+
+            validity.fire("click");
+            expect(focusSpy).toHaveBeenCalled();
+            expect(hideSpy).toHaveBeenCalled();
         });
     });
 
@@ -148,8 +162,10 @@ describe("better-form-validation", function() {
 
             DOM.find("body").append(form);
 
+            expect(function() { form.onFormReset() }).not.toThrow();
+
             form.onFormSubmit();
-            spys = inputs.map(function(el) { return spyOn(el.data("validity-tooltip"), "hide") });
+            spys = inputs.map(function(el) { return spyOn(el.get("_validitytooltip"), "hide") });
 
             form.onFormReset();
             spys.forEach(function(spy) {
