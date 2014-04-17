@@ -16,12 +16,16 @@ module.exports = function(grunt) {
                 configFile: "test/karma.conf.js"
             },
             coverage: {
-                preprocessors: { "src/*.js": "coverage" },
                 reporters: ["coverage", "progress"],
                 background: true
             },
             unit: {
-                singleRun: true
+                singleRun: true,
+                reporters: ["coverage", "dots"],
+                coverageReporter: {
+                    type: "lcovonly",
+                    dir: "coverage/"
+                }
             }
         },
         jshint: {

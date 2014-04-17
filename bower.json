@@ -10,6 +10,7 @@
     ".*",
     "test",
     "src",
+    "index.html",
     "Gruntfile.js",
     "package.json",
     "bower.json",
@@ -19,6 +20,6 @@
     "better-dom"
   ],
   "dependencies": {
-    "better-dom": "~1.7.1"
+    "better-dom": "~1.7.5"
   }
 }

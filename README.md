@@ -1,10 +1,11 @@
-# better-form-validation [![Build Status](https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master)](http://travis-ci.org/chemerisuk/better-form-validation)
-> Form validation polyfill for [better-dom](https://github.com/chemerisuk/better-dom)
+# better-form-validation [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+> HTML5 form validation for [better-dom](https://github.com/chemerisuk/better-dom)
+HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not friendly. This project aims to solve all these issues.
 
 [LIVE DEMO](http://chemerisuk.github.io/better-form-validation/)
 
 ## Features
-* polyfills HTML5 form validation markup support for browsers
+* polyfills HTML5 form validation markup support for browsers (mobile browsers as well)
 * [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
 * validity tooltips are fully customizable via css
 * validity messages are fully custumizable (value of the `title` attribute for `[pattern]` elements is supported as well)
@@ -39,9 +40,22 @@ Then append the following script on your page:
 </body>
 </html>
 ```
+
 ## Browser support
+#### Desktop
 * Chrome
 * Safari 6.0+
 * Firefox 16+
 * Opera 12.10+
 * IE8+
+
+#### Mobile
+* iOS Safari 6+
+* Android 2.3+
+* Chrome for Android
+
+[travis-url]: http://travis-ci.org/chemerisuk/better-form-validation
+[travis-image]: https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master
+
+[coveralls-url]: https://coveralls.io/r/chemerisuk/better-form-validation
+[coveralls-image]: https://coveralls.io/repos/chemerisuk/better-form-validation/badge.png?branch=master
