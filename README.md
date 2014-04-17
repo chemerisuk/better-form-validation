@@ -63,11 +63,11 @@ var form = DOM.find("#myform"),
     password = form.find("[name=password]"),
     replyPassword = form.find("[name=reply_password]");
 
-    replyPassword.validity(function() {
-        if (password.get() !== replyPassword.get()) {
-            return "passwords should match";
-        }
-    });
+replyPassword.validity(function() {
+     if (password.get() !== replyPassword.get()) {
+        return "passwords should match";
+    }
+});
 ```
 
 As you can see I use `validity` to set a function that will do validation. If the function returns non-empty string - this means that validation fails.

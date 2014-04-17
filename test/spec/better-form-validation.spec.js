@@ -126,6 +126,20 @@ describe("better-form-validation", function() {
             expect(spy.calls.count()).toBe(2);
             expect(validity).toBe(validity);
         });
+
+        it("should focus input after clicking on the validity tooltip", function() {
+            input.fire("validity:fail", "test");
+
+            var validity = input.get("_validitytooltip"),
+                focusSpy = jasmine.createSpy("focus"),
+                hideSpy = spyOn(validity, "hide");
+
+            input.on("focus", focusSpy);
+
+            validity.fire("click");
+            expect(focusSpy).toHaveBeenCalled();
+            expect(hideSpy).toHaveBeenCalled();
+        });
     });
 
     describe("forms", function() {
