@@ -18,18 +18,12 @@
         width: 450px;
     }
 
-    #custom_form_errors {
-        float: right;
-        margin: 0;
-        padding: 0;
-    }
-
     #custom_form input {
         -webkit-transition: -webkit-transform 0.3s ease-in-out;
         transition: transform 0.3s ease-in-out;
     }
 
-    #custom_form input.invalid {
+    #custom_form input[aria-invalid=true] {
         -webkit-transform: rotate(-3deg);
         transform: rotate(-3deg);
     }
@@ -40,7 +34,7 @@
     <form>
         <p>
             <label>Your email<br>
-                <input type="email" placeholder="my@email.com" name="email" required style="float: right">
+                <input type="email" placeholder="my@email.com" name="email" required>
             </label>
         </p>
         <p>
@@ -61,7 +55,7 @@
         <button type="submit">Submit</button>
         <button type="reset">Reset</button>
     </form>
-    <h2>Custom validation example:</h2>
+    <h2>Summary validation example</h2>
     <form id="custom_form">
         <ul id="custom_form_errors" style="color:red"></ul>
         <p>
@@ -107,9 +101,11 @@
 
                 Object.keys(errors).forEach(function(field) {
                     var li = DOM.create("li>`{0}: `", [field]),
-                        span = DOM.create("span").i18n(errors[field][0]);
+                        error = errors[field][0];
 
-                    customErrors.append(li.append(span));
+                    if (error) {
+                        customErrors.append(li.append(DOM.create("span").i18n(error)));
+                    }
                 });
             });
 
