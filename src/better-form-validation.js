@@ -79,10 +79,12 @@
         onValidityCheck: function() {
             var errors = this.validity();
 
-            if (errors.length) {
-                if (this.get("aria-invalid")) this.fire("validity:fail", errors);
-            } else {
-                if (this.get("aria-invalid")) this.fire("validity:ok");
+            if (this.get("aria-invalid")) {
+                if (errors.length) {
+                    this.fire("validity:fail", errors);
+                } else {
+                    this.fire("validity:ok");
+                }
             }
         },
         onTextareaInput: function() {
@@ -188,7 +190,7 @@
                         "margin-left": targetOffset.left - offset.left,
                         "margin-top": targetOffset.bottom - offset.top,
                         "z-index": 1 + (this.css("z-index") | 0)
-                    })
+                    });
             }
 
             // use a small delay if several tooltips are going to be displayed
