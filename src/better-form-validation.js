@@ -181,8 +181,6 @@
     });
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, delay, target, cancel) {
-        var oldValue = target.get("aria-invalid");
-
         target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
@@ -219,13 +217,10 @@
 
             // display only the first error and always update the value
             validityTooltip.i18n(typeof errors === "string" ? errors : errors[0]);
-
-            if (oldValue !== "true") {
-                // hiding the tooltip to show later with a small delay
-                validityTooltip.hide();
-                // use a small delay if several tooltips are going to be displayed
-                setTimeout(function() { validityTooltip.show() }, VALIDITY_DELAY + delay);
-            }
+            // hiding the tooltip to show later with a small delay
+            validityTooltip.hide();
+            // use a small delay if several tooltips are going to be displayed
+            setTimeout(function() { validityTooltip.show() }, VALIDITY_DELAY + delay);
         }
     });
 }(window.DOM, "_validity", "_validityTooltip", 100, {
