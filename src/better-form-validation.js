@@ -1,11 +1,9 @@
-(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_DELAY, PATTERN, I18N_MISMATCH) {
     "use strict";
 
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
-        },
-        lastTooltipTimestamp = Date.now(),
-        delay = 0;
+        };
 
     DOM.extend("input[name],select[name],textarea[name]", {
         constructor: function() {
@@ -159,14 +157,15 @@
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
-    DOM.on("validity:fail", [1, "target", "defaultPrevented"], function(errors, target, cancel) {
+    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, delay, target, cancel) {
         target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
-        if (target == "form") {
-            Object.keys(errors).forEach(function(name) {
-                target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
+        if (target.toString() === "form") {
+            Object.keys(errors).forEach(function(name, index) {
+                target.find("[name=\"" + name + "\"]")
+                    .fire("validity:fail", errors[name], VALIDITY_DELAY * (index + 1));
             });
         } else {
             var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
@@ -193,21 +192,17 @@
                     });
             }
 
-            // use a small delay if several tooltips are going to be displayed
-            if (Date.now() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
-                delay += VALIDITY_TOOLTIP_DELAY;
-            } else {
-                delay = VALIDITY_TOOLTIP_DELAY;
-            }
-
             // display only the first error
-            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors)/*.hide()*/;
-            validityTooltip.css("transition-delay", delay + "ms").show();
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors);
 
-            lastTooltipTimestamp = Date.now();
+            // hiding the tooltip to show later with a small delay
+            validityTooltip.hide();
+
+            // use a small delay if several tooltips are going to be displayed
+            setTimeout(function() { validityTooltip.show() }, delay);
         }
     });
-}(window.DOM, "_validity", "_validityTooltip", 150, {
+}(window.DOM, "_validity", "_validityTooltip", 100, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),

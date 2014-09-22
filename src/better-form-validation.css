@@ -1,7 +1,6 @@
 .better-validity-tooltip {
     position: absolute;
     cursor: default;
-    visibility: hidden;
 
     color: #FF3329;
     background: #FFF;
@@ -22,18 +21,22 @@
     -ms-user-select: none;
     user-select: none;
 
-    opacity: 1;
-    -webkit-transform: scale(1, 1);
-    transform: scale(1, 1);
-
     -webkit-transition: 0.3s ease-in-out;
     transition: 0.3s ease-in-out;
+
+    -webkit-transition-property: -webkit-transform, opacity;
+    transition-property: transform, opacity;
+
+    -webkit-transform: scale(1, 1);
+    transform: scale(1, 1);
+    opacity: 1;
+
 }
 
 .better-validity-tooltip[aria-hidden=true] {
-    opacity: 0;
     -webkit-transform: scale(3, 3);
     transform: scale(3, 3);
+    opacity: 0;
 }
 
 input[aria-invalid] {
