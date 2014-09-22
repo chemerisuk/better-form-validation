@@ -82,7 +82,7 @@ describe("better-form-validation", function() {
             expect(input.validity().length).not.toBe(0);
 
             input.on("validity:fail", failSpy);
-            input.addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
             input.set("123").on("validity:ok", successSpy);
@@ -94,7 +94,7 @@ describe("better-form-validation", function() {
             var validityTooltip = input.get("_validityTooltip"), spy;
 
             expect(validityTooltip).toBeFalsy();
-            input.addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
 
             validityTooltip = input.get("_validityTooltip");
             expect(validityTooltip).toBeTruthy();
@@ -114,7 +114,7 @@ describe("better-form-validation", function() {
             var spy = jasmine.createSpy("validity:fail"),
                 validity;
 
-            input.on("validity:fail", spy).addClass("valid");
+            input.on("validity:fail", spy).set("aria-invalid", false);
             expect(input.get("_validityTooltip")).toBeFalsy();
             input.onValidityCheck();
             expect(spy).toHaveBeenCalled();
@@ -122,7 +122,7 @@ describe("better-form-validation", function() {
             validity = input.get("_validityTooltip");
             expect(validity).not.toBeFalsy();
 
-            input.removeClass("invalid").addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
             expect(spy.calls.count()).toBe(2);
             expect(validity).toBe(validity);
         });

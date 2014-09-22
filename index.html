@@ -6,8 +6,7 @@
     <title>better-form-validation demo</title>
     <link rel="stylesheet" href="src/better-form-validation.css">
     <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom-legacy.htc" rel="htc"/>
-        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
+        <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc"/>
     <![endif]-->
     <style type="text/css">
     input, textarea {
@@ -41,7 +40,7 @@
     <form>
         <p>
             <label>Your email<br>
-                <input type="email" placeholder="my@email.com" name="email" required>
+                <input type="email" placeholder="my@email.com" name="email" required style="float: right">
             </label>
         </p>
         <p>
@@ -101,18 +100,18 @@
                 }
             });
 
-            // form.on("validity:fail", function(errors, target) {
-            //     if (target !== form) return false;
+            form.on("validity:fail", [1, "target"], function(errors, target) {
+                if (target !== form) return false;
 
-            //     customErrors.set("");
+                customErrors.set("");
 
-            //     Object.keys(errors).forEach(function(field) {
-            //         var li = DOM.create("li>`{0}: `", [field]),
-            //             span = DOM.create("span").i18n(errors[field][0]);
+                Object.keys(errors).forEach(function(field) {
+                    var li = DOM.create("li>`{0}: `", [field]),
+                        span = DOM.create("span").i18n(errors[field][0]);
 
-            //         customErrors.append(li.append(span));
-            //     });
-            // });
+                    customErrors.append(li.append(span));
+                });
+            });
 
             button.fire("validity:fail", "TIP: toggle tooltips via custom events");
             setTimeout(function() { button.fire("validity:ok") }, 5000);

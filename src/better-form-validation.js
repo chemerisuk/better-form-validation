@@ -1,4 +1,4 @@
-(function(DOM, VALID_CLASS, INVALID_CLASS, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
     "use strict";
 
     var hasCheckedRadio = function(el) {
@@ -80,9 +80,9 @@
             var errors = this.validity();
 
             if (errors.length) {
-                if (!this.hasClass(INVALID_CLASS) && this.hasClass(VALID_CLASS)) this.fire("validity:fail", errors);
+                if (this.get("aria-invalid")) this.fire("validity:fail", errors);
             } else {
-                if (!this.hasClass(VALID_CLASS) && this.hasClass(INVALID_CLASS)) this.fire("validity:ok");
+                if (this.get("aria-invalid")) this.fire("validity:ok");
             }
         },
         onTextareaInput: function() {
@@ -152,13 +152,13 @@
     DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
         var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
-        target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
+        target.set("aria-invalid", false);
 
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
     DOM.on("validity:fail", [1, "target", "defaultPrevented"], function(errors, target, cancel) {
-        target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
+        target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
@@ -167,11 +167,10 @@
                 target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
             });
         } else {
-            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY),
-                offset = target.offset();
+            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
             if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+                validityTooltip = DOM.create("div.better-validity-tooltip");
 
                 target.set(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
 
@@ -180,12 +179,17 @@
                     // focus to the invalid input
                     target.fire("focus");
                 });
-            }
 
-            validityTooltip.css({
-                "margin-top": offset.height,
-                "z-index": 1 + (target.css("z-index") | 0)
-            });
+                var offset = validityTooltip.offset(),
+                    targetOffset = target.offset();
+
+                validityTooltip
+                    .css({
+                        "margin-left": targetOffset.left - offset.left,
+                        "margin-top": targetOffset.bottom - offset.top,
+                        "z-index": 1 + (this.css("z-index") | 0)
+                    })
+            }
 
             // use a small delay if several tooltips are going to be displayed
             if (Date.now() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
@@ -201,7 +205,7 @@
             lastTooltipTimestamp = Date.now();
         }
     });
-}(window.DOM, "valid", "invalid", "_validity", "_validityTooltip", 150, {
+}(window.DOM, "_validity", "_validityTooltip", 150, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),

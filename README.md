@@ -1,4 +1,4 @@
-# better-form-validation [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+# better-form-validation [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][fury-image]][fury-url]
 > HTML5 form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
 HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
@@ -22,9 +22,11 @@ Use [bower](http://bower.io/) to download this extension with all required depen
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 
-Then append the following script on your page:
+Then append the following tags on your page:
 
 ```html
+<link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css">
+...
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
 <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
 <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
@@ -76,7 +78,7 @@ if (replyPassword.validity().length) {
 * Safari 6.0+
 * Firefox 16+
 * Opera 12.10+
-* IE8+
+* Internet Explorer 8+ (see [notes](https://github.com/chemerisuk/better-dom#notes-about-old-ies))
 
 #### Mobile
 * iOS Safari 6+
@@ -84,7 +86,10 @@ if (replyPassword.validity().length) {
 * Chrome for Android
 
 [travis-url]: http://travis-ci.org/chemerisuk/better-form-validation
-[travis-image]: https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master
+[travis-image]: http://img.shields.io/travis/chemerisuk/better-form-validation/master.svg
 
 [coveralls-url]: https://coveralls.io/r/chemerisuk/better-form-validation
-[coveralls-image]: https://coveralls.io/repos/chemerisuk/better-form-validation/badge.png?branch=master
+[coveralls-image]: http://img.shields.io/coveralls/chemerisuk/better-form-validation/master.svg
+
+[fury-url]: http://badge.fury.io/bo/better-form-validation
+[fury-image]: https://badge.fury.io/bo/better-form-validation.svg
