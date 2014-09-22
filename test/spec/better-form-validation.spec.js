@@ -48,11 +48,9 @@ describe("better-form-validation", function() {
 
             input.set({pattern: "[a-z]+", title: "msg"});
             input.set("123").fire("input");
-            expect(input.validity().length).not.toBe(0);
             expect(input.validity()).toEqual(["msg"]);
 
             input.set("title", "").fire("input");
-            expect(input.validity().length).not.toBe(0);
             expect(input.validity()).toEqual(["illegal value format"]);
 
             input.set("abc").fire("input");
@@ -144,15 +142,15 @@ describe("better-form-validation", function() {
 
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name='[b]']"),
-                spy = jasmine.createSpy("validity:fail"),
-                errors = [];
+            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name=b]"),
+                spy = jasmine.createSpy("validity:fail");
 
             form.on("validity:fail", spy).fire("submit");
-            errors.a = ["can't be empty"];
-            errors.b = ["can't be empty"];
-            errors.length = 2;
-            expect(spy).toHaveBeenCalledWith(errors);
+            expect(spy).toHaveBeenCalledWith({
+                a: ["can't be empty"],
+                b: ["can't be empty"],
+                length: 2
+            });
         });
 
         it("should hide all messages on form reset", function() {
@@ -198,7 +196,7 @@ describe("better-form-validation", function() {
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            expect(form.validity()).toEqual({length: 0});
         });
 
         it("should handle checkboxes and radio buttons", function() {
@@ -209,12 +207,11 @@ describe("better-form-validation", function() {
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            expect(form.validity()).toEqual({length: 0});
         });
 
         it("should allow to add custom validation", function() {
-            var form = DOM.mock("form>input[type=text name=d]"),
-                result = [];
+            var form = DOM.mock("form>input[type=text name=d]");
 
             DOM.find("body").append(form);
 
@@ -225,7 +222,8 @@ describe("better-form-validation", function() {
 
                 return "FAIL";
             });
-            expect(form.validity()).toEqual(["FAIL"]);
+
+            expect(form.validity()).toEqual({0: "FAIL", length: 1});
 
             form.validity(function() {
                 expect(this).toBe(form);
@@ -233,9 +231,7 @@ describe("better-form-validation", function() {
                 return {d: ["FAIL"]};
             });
 
-            result.d = ["FAIL"];
-            result.length = 1;
-            expect(form.validity()).toEqual(result);
+            expect(form.validity()).toEqual({d: ["FAIL"], length: 1});
         });
 
         it("should fire validity:fail on invalid elements", function() {
