@@ -1,7 +1,7 @@
 # better-form-validation [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
 > HTML5 form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
-HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not friendly. This project aims to solve all these issues.
+HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
 
 [LIVE DEMO](http://chemerisuk.github.io/better-form-validation/)
 
@@ -25,21 +25,9 @@ This will clone the latest version of the __better-form-validation__ into the `b
 Then append the following script on your page:
 
 ```html
-<html>
-<head>
-    ...
-    <link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css"/>
-    <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom-legacy.htc" rel="htc"/>
-        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
-    <![endif]-->
-</head>
-<body>
-    ...
-    <script src="bower_components/better-dom/dist/better-dom.js"></script>
-    <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
-</body>
-</html>
+<script src="bower_components/better-dom/dist/better-dom.js"></script>
+<script src="bower_components/better-i18n/dist/better-i18n.js"></script>
+<script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
 ```
 
 ## Custom validation via `pattern` attribute

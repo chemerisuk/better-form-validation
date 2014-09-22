@@ -29,7 +29,7 @@
 
             errors = this.get(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.dispatch(errors);
+            if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -109,7 +109,7 @@
 
             errors = this.get(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.dispatch(errors);
+            if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
             return this.findAll("[name]").reduce(function(memo, el) {
@@ -141,7 +141,7 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) {
+            this.findAll("[name]").forEach(function(el) {
                 var tooltip = el.get(VALIDITY_TOOLTIP_KEY);
 
                 if (tooltip) tooltip.hide();
@@ -149,7 +149,7 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, _, cancel) {
+    DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
         var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
         target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
@@ -157,7 +157,7 @@
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
-    DOM.on("validity:fail", function(errors, target, _, cancel) {
+    DOM.on("validity:fail", [1, "target", "defaultPrevented"], function(errors, target, cancel) {
         target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
 
         if (cancel || !errors.length) return;
@@ -182,9 +182,9 @@
                 });
             }
 
-            validityTooltip.style({
+            validityTooltip.css({
                 "margin-top": offset.height,
-                "z-index": 1 + (target.style("z-index") | 0)
+                "z-index": 1 + (target.css("z-index") | 0)
             });
 
             // use a small delay if several tooltips are going to be displayed
@@ -195,12 +195,13 @@
             }
 
             // display only the first error
-            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).hide().show(delay);
+            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors)/*.hide()*/;
+            validityTooltip.css("transition-delay", delay + "ms").show();
 
             lastTooltipTimestamp = Date.now();
         }
     });
-}(window.DOM, "valid", "invalid", "_validity", "_validitytooltip", 100, {
+}(window.DOM, "valid", "invalid", "_validity", "_validityTooltip", 150, {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),

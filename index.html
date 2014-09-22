@@ -84,10 +84,11 @@
         <button type="reset">Reset</button>
     </form>
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
+    <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
     <script src="src/better-form-validation.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
     <script type="text/javascript">
-        DOM.ready(function() {
+        DOM.extend("body", function() {
             var form = DOM.find("#custom_form"),
                 password = form.find("[name=password]"),
                 replyPassword = form.find("[name=reply_password]"),
@@ -100,18 +101,18 @@
                 }
             });
 
-            form.on("validity:fail", function(errors, target) {
-                if (target !== form) return false;
+            // form.on("validity:fail", function(errors, target) {
+            //     if (target !== form) return false;
 
-                customErrors.set("");
+            //     customErrors.set("");
 
-                Object.keys(errors).forEach(function(field) {
-                    var li = DOM.create("li>`{0}: `", [field]),
-                        span = DOM.create("span").i18n(errors[field][0]);
+            //     Object.keys(errors).forEach(function(field) {
+            //         var li = DOM.create("li>`{0}: `", [field]),
+            //             span = DOM.create("span").i18n(errors[field][0]);
 
-                    customErrors.append(li.append(span));
-                });
-            });
+            //         customErrors.append(li.append(span));
+            //     });
+            // });
 
             button.fire("validity:fail", "TIP: toggle tooltips via custom events");
             setTimeout(function() { button.fire("validity:ok") }, 5000);
