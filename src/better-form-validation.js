@@ -23,7 +23,7 @@
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
-                regexp, pattern;
+                regexp, pattern, msg;
 
             errors = this.get(VALIDITY_KEY);
 
@@ -53,28 +53,29 @@
 
                 default:
                     if (value) {
+                        if (type === "textarea") break;
+
                         pattern = this.get("pattern");
 
-                        if (type !== "textarea" && pattern) {
-                            regexp = "^(?:" + pattern + ")$";
+                        if (pattern) {
+                            pattern = "^(?:" + pattern + ")$";
 
-                            if (regexp in PATTERNS) {
-                                regexp = PATTERNS[regexp];
+                            if (pattern in PATTERNS) {
+                                regexp = PATTERNS[pattern];
                             } else {
-                                regexp = new RegExp(regexp);
+                                regexp = new RegExp(pattern);
                                 // cache regexp internally
                                 PATTERNS[pattern] = regexp;
                             }
 
-                            if (!regexp.test(value)) {
-                                errors.push(this.get("title") || "illegal value format");
-                            }
+                            msg = this.get("title") || "illegal value format";
                         } else {
                             regexp = PATTERNS[type];
+                            msg = I18N_MISMATCH[type];
+                        }
 
-                            if (regexp && !regexp.test(value)) {
-                                errors.push(I18N_MISMATCH[type]);
-                            }
+                        if (regexp && !regexp.test(value)) {
+                            errors.push(msg);
                         }
                     } else if (required) {
                         errors.push("can't be empty");
