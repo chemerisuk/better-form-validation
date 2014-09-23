@@ -22,15 +22,5 @@
   "dependencies": {
     "html5shiv": "latest",
     "es5-shim": "latest"
-  },
-  "homepage": "https://github.com/chemerisuk/better-dom",
-  "_release": "2.0.0-rc.5",
-  "_resolution": {
-    "type": "version",
-    "tag": "v2.0.0-rc.5",
-    "commit": "a3310593762d6566d547556ba509e5de04fb7188"
-  },
-  "_source": "git://github.com/chemerisuk/better-dom.git",
-  "_target": "~2.0.0",
-  "_originalSource": "better-dom"
+  }
 }

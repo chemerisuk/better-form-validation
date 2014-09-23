@@ -48,11 +48,9 @@ describe("better-form-validation", function() {
 
             input.set({pattern: "[a-z]+", title: "msg"});
             input.set("123").fire("input");
-            expect(input.validity().length).not.toBe(0);
             expect(input.validity()).toEqual(["msg"]);
 
             input.set("title", "").fire("input");
-            expect(input.validity().length).not.toBe(0);
             expect(input.validity()).toEqual(["illegal value format"]);
 
             input.set("abc").fire("input");
@@ -82,7 +80,7 @@ describe("better-form-validation", function() {
             expect(input.validity().length).not.toBe(0);
 
             input.on("validity:fail", failSpy);
-            input.addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
             expect(failSpy).toHaveBeenCalled();
 
             input.set("123").on("validity:ok", successSpy);
@@ -91,12 +89,12 @@ describe("better-form-validation", function() {
         });
 
         it("should show/hide error message when it's needed", function() {
-            var validityTooltip = input.get("_validitytooltip"), spy;
+            var validityTooltip = input.get("_validityTooltip"), spy;
 
             expect(validityTooltip).toBeFalsy();
-            input.addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
 
-            validityTooltip = input.get("_validitytooltip");
+            validityTooltip = input.get("_validityTooltip");
             expect(validityTooltip).toBeTruthy();
 
             spy = spyOn(validityTooltip, "hide");
@@ -114,15 +112,15 @@ describe("better-form-validation", function() {
             var spy = jasmine.createSpy("validity:fail"),
                 validity;
 
-            input.on("validity:fail", spy).addClass("valid");
-            expect(input.get("_validitytooltip")).toBeFalsy();
+            input.on("validity:fail", spy).set("aria-invalid", false);
+            expect(input.get("_validityTooltip")).toBeFalsy();
             input.onValidityCheck();
             expect(spy).toHaveBeenCalled();
 
-            validity = input.get("_validitytooltip");
+            validity = input.get("_validityTooltip");
             expect(validity).not.toBeFalsy();
 
-            input.removeClass("invalid").addClass("valid").onValidityCheck();
+            input.set("aria-invalid", false).onValidityCheck();
             expect(spy.calls.count()).toBe(2);
             expect(validity).toBe(validity);
         });
@@ -130,7 +128,7 @@ describe("better-form-validation", function() {
         it("should focus input after clicking on the validity tooltip", function() {
             input.fire("validity:fail", "test");
 
-            var validity = input.get("_validitytooltip"),
+            var validity = input.get("_validityTooltip"),
                 focusSpy = jasmine.createSpy("focus"),
                 hideSpy = spyOn(validity, "hide");
 
@@ -144,15 +142,15 @@ describe("better-form-validation", function() {
 
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
-            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name='[b]']"),
-                spy = jasmine.createSpy("validity:fail"),
-                errors = [];
+            var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name=b]"),
+                spy = jasmine.createSpy("validity:fail");
 
             form.on("validity:fail", spy).fire("submit");
-            errors.a = ["can't be empty"];
-            errors.b = ["can't be empty"];
-            errors.length = 2;
-            expect(spy).toHaveBeenCalledWith(errors, form, form, false);
+            expect(spy).toHaveBeenCalledWith({
+                a: ["can't be empty"],
+                b: ["can't be empty"],
+                length: 2
+            });
         });
 
         it("should hide all messages on form reset", function() {
@@ -165,7 +163,7 @@ describe("better-form-validation", function() {
             expect(function() { form.onFormReset() }).not.toThrow();
 
             form.onFormSubmit();
-            spys = inputs.map(function(el) { return spyOn(el.get("_validitytooltip"), "hide") });
+            spys = inputs.map(function(el) { return spyOn(el.get("_validityTooltip"), "hide") });
 
             form.onFormReset();
             spys.forEach(function(spy) {
@@ -179,7 +177,7 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[name=a required]+textarea+button[type=submit]"),
                 spy = jasmine.createSpy("spy");
 
-            form.on("submit", spy.and.callFake(function(target, currentTarget, cancel) {
+            form.on("submit", ["defaultPrevented"], spy.and.callFake(function(cancel) {
                 expect(cancel).toBe(true);
                 expect(Object.keys(form.validity()).length).not.toBeFalsy();
                 // prevent submitting even if the test fails
@@ -198,7 +196,7 @@ describe("better-form-validation", function() {
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            expect(form.validity()).toEqual({length: 0});
         });
 
         it("should handle checkboxes and radio buttons", function() {
@@ -209,12 +207,11 @@ describe("better-form-validation", function() {
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(Object.keys(form.validity()).length).toBeFalsy();
+            expect(form.validity()).toEqual({length: 0});
         });
 
         it("should allow to add custom validation", function() {
-            var form = DOM.mock("form>input[type=text name=d]"),
-                result = [];
+            var form = DOM.mock("form>input[type=text name=d]");
 
             DOM.find("body").append(form);
 
@@ -225,7 +222,8 @@ describe("better-form-validation", function() {
 
                 return "FAIL";
             });
-            expect(form.validity()).toEqual(["FAIL"]);
+
+            expect(form.validity()).toEqual({0: "FAIL", length: 1});
 
             form.validity(function() {
                 expect(this).toBe(form);
@@ -233,9 +231,7 @@ describe("better-form-validation", function() {
                 return {d: ["FAIL"]};
             });
 
-            result.d = ["FAIL"];
-            result.length = 1;
-            expect(form.validity()).toEqual(result);
+            expect(form.validity()).toEqual({d: ["FAIL"], length: 1});
         });
 
         it("should fire validity:fail on invalid elements", function() {
@@ -253,7 +249,7 @@ describe("better-form-validation", function() {
 
             input.on("validity:fail", spy);
             form.onFormSubmit();
-            expect(spy).toHaveBeenCalledWith(["FAIL"], input, input, false);
+            expect(spy).toHaveBeenCalledWith(["FAIL"], 0);
 
             form.remove();
         });

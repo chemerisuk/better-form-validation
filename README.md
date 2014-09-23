@@ -1,7 +1,7 @@
-# better-form-validation [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
+# better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][fury-image]][fury-url]
 > HTML5 form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
-HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not friendly. This project aims to solve all these issues.
+HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
 
 [LIVE DEMO](http://chemerisuk.github.io/better-form-validation/)
 
@@ -22,24 +22,14 @@ Use [bower](http://bower.io/) to download this extension with all required depen
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 
-Then append the following script on your page:
+Then append the following tags on your page:
 
 ```html
-<html>
-<head>
-    ...
-    <link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css"/>
-    <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom-legacy.htc" rel="htc"/>
-        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
-    <![endif]-->
-</head>
-<body>
-    ...
-    <script src="bower_components/better-dom/dist/better-dom.js"></script>
-    <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
-</body>
-</html>
+<link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css">
+...
+<script src="bower_components/better-dom/dist/better-dom.js"></script>
+<script src="bower_components/better-i18n/dist/better-i18n.js"></script>
+<script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
 ```
 
 ## Custom validation via `pattern` attribute
@@ -48,7 +38,7 @@ There are a lot of use cases when you need something more flexible than having m
 For instance you need to implement a required `fullname` field, and you know that it may contain only letters. This can look like that:
 
 ```html
-<input type="text" name="fullname" required placeholder="Your name" pattern="[^\d]+" maxlength="30" title="Your name may contain only letters"/>
+<input type="text" name="fullname" pattern="\w+" title="Only letters, please"/>
 ```
 
 So the `pattern` attribute allows you to use regexp for checking field value, without any extra JavaScript. By default problematic value displays tooltip `"illegal value format"` but you can change it by specifying the `title` attribute value (as in example above).
@@ -88,7 +78,7 @@ if (replyPassword.validity().length) {
 * Safari 6.0+
 * Firefox 16+
 * Opera 12.10+
-* IE8+
+* Internet Explorer 8+ (see [notes](https://github.com/chemerisuk/better-dom#notes-about-old-ies))
 
 #### Mobile
 * iOS Safari 6+
@@ -96,7 +86,10 @@ if (replyPassword.validity().length) {
 * Chrome for Android
 
 [travis-url]: http://travis-ci.org/chemerisuk/better-form-validation
-[travis-image]: https://api.travis-ci.org/chemerisuk/better-form-validation.png?branch=master
+[travis-image]: http://img.shields.io/travis/chemerisuk/better-form-validation/master.svg
 
 [coveralls-url]: https://coveralls.io/r/chemerisuk/better-form-validation
-[coveralls-image]: https://coveralls.io/repos/chemerisuk/better-form-validation/badge.png?branch=master
+[coveralls-image]: http://img.shields.io/coveralls/chemerisuk/better-form-validation/master.svg
+
+[fury-url]: http://badge.fury.io/bo/better-form-validation
+[fury-image]: https://badge.fury.io/bo/better-form-validation.svg

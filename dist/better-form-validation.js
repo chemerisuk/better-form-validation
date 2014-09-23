@@ -1,31 +1,29 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.3.2 2014-04-17T12:34:01
+ * @version 1.4.0-beta.1 2014-09-23T14:05:09
  * @overview HTML5 form validation for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-(function(DOM, VALID_CLASS, INVALID_CLASS, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, VALIDITY_TOOLTIP_DELAY, PATTERN, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, PATTERNS, I18N_MISMATCH) {
     "use strict";
 
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
-        },
-        lastTooltipTimestamp = Date.now(),
-        delay = 0;
+        };
 
     DOM.extend("input[name],select[name],textarea[name]", {
         constructor: function() {
             var type = this.get("type");
 
-            if (type === "checkbox" || type === "radio") {
-                this.on("click", this.onValidityCheck);
-            } else {
+            if (type !== "checkbox" && type !== "radio") {
                 if (type === "textarea") this.on("input", this.onTextareaInput);
 
                 this.on("input", this.onValidityCheck);
             }
+
+            this.on("change", this.onValidityUpdate);
         },
         validity: function(errors) {
             if (arguments.length) return this.set(VALIDITY_KEY, errors);
@@ -33,11 +31,11 @@
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
-                regexp;
+                regexp, pattern, msg;
 
             errors = this.get(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.dispatch(errors);
+            if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
@@ -56,25 +54,36 @@
                     if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
                     /* falls through */
                 case "checkbox":
-                    if (required && !this.get("checked")) errors.push("can't be empty");
+                    if (required && !this.get("checked")) {
+                        errors.push("can't be empty");
+                    }
                     break;
 
                 default:
                     if (value) {
-                        regexp = PATTERN[type];
+                        if (type === "textarea") break;
 
-                        if (regexp && !regexp.test(value)) errors.push(I18N_MISMATCH[type]);
+                        pattern = this.get("pattern");
 
-                        if (type !== "textarea" && (type = this.get("pattern"))) {
-                            type = "^(?:" + type + ")$";
+                        if (pattern) {
+                            pattern = "^(?:" + pattern + ")$";
 
-                            if (!(regexp = PATTERN[type])) {
-                                regexp = PATTERN[type] = new RegExp(type);
+                            if (pattern in PATTERNS) {
+                                regexp = PATTERNS[pattern];
+                            } else {
+                                regexp = new RegExp(pattern);
+                                // cache regexp internally
+                                PATTERNS[pattern] = regexp;
                             }
 
-                            if (!regexp.test(value)) {
-                                errors.push(this.get("title") || "illegal value format");
-                            }
+                            msg = this.get("title") || "illegal value format";
+                        } else {
+                            regexp = PATTERNS[type];
+                            msg = I18N_MISMATCH[type];
+                        }
+
+                        if (regexp && !regexp.test(value)) {
+                            errors.push(msg);
                         }
                     } else if (required) {
                         errors.push("can't be empty");
@@ -85,12 +94,23 @@
             return errors;
         },
         onValidityCheck: function() {
+            if (!this.get("aria-invalid")) return;
+
             var errors = this.validity();
 
             if (errors.length) {
-                if (!this.hasClass(INVALID_CLASS) && this.hasClass(VALID_CLASS)) this.fire("validity:fail", errors);
+                this.fire("validity:fail", errors);
             } else {
-                if (!this.hasClass(VALID_CLASS) && this.hasClass(INVALID_CLASS)) this.fire("validity:ok");
+                this.fire("validity:ok");
+            }
+        },
+        onValidityUpdate: function() {
+            var errors = this.validity();
+
+            if (errors.length) {
+                this.fire("validity:fail", errors);
+            } else {
+                this.fire("validity:ok");
             }
         },
         onTextareaInput: function() {
@@ -106,9 +126,8 @@
 
     DOM.extend("form", {
         constructor: function() {
-            // disable native validation
             this
-                .set("novalidate", "novalidate")
+                .set("novalidate", "novalidate") // disable native validation
                 .on("submit", this.onFormSubmit)
                 .on("reset", this.onFormReset);
         },
@@ -117,26 +136,30 @@
 
             errors = this.get(VALIDITY_KEY);
 
-            if (typeof errors === "function") errors = this.dispatch(errors);
-            if (typeof errors === "string") errors = [errors];
+            if (typeof errors === "function") errors = errors.call(this);
+            if (typeof errors === "string") errors = {0: errors, length: 1};
 
-            return this.findAll("[name]").reduce(function(memo, el) {
+            if (errors) {
+                errors.length = errors.length || 0;
+            } else {
+                errors = {length: 0};
+            }
+
+            this.findAll("[name]").forEach(function(el) {
                 var name = el.get("name");
 
-                if (errors && name in errors) {
-                    memo[name] = errors[name];
-                } else {
-                    memo[name] = el.validity && el.validity();
+                if (!(name in errors)) {
+                    errors[name] = el.validity && el.validity();
                 }
 
-                if (memo[name] && memo[name].length) {
-                    memo.length += memo[name].length;
+                if (errors[name] && errors[name].length) {
+                    errors.length += errors[name].length;
                 } else {
-                    delete memo[name];
+                    delete errors[name];
                 }
+            });
 
-                return memo;
-            }, Array.isArray(errors) ? errors : []);
+            return errors;
         },
         onFormSubmit: function() {
             var errors = this.validity();
@@ -149,7 +172,7 @@
             }
         },
         onFormReset: function() {
-            this.findAll("[name]").each(function(el) {
+            this.findAll("[name]").forEach(function(el) {
                 var tooltip = el.get(VALIDITY_TOOLTIP_KEY);
 
                 if (tooltip) tooltip.hide();
@@ -157,29 +180,29 @@
         }
     });
 
-    DOM.on("validity:ok", function(target, _, cancel) {
+    DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
         var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
-        target.removeClass(INVALID_CLASS).addClass(VALID_CLASS);
+        target.set("aria-invalid", false);
 
         if (!cancel && validityTooltip) validityTooltip.hide();
     });
 
-    DOM.on("validity:fail", function(errors, target, _, cancel) {
-        target.removeClass(VALID_CLASS).addClass(INVALID_CLASS);
+    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel) {
+        target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
-        if (target == "form") {
-            Object.keys(errors).forEach(function(name) {
-                target.find("[name=\"" + name + "\"]").fire("validity:fail", errors[name]);
+        if (target.toString() === "form") {
+            Object.keys(errors).forEach(function(name, index) {
+                target.find("[name=\"" + name + "\"]")
+                    .fire("validity:fail", errors[name], index);
             });
         } else {
-            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY),
-                offset = target.offset();
+            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
 
             if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip").hide();
+                validityTooltip = DOM.create("div.better-validity-tooltip");
 
                 target.set(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
 
@@ -188,27 +211,36 @@
                     // focus to the invalid input
                     target.fire("focus");
                 });
+
+                var offset = validityTooltip.offset(),
+                    targetOffset = target.offset(),
+                    value = validityTooltip.css("transition-delay");
+
+                if (value) {
+                    value = parseFloat(value) * (value.slice(-2) === "ms" ? 1 : 1000);
+
+                    target.set("_tooltipDelay", value);
+                }
+
+                validityTooltip
+                    .css({
+                        "transition-delay": "0s", // setTimeout will be used instead
+                        "margin-left": targetOffset.left - offset.left,
+                        "margin-top": targetOffset.bottom - offset.top,
+                        "z-index": 1 + (this.css("z-index") | 0)
+                    });
             }
 
-            validityTooltip.style({
-                "margin-top": offset.height,
-                "z-index": 1 + (target.style("z-index") | 0)
-            });
-
+            var delay = target.get("_tooltipDelay") * coef;
+            // display only the first error and always update the value
+            validityTooltip.i18n(typeof errors === "string" ? errors : errors[0]);
+            // hiding the tooltip to show later with a small delay
+            validityTooltip.hide();
             // use a small delay if several tooltips are going to be displayed
-            if (Date.now() - lastTooltipTimestamp < VALIDITY_TOOLTIP_DELAY) {
-                delay += VALIDITY_TOOLTIP_DELAY;
-            } else {
-                delay = VALIDITY_TOOLTIP_DELAY;
-            }
-
-            // display only the first error
-            validityTooltip.i18n(Array.isArray(errors) ? errors[0] : errors).hide().show(delay);
-
-            lastTooltipTimestamp = Date.now();
+            setTimeout(function() { validityTooltip.show() }, delay);
         }
     });
-}(window.DOM, "valid", "invalid", "_validity", "_validitytooltip", 100, {
+}(window.DOM, "_validity", "_validityTooltip", {
     email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
     url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
     tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),

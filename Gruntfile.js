@@ -8,20 +8,23 @@ module.exports = function(grunt) {
         watch: {
             jasmine: {
                 files: ["src/*.js", "test/spec/*.spec.js"],
-                tasks: ["karma:coverage:run"]
+                tasks: ["karma:watch:run"]
             }
         },
         karma: {
             options: {
                 configFile: "test/karma.conf.js"
             },
-            coverage: {
-                reporters: ["coverage", "progress"],
-                background: true
+            watch: {
+                background: true,
+                singleRun: false,
+                reporters: ["coverage", "progress"]
             },
             unit: {
-                singleRun: true,
-                reporters: ["coverage", "dots"],
+                reporters: ["dots"]
+            },
+            coveralls: {
+                reporters: ["coverage", "dots", "coveralls"],
                 coverageReporter: {
                     type: "lcovonly",
                     dir: "coverage/"
@@ -46,7 +49,8 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask("test", ["jshint", "karma:unit"]);
-    grunt.registerTask("dev", ["jshint", "karma:coverage", "watch"]);
+    grunt.registerTask("travis", ["jshint", "karma:coveralls"]);
+    grunt.registerTask("dev", ["jshint", "karma:watch", "watch"]);
     grunt.registerTask("publish", "Publish a new version", function(version) {
         grunt.task.run([
             "shell:bower",
