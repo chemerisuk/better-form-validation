@@ -21,8 +21,8 @@
     -ms-user-select: none;
     user-select: none;
 
-    -webkit-transition: 0.3s ease-in-out;
-    transition: 0.3s ease-in-out;
+    -webkit-transition: 0.3s ease-in-out 75ms;
+    transition: 0.3s ease-in-out 75ms;
 
     -webkit-transition-property: -webkit-transform, opacity;
     transition-property: transform, opacity;
