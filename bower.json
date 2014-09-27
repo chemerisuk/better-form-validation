@@ -14,14 +14,13 @@
     "index.html",
     "Gruntfile.js",
     "package.json",
-    "bower.json",
-    "main.sublime-project"
+    "bower.json"
   ],
   "keywords": [
     "better-dom"
   ],
   "dependencies": {
     "better-dom": "~2.0.0",
-    "better-i18n": "~1.0.0-beta.1"
+    "better-i18n": "~1.0.0"
   }
 }

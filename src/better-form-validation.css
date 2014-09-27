@@ -1,6 +1,6 @@
 .better-validity-tooltip {
     position: absolute;
-    cursor: default;
+    cursor: pointer;
 
     color: #FF3329;
     background: #FFF;

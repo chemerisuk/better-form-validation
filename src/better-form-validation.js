@@ -43,7 +43,7 @@
                     break;
 
                 case "radio":
-                    if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
+                    if (!required || this.closest("form").findAll("[name]").some(hasCheckedRadio, this)) break;
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
