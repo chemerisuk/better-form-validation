@@ -140,6 +140,26 @@ describe("better-form-validation", function() {
         });
     });
 
+    describe("textarea", function() {
+        var textarea;
+
+        beforeEach(function() {
+            textarea = DOM.mock("textarea[name=b]");
+        });
+
+        it("should fix maxlength attribute", function() {
+            textarea.set("maxlength", 5);
+
+            textarea.set("1234567");
+            textarea.onTextareaInput();
+            expect(textarea.get()).toBe("12345");
+
+            textarea.set("1234");
+            textarea.onTextareaInput();
+            expect(textarea.get()).toBe("1234");
+        });
+    });
+
     describe("forms", function() {
         it("should send invalid event when validation fails", function() {
             var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name=b]"),
@@ -179,7 +199,7 @@ describe("better-form-validation", function() {
 
             form.on("submit", ["defaultPrevented"], spy.and.callFake(function(cancel) {
                 expect(cancel).toBe(true);
-                expect(Object.keys(form.validity()).length).not.toBeFalsy();
+                expect(form.validity().length).not.toBe(0);
                 // prevent submitting even if the test fails
                 return false;
             }));
@@ -192,7 +212,7 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[type=checkbox required name=b]");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(Object.keys(form.validity()).length).not.toBeFalsy();
+            expect(form.validity().length).not.toBeFalsy();
 
             form.find("input").set("checked", true);
             form.fire("submit");
@@ -203,11 +223,26 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[type=radio required name=c]*3");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(Object.keys(form.validity()).length).not.toBeFalsy();
+            expect(form.validity().length).not.toBe(0);
 
             form.find("input").set("checked", true);
             form.fire("submit");
             expect(form.validity()).toEqual({length: 0});
+        });
+
+        it("should skip some input types", function() {
+            var form = DOM.mock("form>input[type=image name=a required]+input[type=submit name=b required]"),
+                spy = jasmine.createSpy("spy");
+
+            form.on("submit", ["defaultPrevented"], spy.and.callFake(function(cancel) {
+                expect(cancel).toBeFalsy();
+                expect(form.validity().length).toBe(0);
+                // prevent submitting even if the test fails
+                return false;
+            }));
+
+            form.fire("submit");
+            expect(spy).toHaveBeenCalled();
         });
 
         it("should allow to add custom validation", function() {

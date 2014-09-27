@@ -1,6 +1,6 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.4.0-beta.1 2014-09-23T14:05:09
+ * @version 1.4.0-beta.2 2014-09-27T18:17:06
  * @overview HTML5 form validation for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
@@ -51,7 +51,7 @@
                     break;
 
                 case "radio":
-                    if (!required || this.parent("form").findAll("[name]").some(hasCheckedRadio, this)) break;
+                    if (!required || this.closest("form").findAll("[name]").some(hasCheckedRadio, this)) break;
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {

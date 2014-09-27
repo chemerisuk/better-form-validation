@@ -27,7 +27,6 @@
     "commit": "74b87153e58f48d1b769ad6cba85eed7639c9582"
   },
   "_source": "git://github.com/chemerisuk/better-i18n.git",
-  "_target": "~1.0.0-beta.1",
-  "_originalSource": "better-i18n",
-  "_direct": true
+  "_target": "~1.0.0",
+  "_originalSource": "better-i18n"
 }
