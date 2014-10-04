@@ -1,5 +1,12 @@
-(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, PATTERNS, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, I18N_MISMATCH) {
     "use strict";
+
+    var patterns = {
+            email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
+            url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
+            tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
+            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
+        };
 
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
@@ -60,17 +67,17 @@
                         if (pattern) {
                             pattern = "^(?:" + pattern + ")$";
 
-                            if (pattern in PATTERNS) {
-                                regexp = PATTERNS[pattern];
+                            if (pattern in patterns) {
+                                regexp = patterns[pattern];
                             } else {
                                 regexp = new RegExp(pattern);
                                 // cache regexp internally
-                                PATTERNS[pattern] = regexp;
+                                patterns[pattern] = regexp;
                             }
 
                             msg = this.get("title") || "illegal value format";
                         } else {
-                            regexp = PATTERNS[type];
+                            regexp = patterns[type];
                             msg = I18N_MISMATCH[type];
                         }
 
@@ -165,9 +172,7 @@
         },
         onFormReset: function() {
             this.findAll("[name]").forEach(function(el) {
-                var tooltip = el.get(VALIDITY_TOOLTIP_KEY);
-
-                if (tooltip) tooltip.hide();
+                el.popover().hide();
             });
         }
     });
@@ -194,7 +199,15 @@
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
-            popover.hide().addClass("better-validity-tooltip");
+            if (!popover.hide().hasClass("better-validity-tooltip")) {
+                popover.addClass("better-validity-tooltip");
+
+                popover.on("click", function() {
+                    popover.hide();
+
+                    target.fire("focus");
+                });
+            }
 
             if (coef) {
                 delay = popover.css("transition-duration");
@@ -208,12 +221,7 @@
             setTimeout(function() { popover.show() }, delay);
         }
     });
-}(window.DOM, "_validity", "_validityTooltip", {
-    email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
-    url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
-    tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
-    number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
-}, {
+}(window.DOM, "_validity", {
     email: "should be a valid email",
     url: "should be a valid URL",
     tel: "should be a valid phone number",

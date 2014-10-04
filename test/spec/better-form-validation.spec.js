@@ -88,19 +88,15 @@ describe("better-form-validation", function() {
             expect(successSpy).toHaveBeenCalled();
         });
 
-        it("should show/hide error message when it's needed", function() {
-            var validityTooltip = input.get("_validityTooltip"), spy;
+        // it("should show/hide error message when it's needed", function() {
+        //     var validityTooltip = input.popover(), spy;
 
-            expect(validityTooltip).toBeFalsy();
-            input.set("aria-invalid", false).onValidityCheck();
+        //     input.set("aria-invalid", false).onValidityCheck();
 
-            validityTooltip = input.get("_validityTooltip");
-            expect(validityTooltip).toBeTruthy();
-
-            spy = spyOn(validityTooltip, "hide");
-            input.set("123").onValidityCheck();
-            expect(spy).toHaveBeenCalled();
-        });
+        //     spy = spyOn(validityTooltip, "hide");
+        //     input.set("123").onValidityCheck();
+        //     expect(spy).toHaveBeenCalled();
+        // });
 
         it("should skip non-form elements", function() {
             var div = DOM.mock("div[name=test]");
@@ -108,35 +104,16 @@ describe("better-form-validation", function() {
             expect(div.validity).toBeUndefined();
         });
 
-        it("should create tooltip on demand", function() {
-            var spy = jasmine.createSpy("validity:fail"),
-                validity;
-
-            input.on("validity:fail", spy).set("aria-invalid", false);
-            expect(input.get("_validityTooltip")).toBeFalsy();
-            input.onValidityCheck();
-            expect(spy).toHaveBeenCalled();
-
-            validity = input.get("_validityTooltip");
-            expect(validity).not.toBeFalsy();
-
-            input.set("aria-invalid", false).onValidityCheck();
-            expect(spy.calls.count()).toBe(2);
-            expect(validity).toBe(validity);
-        });
-
         it("should focus input after clicking on the validity tooltip", function() {
             input.fire("validity:fail", "test");
 
-            var validity = input.get("_validityTooltip"),
-                focusSpy = jasmine.createSpy("focus"),
-                hideSpy = spyOn(validity, "hide");
+            var validity = input.popover(),
+                spy = jasmine.createSpy("focus")
 
-            input.on("focus", focusSpy);
+            input.on("focus", spy);
 
             validity.fire("click");
-            expect(focusSpy).toHaveBeenCalled();
-            expect(hideSpy).toHaveBeenCalled();
+            expect(spy).toHaveBeenCalled();
         });
     });
 
@@ -183,7 +160,7 @@ describe("better-form-validation", function() {
             expect(function() { form.onFormReset() }).not.toThrow();
 
             form.onFormSubmit();
-            spys = inputs.map(function(el) { return spyOn(el.get("_validityTooltip"), "hide") });
+            spys = inputs.map(function(el) { return spyOn(el.popover(), "hide") });
 
             form.onFormReset();
             spys.forEach(function(spy) {
