@@ -29,6 +29,7 @@ Then append the following tags on your page:
 ...
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
 <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
+<script src="bower_components/better-i18n/dist/better-popover.js"></script>
 <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
 ```
 
@@ -76,9 +77,9 @@ if (replyPassword.validity().length) {
 
 Current standard has pseudo-selectors `:valid`, `:invalid` to capture an element in the appropriate state. The problem is that they are broken: `:valid` and `:invalid` applies immediately on a page load, even when user didn't touch the form.
 
-To fix the issue polyfill uses standards-based [`aria-invalid`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-invalid_attribute) attribute instead. Initially elements do not have this attribute, but as soon as user changed a value of an input (`change` event) or tried to submit the form (`submit` event) the attribute is set to `true` if the value is fine, or `false` otherwise.
+To fix the issue polyfill uses standards-based [`aria-invalid`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-invalid_attribute) attribute instead. Initially elements do not have this attribute, but as soon as user changed a value of an input (`"change"` event) or tried to submit the form (`"submit"` event) the attribute is set to `true` if the value is fine, or `false` otherwise.
 
-By default `aria-invalid` elements have a succes or fail icon on the right side of the input. But you can your owns style rules of course.
+By default elements with `aria-invalid` have a success or fail icon on the right side of the input. But you can your owns style rules of course.
 
 ## Browser support
 #### Desktop

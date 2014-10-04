@@ -1,5 +1,16 @@
-# better-i18n [![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url]
-> Internationalization extension for [better-dom](https://github.com/chemerisuk/better-dom)
+# better-i18n<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][fury-image]][fury-url]
+> Internationalization plugin for [better-dom](https://github.com/chemerisuk/better-dom)
+
+The project aims to solve the internationalization problem __on front-end side__. The technique used behind the scenes I call “CSS-driven internationalization” and there is a [deep article](http://www.smashingmagazine.com/2014/06/23/css-driven-internationalization-in-javascript/) about it.
+
+## Features
+
+* does not require initionalization calls on initial page load
+* change current language using the `lang` attribute
+* ability to change language on a subset of DOM elements
+* supports localization of HTML strings
+
+NOTE: currently the project can't localize empty DOM elements (like `<input>`, `<select>` etc.) or attribute values.
 
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
@@ -14,6 +25,38 @@ Then append the following scripts on your page:
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
 <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
 ```
+
+## Usage
+
+Let's say you need to localize a button to support multiple languages. In this case you can use `DOM.i18n` with appropriate string and set it as a `innerHTML`:
+
+```js
+button.set( DOM.i18n("Hello world") );
+```
+
+When you need to add a support for a new language just import a localized version of the string. For example the string in Russian:
+
+```js
+DOM.importStrings("ru", "Hello world", "Привет мир");
+```
+
+Now for web pages where `<html lang="ru">` the button displays `"Привет мир"` instead of `"Hello world"`. 
+
+### Variables support
+You can specify variables via declaring `{param}` in your strings:
+
+```js
+button.set( DOM.i18n("Hello {user}", {user: "Maksim"}) );
+// displays "Hello Maksim"
+```
+
+For a more compact syntax you can use arrays:
+
+```js
+button.set( DOM.i18n("Hello {0}", ["Maksim"]) );
+// displays "Hello Maksim"
+```
+
 
 ## Browser support
 #### Desktop
@@ -34,3 +77,5 @@ Then append the following scripts on your page:
 [coveralls-url]: https://coveralls.io/r/chemerisuk/better-i18n
 [coveralls-image]: http://img.shields.io/coveralls/chemerisuk/better-i18n/master.svg
 
+[fury-url]: http://badge.fury.io/bo/better-i18n
+[fury-image]: https://badge.fury.io/bo/better-i18n.svg

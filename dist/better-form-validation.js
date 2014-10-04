@@ -1,13 +1,21 @@
 /**
  * @file src/better-form-validation.js
- * @version 1.4.0-beta.2 2014-09-27T18:17:06
+ * @version 1.4.0-rc.1 2014-10-04T23:47:52
  * @overview HTML5 form validation for better-dom
  * @copyright Maksim Chemerisuk 2014
  * @license MIT
  * @see https://github.com/chemerisuk/better-form-validation
  */
-(function(DOM, VALIDITY_KEY, VALIDITY_TOOLTIP_KEY, PATTERNS, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, I18N_MISMATCH, undefined) {
     "use strict";
+
+    var patterns = {
+            email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
+            url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
+            tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
+            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
+            required: new RegExp("^\\s*\\S+\\s*$")
+        };
 
     var hasCheckedRadio = function(el) {
             return el.get("name") === this.get("name") && el.get("checked");
@@ -26,14 +34,16 @@
             this.on("change", this.onValidityUpdate);
         },
         validity: function(errors) {
-            if (arguments.length) return this.set(VALIDITY_KEY, errors);
+            if (errors !== undefined) {
+                this.set(VALIDITY_KEY, errors);
+            } else {
+                errors = this.get(VALIDITY_KEY);
+            }
 
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
                 regexp, pattern, msg;
-
-            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
@@ -60,33 +70,32 @@
                     break;
 
                 default:
-                    if (value) {
-                        if (type === "textarea") break;
+                    pattern = this.get("pattern");
 
-                        pattern = this.get("pattern");
+                    if (pattern) {
+                        pattern = "^(?:" + pattern + ")$";
 
-                        if (pattern) {
-                            pattern = "^(?:" + pattern + ")$";
-
-                            if (pattern in PATTERNS) {
-                                regexp = PATTERNS[pattern];
-                            } else {
-                                regexp = new RegExp(pattern);
-                                // cache regexp internally
-                                PATTERNS[pattern] = regexp;
-                            }
-
-                            msg = this.get("title") || "illegal value format";
+                        if (pattern in patterns) {
+                            regexp = patterns[pattern];
                         } else {
-                            regexp = PATTERNS[type];
-                            msg = I18N_MISMATCH[type];
+                            regexp = new RegExp(pattern);
+                            // cache regexp internally
+                            patterns[pattern] = regexp;
                         }
 
-                        if (regexp && !regexp.test(value)) {
-                            errors.push(msg);
-                        }
-                    } else if (required) {
-                        errors.push("can't be empty");
+                        msg = this.get("title") || "illegal value format";
+                    } else {
+                        regexp = patterns[type];
+                        msg = I18N_MISMATCH[type];
+                    }
+
+                    if (required && !regexp) {
+                        regexp = patterns.required;
+                        msg = "can't be empty";
+                    }
+
+                    if (regexp && !regexp.test(value)) {
+                        errors.push(msg);
                     }
                 }
             }
@@ -132,9 +141,11 @@
                 .on("reset", this.onFormReset);
         },
         validity: function(errors) {
-            if (arguments.length) return this.set(VALIDITY_KEY, errors);
-
-            errors = this.get(VALIDITY_KEY);
+            if (errors !== undefined) {
+                this.set(VALIDITY_KEY, errors);
+            } else {
+                errors = this.get(VALIDITY_KEY);
+            }
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = {0: errors, length: 1};
@@ -173,19 +184,15 @@
         },
         onFormReset: function() {
             this.findAll("[name]").forEach(function(el) {
-                var tooltip = el.get(VALIDITY_TOOLTIP_KEY);
-
-                if (tooltip) tooltip.hide();
+                el.popover().hide();
             });
         }
     });
 
     DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
-        var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
-
         target.set("aria-invalid", false);
 
-        if (!cancel && validityTooltip) validityTooltip.hide();
+        if (!cancel) target.popover().hide();
     });
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel) {
@@ -196,56 +203,37 @@
         if (target.toString() === "form") {
             Object.keys(errors).forEach(function(name, index) {
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], index);
+                    .fire("validity:fail", errors[name], index + 1);
             });
         } else {
-            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
+            var errorMessage = DOM.i18n(typeof errors === "string" ? errors : errors[0]),
+                popover = target.popover(errorMessage.toString(), "left", "bottom"),
+                delay = 0;
 
-            if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip");
+            // hiding the tooltip to show later with a small delay
+            if (!popover.hide().hasClass("better-validity-tooltip")) {
+                popover.addClass("better-validity-tooltip");
 
-                target.set(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
+                popover.on("click", function() {
+                    popover.hide();
 
-                validityTooltip.on("click", function() {
-                    validityTooltip.hide();
-                    // focus to the invalid input
                     target.fire("focus");
                 });
-
-                var offset = validityTooltip.offset(),
-                    targetOffset = target.offset(),
-                    value = validityTooltip.css("transition-delay");
-
-                if (value) {
-                    value = parseFloat(value) * (value.slice(-2) === "ms" ? 1 : 1000);
-
-                    target.set("_tooltipDelay", value);
-                }
-
-                validityTooltip
-                    .css({
-                        "transition-delay": "0s", // setTimeout will be used instead
-                        "margin-left": targetOffset.left - offset.left,
-                        "margin-top": targetOffset.bottom - offset.top,
-                        "z-index": 1 + (this.css("z-index") | 0)
-                    });
             }
 
-            var delay = target.get("_tooltipDelay") * coef;
-            // display only the first error and always update the value
-            validityTooltip.i18n(typeof errors === "string" ? errors : errors[0]);
-            // hiding the tooltip to show later with a small delay
-            validityTooltip.hide();
+            if (coef) {
+                delay = popover.css("transition-duration");
+                // parse animation duration value
+                delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
+                // use extra delay for each next form melement
+                delay = delay * coef / target.get("form").length;
+            }
+
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(function() { validityTooltip.show() }, delay);
+            setTimeout(function() { popover.show() }, delay);
         }
     });
-}(window.DOM, "_validity", "_validityTooltip", {
-    email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
-    url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
-    tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
-    number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
-}, {
+}(window.DOM, "_validity", {
     email: "should be a valid email",
     url: "should be a valid URL",
     tel: "should be a valid phone number",

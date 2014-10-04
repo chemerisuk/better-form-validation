@@ -80,6 +80,7 @@
     </form>
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
     <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
+    <script src="bower_components/better-popover/dist/better-popover.js"></script>
     <script src="src/better-form-validation.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
     <script type="text/javascript">
@@ -106,13 +107,10 @@
                         error = errors[field][0];
 
                     if (error) {
-                        customErrors.append(li.append(DOM.create("span").i18n(error)));
+                        customErrors.append(li.append(DOM.i18n(error).toString()));
                     }
                 });
             });
-
-            button.fire("validity:fail", "TIP: toggle tooltips via custom events");
-            setTimeout(function() { button.fire("validity:ok") }, 5000);
         });
     </script>
 </body>
