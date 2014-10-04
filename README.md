@@ -29,6 +29,7 @@ Then append the following tags on your page:
 ...
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
 <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
+<script src="bower_components/better-i18n/dist/better-popover.js"></script>
 <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
 ```
 

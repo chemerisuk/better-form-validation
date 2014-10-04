@@ -13,6 +13,20 @@ describe("better-form-validation", function() {
             input.remove();
         });
 
+        it("deosn't allow empty values for required inputs", function() {
+            input.set("").fire("input");
+            expect(input.validity().length).not.toBe(0);
+
+            input.set("   ").fire("input");
+            expect(input.validity().length).not.toBe(0);
+
+            input.set(" 123  ").fire("input");
+            expect(input.validity().length).toBe(0);
+
+            input.set("123").fire("input");
+            expect(input.validity().length).toBe(0);
+        });
+
         it("should validate predefined types", function() {
             // email
             input.set("type", "email");
@@ -38,8 +52,6 @@ describe("better-form-validation", function() {
             expect(input.validity().length).toBe(0);
             input.set("-43434.45").fire("input");
             expect(input.validity().length).toBe(0);
-            input.set("abs").fire("input");
-            expect(input.validity().length).not.toBe(0);
         });
 
         it("should validate by pattern attribute and use title for tooltip", function() {
@@ -88,16 +100,6 @@ describe("better-form-validation", function() {
             expect(successSpy).toHaveBeenCalled();
         });
 
-        // it("should show/hide error message when it's needed", function() {
-        //     var validityTooltip = input.popover(), spy;
-
-        //     input.set("aria-invalid", false).onValidityCheck();
-
-        //     spy = spyOn(validityTooltip, "hide");
-        //     input.set("123").onValidityCheck();
-        //     expect(spy).toHaveBeenCalled();
-        // });
-
         it("should skip non-form elements", function() {
             var div = DOM.mock("div[name=test]");
 
@@ -108,7 +110,7 @@ describe("better-form-validation", function() {
             input.fire("validity:fail", "test");
 
             var validity = input.popover(),
-                spy = jasmine.createSpy("focus")
+                spy = jasmine.createSpy("focus");
 
             input.on("focus", spy);
 

@@ -5,7 +5,8 @@
             email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
             url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
             tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
-            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$")
+            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
+            required: new RegExp("^\\s*\\S+\\s*$")
         };
 
     var hasCheckedRadio = function(el) {
@@ -59,33 +60,32 @@
                     break;
 
                 default:
-                    if (value) {
-                        if (type === "textarea") break;
+                    pattern = this.get("pattern");
 
-                        pattern = this.get("pattern");
+                    if (pattern) {
+                        pattern = "^(?:" + pattern + ")$";
 
-                        if (pattern) {
-                            pattern = "^(?:" + pattern + ")$";
-
-                            if (pattern in patterns) {
-                                regexp = patterns[pattern];
-                            } else {
-                                regexp = new RegExp(pattern);
-                                // cache regexp internally
-                                patterns[pattern] = regexp;
-                            }
-
-                            msg = this.get("title") || "illegal value format";
+                        if (pattern in patterns) {
+                            regexp = patterns[pattern];
                         } else {
-                            regexp = patterns[type];
-                            msg = I18N_MISMATCH[type];
+                            regexp = new RegExp(pattern);
+                            // cache regexp internally
+                            patterns[pattern] = regexp;
                         }
 
-                        if (regexp && !regexp.test(value)) {
-                            errors.push(msg);
-                        }
-                    } else if (required) {
-                        errors.push("can't be empty");
+                        msg = this.get("title") || "illegal value format";
+                    } else {
+                        regexp = patterns[type];
+                        msg = I18N_MISMATCH[type];
+                    }
+
+                    if (required && !regexp) {
+                        regexp = patterns.required;
+                        msg = "can't be empty";
+                    }
+
+                    if (regexp && !regexp.test(value)) {
+                        errors.push(msg);
                     }
                 }
             }
