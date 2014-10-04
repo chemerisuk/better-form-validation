@@ -21,14 +21,18 @@
     -ms-user-select: none;
     user-select: none;
 
-    -webkit-transition: 0.3s ease-in-out 75ms;
-    transition: 0.3s ease-in-out 75ms;
+    -webkit-transition: 0.3s ease-in-out;
+    transition: 0.3s ease-in-out;
 
     -webkit-transition-property: -webkit-transform, opacity;
     transition-property: transform, opacity;
 
     -webkit-transform: scale(1, 1);
     transform: scale(1, 1);
+
+    -webkit-transform-origin: 0 0;
+    transform-origin: 0 0;
+
     opacity: 1;
 
 }

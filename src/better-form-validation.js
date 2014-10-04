@@ -173,11 +173,9 @@
     });
 
     DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
-        var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
-
         target.set("aria-invalid", false);
 
-        if (!cancel && validityTooltip) validityTooltip.hide();
+        if (!cancel) target.popover().hide();
     });
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel) {
@@ -188,48 +186,26 @@
         if (target.toString() === "form") {
             Object.keys(errors).forEach(function(name, index) {
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], index);
+                    .fire("validity:fail", errors[name], index + 1);
             });
         } else {
-            var validityTooltip = target.get(VALIDITY_TOOLTIP_KEY);
+            var errorMessage = DOM.i18n(typeof errors === "string" ? errors : errors[0]),
+                popover = target.popover(errorMessage.toString(), "left", "bottom"),
+                delay = 0;
 
-            if (!validityTooltip) {
-                validityTooltip = DOM.create("div.better-validity-tooltip");
+            // hiding the tooltip to show later with a small delay
+            popover.hide().addClass("better-validity-tooltip");
 
-                target.set(VALIDITY_TOOLTIP_KEY, validityTooltip).before(validityTooltip);
-
-                validityTooltip.on("click", function() {
-                    validityTooltip.hide();
-                    // focus to the invalid input
-                    target.fire("focus");
-                });
-
-                var offset = validityTooltip.offset(),
-                    targetOffset = target.offset(),
-                    value = validityTooltip.css("transition-delay");
-
-                if (value) {
-                    value = parseFloat(value) * (value.slice(-2) === "ms" ? 1 : 1000);
-
-                    target.set("_tooltipDelay", value);
-                }
-
-                validityTooltip
-                    .css({
-                        "transition-delay": "0s", // setTimeout will be used instead
-                        "margin-left": targetOffset.left - offset.left,
-                        "margin-top": targetOffset.bottom - offset.top,
-                        "z-index": 1 + (this.css("z-index") | 0)
-                    });
+            if (coef) {
+                delay = popover.css("transition-duration");
+                // parse animation duration value
+                delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
+                // use extra delay for each next form melement
+                delay = delay * coef / target.get("form").length;
             }
 
-            var delay = target.get("_tooltipDelay") * coef;
-            // display only the first error and always update the value
-            validityTooltip.i18n(typeof errors === "string" ? errors : errors[0]);
-            // hiding the tooltip to show later with a small delay
-            validityTooltip.hide();
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(function() { validityTooltip.show() }, delay);
+            setTimeout(function() { popover.show() }, delay);
         }
     });
 }(window.DOM, "_validity", "_validityTooltip", {

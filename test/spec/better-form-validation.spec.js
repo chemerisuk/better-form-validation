@@ -284,7 +284,7 @@ describe("better-form-validation", function() {
 
             input.on("validity:fail", spy);
             form.onFormSubmit();
-            expect(spy).toHaveBeenCalledWith(["FAIL"], 0);
+            expect(spy).toHaveBeenCalledWith(["FAIL"], 1);
 
             form.remove();
         });
