@@ -1,4 +1,4 @@
-(function(DOM, VALIDITY_KEY, I18N_MISMATCH) {
+(function(DOM, VALIDITY_KEY, I18N_MISMATCH, undefined) {
     "use strict";
 
     var patterns = {
@@ -26,14 +26,16 @@
             this.on("change", this.onValidityUpdate);
         },
         validity: function(errors) {
-            if (arguments.length) return this.set(VALIDITY_KEY, errors);
+            if (errors !== undefined) {
+                this.set(VALIDITY_KEY, errors);
+            } else {
+                errors = this.get(VALIDITY_KEY);
+            }
 
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),
                 regexp, pattern, msg;
-
-            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
@@ -131,9 +133,11 @@
                 .on("reset", this.onFormReset);
         },
         validity: function(errors) {
-            if (arguments.length) return this.set(VALIDITY_KEY, errors);
-
-            errors = this.get(VALIDITY_KEY);
+            if (errors !== undefined) {
+                this.set(VALIDITY_KEY, errors);
+            } else {
+                errors = this.get(VALIDITY_KEY);
+            }
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = {0: errors, length: 1};
