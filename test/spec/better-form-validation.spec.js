@@ -7,7 +7,6 @@ describe("better-form-validation", function() {
         beforeEach(function() {
             input = DOM.mock("input[required name=t]");
             body.append(input);
-
         });
 
         afterEach(function() {
@@ -16,10 +15,10 @@ describe("better-form-validation", function() {
 
         it("deosn't allow empty values for required inputs", function() {
             input.set("").fire("input");
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
 
             input.set("   ").fire("input");
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
 
             input.set(" 123  ").fire("input");
             expect(input).toBeValid();
@@ -41,32 +40,32 @@ describe("better-form-validation", function() {
             // email
             input.set("type", "email");
             input.set("123").fire("input");
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
             input.set("test@").fire("input");
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
             input.set("test@test.by").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
 
             // url
             input.set("type", "url");
             input.set("123").fire("input");
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
             input.set("https://test.html").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
             input.set("http://test.by#a2").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
 
             // number
             input.set("type", "number");
             input.set("123").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
             input.set("-43434.45").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
         });
 
         it("should validate by pattern attribute and use title for tooltip", function() {
             input.set("required", null).fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
 
             input.set({pattern: "[a-z]+", title: "msg"});
             input.set("123").fire("input");
@@ -76,7 +75,7 @@ describe("better-form-validation", function() {
             expect(input.validity()).toEqual(["illegal value format"]);
 
             input.set("abc").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
         });
 
         it("should support custom validators", function() {
@@ -88,18 +87,18 @@ describe("better-form-validation", function() {
             expect(input.validity()).toEqual(["error"]);
 
             input.validity(function() { return "" });
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
 
             input.validity(null);
             input.set("123");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
         });
 
         it("should fire validity:fail and validity:ok", function() {
             var failSpy = jasmine.createSpy("validity:fail"),
                 successSpy = jasmine.createSpy("validity:ok");
 
-            expect(input.validity().length).not.toBe(0);
+            expect(input).not.toBeValid();
 
             input.on("validity:fail", failSpy);
             input.set("aria-invalid", false).onValidityCheck();
@@ -188,7 +187,7 @@ describe("better-form-validation", function() {
 
             form.on("submit", ["defaultPrevented"], spy.and.callFake(function(cancel) {
                 expect(cancel).toBe(true);
-                expect(form.validity().length).not.toBe(0);
+                expect(form).not.toBeValid();
                 // prevent submitting even if the test fails
                 return false;
             }));
@@ -201,22 +200,22 @@ describe("better-form-validation", function() {
             var form = DOM.mock("form>input[type=checkbox required name=b]");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(form.validity().length).not.toBeFalsy();
+            expect(form).not.toBeValid();
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(form.validity()).toEqual({length: 0});
+            expect(form).toBeValid();
         });
 
         it("should handle checkboxes and radio buttons", function() {
             var form = DOM.mock("form>input[type=radio required name=c]*3");
 
             form.on("submit", function() { return false; }).fire("submit");
-            expect(form.validity().length).not.toBe(0);
+            expect(form).not.toBeValid();
 
             form.find("input").set("checked", true);
             form.fire("submit");
-            expect(form.validity()).toEqual({length: 0});
+            expect(form).toBeValid();
         });
 
         it("should skip some input types", function() {
@@ -225,7 +224,7 @@ describe("better-form-validation", function() {
 
             form.on("submit", ["defaultPrevented"], spy.and.callFake(function(cancel) {
                 expect(cancel).toBeFalsy();
-                expect(form.validity().length).toBe(0);
+                expect(form).toBeValid();
                 // prevent submitting even if the test fails
                 return false;
             }));
@@ -239,7 +238,7 @@ describe("better-form-validation", function() {
 
             DOM.find("body").append(form);
 
-            expect(form.validity().length).toBe(0);
+            expect(form).toBeValid();
 
             form.validity(function() {
                 expect(this).toBe(form);
@@ -278,24 +277,26 @@ describe("better-form-validation", function() {
             form.remove();
         });
     });
-});
 
-jasmine.addMatchers({
-    toBeValid: function() {
-        return {
-            compare: function(actual) {
-                var result = {};
+    beforeEach(function() {
+        jasmine.addMatchers({
+                toBeValid: function() {
+                return {
+                    compare: function(actual) {
+                        var result = {};
 
-                if (actual) {
-                    result.pass = actual.validity().length === 0;
+                        if (actual) {
+                            result.pass = actual.validity().length === 0;
+                        }
+
+                        if (!result.pass) {
+                            result.message = "Expected element <" + actual.toString() + "> to be valid";
+                        }
+
+                        return result;
+                    }
                 }
-
-                if (!result.pass) {
-                    result.message = "Expected element <" + actual.toString() + "> to be valid";
-                }
-
-                return result;
             }
-        }
-    }
+        });
+    });
 });
