@@ -76,6 +76,9 @@ describe("better-form-validation", function() {
 
             input.set("abc").fire("input");
             expect(input).toBeValid();
+
+            input.set("").fire("input");
+            expect(input).toBeValid();
         });
 
         it("should support custom validators", function() {

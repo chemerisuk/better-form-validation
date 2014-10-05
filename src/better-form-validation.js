@@ -60,23 +60,27 @@
                     break;
 
                 default:
-                    pattern = this.get("pattern");
+                    // pattern/type validations ignore blank values
+                    if (value) {
+                        pattern = this.get("pattern");
 
-                    if (pattern) {
-                        pattern = "^(?:" + pattern + ")$";
+                        if (pattern) {
+                            // make the pattern string
+                            pattern = "^(?:" + pattern + ")$";
 
-                        if (pattern in patterns) {
-                            regexp = patterns[pattern];
+                            if (pattern in patterns) {
+                                regexp = patterns[pattern];
+                            } else {
+                                regexp = new RegExp(pattern);
+                                // cache regexp internally
+                                patterns[pattern] = regexp;
+                            }
+
+                            msg = this.get("title") || "illegal value format";
                         } else {
-                            regexp = new RegExp(pattern);
-                            // cache regexp internally
-                            patterns[pattern] = regexp;
+                            regexp = patterns[type];
+                            msg = I18N_MISMATCH[type];
                         }
-
-                        msg = this.get("title") || "illegal value format";
-                    } else {
-                        regexp = patterns[type];
-                        msg = I18N_MISMATCH[type];
                     }
 
                     if (required && !regexp) {
