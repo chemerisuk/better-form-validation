@@ -325,7 +325,7 @@ describe("better-form-validation", function() {
 
     beforeEach(function() {
         jasmine.addMatchers({
-                toBeValid: function() {
+            toBeValid: function() {
                 return {
                     compare: function(actual) {
                         var result = {};
@@ -340,7 +340,7 @@ describe("better-form-validation", function() {
 
                         return result;
                     }
-                }
+                };
             }
         });
     });
