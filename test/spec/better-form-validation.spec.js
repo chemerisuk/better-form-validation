@@ -128,23 +128,39 @@ describe("better-form-validation", function() {
         });
     });
 
-    describe("textarea", function() {
-        var textarea;
-
-        beforeEach(function() {
-            textarea = DOM.mock("textarea[name=b]");
-        });
-
-        it("should fix maxlength attribute", function() {
-            textarea.set("maxlength", 5);
+    describe("maxlength", function() {
+        it("provides fix for textarea", function() {
+            var textarea = DOM.mock("textarea[name=b maxlength=5]");
 
             textarea.set("1234567");
-            textarea.onTextareaInput();
+            textarea.onValidityCheck();
             expect(textarea.get()).toBe("12345");
 
             textarea.set("1234");
-            textarea.onTextareaInput();
+            textarea.onValidityCheck();
             expect(textarea.get()).toBe("1234");
+
+            textarea.set("maxlength", null);
+            textarea.set("1234567");
+            textarea.onValidityCheck();
+            expect(textarea.get()).toBe("1234567");
+        });
+
+        it("provides fix for input", function() {
+            var input = DOM.mock("input[name=c type=number maxlength=3]");
+
+            input.set("1234567");
+            input.onValidityCheck();
+            expect(input.get()).toBe("123");
+
+            input.set("12");
+            input.onValidityCheck();
+            expect(input.get()).toBe("12");
+
+            input.set("maxlength", null);
+            input.set("1234567");
+            input.onValidityCheck();
+            expect(input.get()).toBe("1234567");
         });
     });
 

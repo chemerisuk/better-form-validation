@@ -6,7 +6,7 @@
             url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
             tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
             number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
-            required: new RegExp("^\\s*\\S.*$")
+            required: new RegExp("\\S")
         };
 
     var hasCheckedRadio = function(el) {
@@ -18,8 +18,6 @@
             var type = this.get("type");
 
             if (type !== "checkbox" && type !== "radio") {
-                if (type === "textarea") this.on("input", this.onTextareaInput);
-
                 this.on("input", this.onValidityCheck);
             }
 
@@ -95,14 +93,21 @@
             return errors;
         },
         onValidityCheck: function() {
-            if (!this.get("aria-invalid")) return;
+            var value = this.get(),
+                maxlength = this.get("maxlength");
 
-            var errors = this.validity();
+            if (maxlength >= 0 && value.length > maxlength) {
+                this.set(value.substr(0, maxlength));
+            }
 
-            if (errors.length) {
-                this.fire("validity:fail", errors);
-            } else {
-                this.fire("validity:ok");
+            if (this.get("aria-invalid")) {
+                var errors = this.validity();
+
+                if (errors.length) {
+                    this.fire("validity:fail", errors);
+                } else {
+                    this.fire("validity:ok");
+                }
             }
         },
         onValidityUpdate: function() {
@@ -112,15 +117,6 @@
                 this.fire("validity:fail", errors);
             } else {
                 this.fire("validity:ok");
-            }
-        },
-        onTextareaInput: function() {
-            // maxlength fix for textarea
-            var maxlength = parseFloat(this.get("maxlength")),
-                value = this.get();
-
-            if (maxlength && value.length > maxlength) {
-                this.set(value.substr(0, maxlength));
             }
         }
     });
