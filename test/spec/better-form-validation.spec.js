@@ -7,6 +7,7 @@ describe("better-form-validation", function() {
         beforeEach(function() {
             input = DOM.mock("input[required name=t]");
             body.append(input);
+
         });
 
         afterEach(function() {
@@ -21,10 +22,19 @@ describe("better-form-validation", function() {
             expect(input.validity().length).not.toBe(0);
 
             input.set(" 123  ").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
 
             input.set("123").fire("input");
-            expect(input.validity().length).toBe(0);
+            expect(input).toBeValid();
+
+            input.set("123").fire("input");
+            expect(input).toBeValid();
+
+            input.set(" a b").fire("input");
+            expect(input).toBeValid();
+
+            input.set("a b ").fire("input");
+            expect(input).toBeValid();
         });
 
         it("should validate predefined types", function() {
@@ -268,4 +278,24 @@ describe("better-form-validation", function() {
             form.remove();
         });
     });
+});
+
+jasmine.addMatchers({
+    toBeValid: function() {
+        return {
+            compare: function(actual) {
+                var result = {};
+
+                if (actual) {
+                    result.pass = actual.validity().length === 0;
+                }
+
+                if (!result.pass) {
+                    result.message = "Expected element <" + actual.toString() + "> to be valid";
+                }
+
+                return result;
+            }
+        }
+    }
 });

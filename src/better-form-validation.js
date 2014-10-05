@@ -6,7 +6,7 @@
             url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
             tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
             number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
-            required: new RegExp("^\\s*\\S+\\s*$")
+            required: new RegExp("^\\s*\\S.*$")
         };
 
     var hasCheckedRadio = function(el) {
