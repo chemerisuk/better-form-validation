@@ -30,6 +30,8 @@
                 errors = this.get(VALIDITY_KEY);
             }
 
+            if (this.get("novalidate")) return [];
+
             var type = this.get("type"),
                 value = this.get("value"),
                 required = this.matches("[required]"),

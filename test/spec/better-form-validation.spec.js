@@ -34,10 +34,14 @@ describe("better-form-validation", function() {
 
             input.set("a b ").fire("input");
             expect(input).toBeValid();
+
+            input.set(" ").fire("input");
+            expect(input).not.toBeValid();
+            input.set("novalidate", "novalidate");
+            expect(input).toBeValid();
         });
 
-        it("should validate predefined types", function() {
-            // email
+        it("should validate email type", function() {
             input.set("type", "email");
             input.set("123").fire("input");
             expect(input).not.toBeValid();
@@ -46,7 +50,13 @@ describe("better-form-validation", function() {
             input.set("test@test.by").fire("input");
             expect(input).toBeValid();
 
-            // url
+            input.set(" ").fire("input");
+            expect(input).not.toBeValid();
+            input.set("novalidate", "novalidate");
+            expect(input).toBeValid();
+        });
+
+        it("should validate url type", function() {
             input.set("type", "url");
             input.set("123").fire("input");
             expect(input).not.toBeValid();
@@ -55,11 +65,22 @@ describe("better-form-validation", function() {
             input.set("http://test.by#a2").fire("input");
             expect(input).toBeValid();
 
-            // number
+            input.set(" ").fire("input");
+            expect(input).not.toBeValid();
+            input.set("novalidate", "novalidate");
+            expect(input).toBeValid();
+        });
+
+        it("should validate number type", function() {
             input.set("type", "number");
             input.set("123").fire("input");
             expect(input).toBeValid();
             input.set("-43434.45").fire("input");
+            expect(input).toBeValid();
+
+            input.set(" ").fire("input");
+            expect(input).not.toBeValid();
+            input.set("novalidate", "novalidate");
             expect(input).toBeValid();
         });
 
@@ -78,6 +99,11 @@ describe("better-form-validation", function() {
             expect(input).toBeValid();
 
             input.set("").fire("input");
+            expect(input).toBeValid();
+
+            input.set(" ").fire("input");
+            expect(input).not.toBeValid();
+            input.set("novalidate", "novalidate");
             expect(input).toBeValid();
         });
 
