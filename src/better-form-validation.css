@@ -27,7 +27,7 @@
 
 .better-validity-tooltip[aria-hidden=true] {
     opacity: 0;
-    transform: scale(3, 3);
+    transform: scale(2, 2);
 }
 
 input[aria-invalid]:not([type="checkbox"]),

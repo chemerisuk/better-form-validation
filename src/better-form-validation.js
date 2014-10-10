@@ -178,7 +178,7 @@
         },
         onFormReset: function() {
             this.findAll("[name]").forEach(function(el) {
-                el.popover().hide();
+                el.set("aria-invalid", null).popover().hide();
             });
         }
     });

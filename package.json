@@ -25,10 +25,10 @@
     "karma-coveralls": "^0.1.4",
     "karma-jasmine": "^0.2.0",
     "karma-phantomjs-launcher": "^0.1.4",
-    "postcss-url": "^1.0.1"
+    "postcss-url": "^1.0.2"
   },
   "scripts": {
-    "test": "grunt test",
-    "start": "grunt dev"
+    "test": "gulp test",
+    "start": "gulp dev"
   }
 }

@@ -223,6 +223,10 @@ describe("better-form-validation", function() {
                 expect(spy).toHaveBeenCalled();
             });
 
+            inputs.forEach(function(el) {
+                expect(el.get("aria-invalid")).toBeNull();
+            });
+
             form.remove();
         });
 

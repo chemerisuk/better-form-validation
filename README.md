@@ -24,8 +24,6 @@ This will clone the latest version of the __better-form-validation__ into the `b
 Then append the following tags on your page:
 
 ```html
-<link rel="stylesheet" href="bower_components/better-form-validation/dist/better-form-validation.css">
-...
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
 <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
 <script src="bower_components/better-i18n/dist/better-popover.js"></script>
