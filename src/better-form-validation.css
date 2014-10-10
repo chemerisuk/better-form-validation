@@ -47,6 +47,7 @@ input[aria-invalid] {
     background-size: auto 100%;
     background-position: right center;
     background-repeat: no-repeat;
+    background-origin: content-box;
 }
 
 input[aria-invalid=false] {

@@ -8,17 +8,16 @@ HTML5 form validation is extremely useful to make client-side data checking cons
 ## Features
 * polyfills HTML5 form validation markup support for browsers (mobile browsers as well)
 * [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
-* validity tooltips are fully customizable via CSS
-* validity messages are fully custumizable (value of the `title` attribute for `[pattern]` elements is supported as well)
+* validity tooltips are fully customizable (messages and presentation)
 * custom validation via new `validity` method for inputs and forms
-* `validity:ok` and `validity:fail` events for advanced interaction
-* `maxlength` attribute fix for `<textarea>`
-* customizable validation messages
+* new `validity:ok` and `validity:fail` events that bubble (unlike standard `invalid`)
+* standards-based `aria-invalid` instead of broken `:valid` and `:invalid`
+* `maxlength` attribute fix for  `<input type="number">` and `<textarea>`
 
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
-    bower install better-form-validation
+    $ bower install better-form-validation --save
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 
@@ -73,8 +72,7 @@ if (replyPassword.validity().length) {
 } 
 ```
 
-## Advanced CSS styling
-
+## CSS customization
 Current standard has pseudo-selectors `:valid`, `:invalid` to capture an element in the appropriate state. The problem is that they are broken: `:valid` and `:invalid` applies immediately on a page load, even when user didn't touch the form.
 
 To fix the issue polyfill uses standards-based [`aria-invalid`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-invalid_attribute) attribute instead. Initially elements do not have this attribute, but as soon as user changed a value of an input (`"change"` event) or tried to submit the form (`"submit"` event) the attribute is set to `true` if the value is fine, or `false` otherwise.
