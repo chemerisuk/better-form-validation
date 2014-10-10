@@ -30,22 +30,21 @@
     transform: scale(2, 2);
 }
 
-input[aria-invalid]:not([type="checkbox"]),
-input[aria-invalid]:not([type="radio"]) {
-    background-size: auto 100%;
-    background-position: right;
-    background-repeat: no-repeat;
-    background-origin: content-box;
+input[aria-invalid] {
+    background: none no-repeat right center / auto 100% content-box;
 }
 
-input[aria-invalid="false"]:not([type="checkbox"]),
-input[aria-invalid="false"]:not([type="radio"]) {
+input[aria-invalid=false] {
     background-image: url(src/valid-icon.svg);
 }
 
-input[aria-invalid="true"]:not([type="checkbox"]),
-input[aria-invalid="true"]:not([type="radio"]) {
+input[aria-invalid=true] {
     background-image: url(src/invalid-icon.svg);
+}
+
+input[aria-invalid][type=checkbox],
+input[aria-invalid][type=radio] {
+    background: none;
 }
 
 input[aria-invalid]::-ms-clear,

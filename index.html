@@ -14,11 +14,15 @@
         font-size: 1em;
         margin: 0;
         padding: 0.25em;
-        border: 1px solid;
     }
 
-    #custom_form {
-        width: 450px;
+    input[type=text], input[type=email], input[type=password], textarea {
+        border: 1px solid;
+        width: 100%;
+    }
+
+    form {
+        width: 250px;
     }
 
     #custom_form input {
@@ -47,7 +51,7 @@
         </p>
         <p>
             <label>Your comment<br>
-                <textarea placeholder="say what you think..." name="comment" maxlength="10"></textarea>
+                <textarea placeholder="say what you think..." name="comment" rows="3"maxlength="10"></textarea>
             </label>
         </p>
         <p>Select gender:</p>

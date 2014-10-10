@@ -16,7 +16,7 @@ module.exports = function(config) {
             "bower_components/better-dom/dist/better-dom.js",
             "bower_components/better-i18n/dist/better-i18n.js",
             "bower_components/better-popover/dist/better-popover.js",
-            "src/*.js",
+            "build/*.js",
             "test/spec/*.spec.js"
         ]
     });

@@ -14,7 +14,7 @@
         };
 
     DOM.extend("input[name],select[name],textarea[name]", {
-        constructor: function() {
+        constructor() {
             var type = this.get("type");
 
             if (type !== "checkbox" && type !== "radio") {
@@ -23,7 +23,7 @@
 
             this.on("change", this.onValidityUpdate);
         },
-        validity: function(errors) {
+        validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
             } else {
@@ -98,7 +98,7 @@
 
             return errors;
         },
-        onValidityCheck: function() {
+        onValidityCheck() {
             var value = this.get(),
                 maxlength = this.get("maxlength");
 
@@ -116,7 +116,7 @@
                 }
             }
         },
-        onValidityUpdate: function() {
+        onValidityUpdate() {
             var errors = this.validity();
 
             if (errors.length) {
@@ -128,13 +128,13 @@
     });
 
     DOM.extend("form", {
-        constructor: function() {
+        constructor() {
             this
                 .set("novalidate", "novalidate") // disable native validation
                 .on("submit", this.onFormSubmit)
                 .on("reset", this.onFormReset);
         },
-        validity: function(errors) {
+        validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
             } else {
@@ -150,7 +150,7 @@
                 errors = {length: 0};
             }
 
-            this.findAll("[name]").forEach(function(el) {
+            this.findAll("[name]").forEach((el) => {
                 var name = el.get("name");
 
                 if (!(name in errors)) {
@@ -166,7 +166,7 @@
 
             return errors;
         },
-        onFormSubmit: function() {
+        onFormSubmit() {
             var errors = this.validity();
 
             if (errors.length) {
@@ -176,26 +176,26 @@
                 return false;
             }
         },
-        onFormReset: function() {
-            this.findAll("[name]").forEach(function(el) {
+        onFormReset() {
+            this.findAll("[name]").forEach((el) => {
                 el.set("aria-invalid", null).popover().hide();
             });
         }
     });
 
-    DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
+    DOM.on("validity:ok", ["target", "defaultPrevented"], (target, cancel) => {
         target.set("aria-invalid", false);
 
         if (!cancel) target.popover().hide();
     });
 
-    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel) {
+    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, coef, target, cancel) => {
         target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
         if (target.toString() === "form") {
-            Object.keys(errors).forEach(function(name, index) {
+            Object.keys(errors).forEach((name, index) => {
                 target.find("[name=\"" + name + "\"]")
                     .fire("validity:fail", errors[name], index + 1);
             });
@@ -208,15 +208,17 @@
             if (!popover.hide().hasClass("better-validity-tooltip")) {
                 popover.addClass("better-validity-tooltip");
 
-                popover.on("click", function() {
-                    popover.hide();
-
+                popover.on("click", () => {
                     target.fire("focus");
+                    // hide with delay to fix issue in IE10-11
+                    // which trigger input event on focus
+                    setTimeout(() => { popover.hide() }, delay);
                 });
             }
 
-            if (coef) {
-                delay = popover.css("transition-duration");
+            delay = popover.css("transition-duration");
+
+            if (coef && delay) {
                 // parse animation duration value
                 delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
                 // use extra delay for each next form melement
@@ -224,7 +226,7 @@
             }
 
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(function() { popover.show() }, delay);
+            setTimeout(() => { popover.show() }, delay);
         }
     });
 }(window.DOM, "_validity", {

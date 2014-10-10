@@ -10,7 +10,7 @@ var csswring = require("csswring");
 var url = require("postcss-url");
 var replace = require("gulp-replace");
 
-autoprefixer = autoprefixer({browsers: ["last 2 versions", "android 2.3", "IE >= 8"]});
+autoprefixer = autoprefixer({browsers: ["last 2 versions", "android 2.3", "IE >= 8", "Opera 12.1"]});
 url = url({url: "inline"});
 
 var karma = require("karma").server;
