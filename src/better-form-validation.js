@@ -202,11 +202,11 @@
             });
         } else {
             var errorMessage = DOM.i18n(typeof errors === "string" ? errors : errors[0]),
-                popover = target.popover(errorMessage.toString(), "left", "bottom"),
+                popover = target.popover(errorMessage, "left", "bottom"),
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
-            if (!popover.hide().hasClass("better-validity-tooltip")) {
+            if (!popover.hasClass("better-validity-tooltip")) {
                 popover.addClass("better-validity-tooltip");
 
                 popover.on("click", () => {
@@ -217,7 +217,7 @@
                 });
             }
 
-            delay = popover.css("transition-duration");
+            delay = popover.hide().css("transition-duration");
 
             if (coef && delay) {
                 // parse animation duration value

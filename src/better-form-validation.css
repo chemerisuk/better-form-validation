@@ -18,7 +18,7 @@
 
     user-select: none;
 
-    opacity: 1;
+    opacity: 0.925;
     transform: scale(1, 1);
     transform-origin: 0 0;
     transition: 0.3s ease-in-out;

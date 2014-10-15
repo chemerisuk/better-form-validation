@@ -5,11 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>better-form-validation demo</title>
     <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc"/>
-        <script src="bower_components/es5-shim/es5-shim.js"></script>
-        <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
+        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
     <![endif]-->
     <style type="text/css">
+    body {
+        line-height: 1.5;
+        font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", sans-serif;
+    }
+
+    label { display: block; }
+
     input, textarea, button {
         font-size: 1em;
         margin: 0;
@@ -17,12 +22,12 @@
     }
 
     input[type=text], input[type=email], input[type=password], textarea {
-        border: 1px solid;
+        border: 1px solid #333;
         width: 100%;
     }
 
     form {
-        width: 250px;
+        width: 300px;
     }
 
     #custom_form input {
@@ -54,14 +59,15 @@
                 <textarea placeholder="say what you think..." name="comment" rows="3"maxlength="10"></textarea>
             </label>
         </p>
-        <p>Select gender:</p>
-        <ul>
-            <li><label><input type="radio" name="gender" value="male" required>Male</label></li>
-            <li><label><input type="radio" name="gender" value="female" required>Female</label></li>
-        </ul>
+        <p>
+            Select gender:
+            <label><input type="radio" name="gender" value="male" required>Male</label>
+            <label><input type="radio" name="gender" value="female" required>Female</label>
+        </p>
         <button type="submit">Submit</button>
         <button type="reset">Reset</button>
     </form>
+    <hr>
     <h2>Summary validation example</h2>
     <form id="custom_form">
         <ul id="custom_form_errors" style="color:red"></ul>
