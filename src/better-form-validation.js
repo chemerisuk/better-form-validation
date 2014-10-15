@@ -3,11 +3,11 @@
 
     var patterns = {};
 
+    patterns.required = /\S/;
+    patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
     patterns.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
-    patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
-    patterns.required = /\S/;
 
     DOM.extend("input[name],select[name],textarea[name]", {
         constructor() {
@@ -29,8 +29,7 @@
             if (this.get("novalidate")) return [];
 
             var type = this.get("type"),
-                value = this.get("value"),
-                required = this.matches("[required]"),
+                required = this.get("required"),
                 regexp, pattern, msg;
 
             if (typeof errors === "function") errors = errors.call(this);
@@ -51,10 +50,10 @@
                 case "radio":
                     if (!required) break;
 
-                    let elements = this.closest("form").findAll("[name]");
+                    let elements = this.closest("form").findAll("[name]"),
+                        hasCheckedRadio = (el) => el.get("name") === this.get("name") && el.get("checked");
 
-                    if (elements.some((el) => el.get("name") === this.get("name")
-                        && el.get("checked"))) break;
+                    if (elements.some(hasCheckedRadio)) break;
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
@@ -63,6 +62,7 @@
                     break;
 
                 default:
+                    let value = this.get("value");
                     // pattern/type validations ignore blank values
                     if (value) {
                         pattern = this.get("pattern");

@@ -339,7 +339,7 @@ describe("better-form-validation", function() {
                         }
 
                         if (!result.pass) {
-                            result.message = "Expected element <" + actual.toString() + "> to be valid";
+                            result.message = "Expected element " + actual + " to be valid";
                         }
 
                         return result;
