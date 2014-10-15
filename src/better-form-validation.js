@@ -1,17 +1,13 @@
 (function(DOM, VALIDITY_KEY, I18N_MISMATCH, undefined) {
     "use strict";
 
-    var patterns = {
-            email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
-            url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
-            tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
-            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
-            required: new RegExp("\\S")
-        };
+    var patterns = {};
 
-    var hasCheckedRadio = function(el) {
-            return el.get("name") === this.get("name") && el.get("checked");
-        };
+    patterns.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
+    patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
+    patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
+    patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
+    patterns.required = /\S/;
 
     DOM.extend("input[name],select[name],textarea[name]", {
         constructor() {
@@ -53,7 +49,12 @@
                     break;
 
                 case "radio":
-                    if (!required || this.closest("form").findAll("[name]").some(hasCheckedRadio, this)) break;
+                    if (!required) break;
+
+                    let elements = this.closest("form").findAll("[name]");
+
+                    if (elements.some((el) => el.get("name") === this.get("name")
+                        && el.get("checked"))) break;
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
@@ -194,7 +195,7 @@
 
         if (cancel || !errors.length) return;
 
-        if (target.toString() === "form") {
+        if (target.matches("form")) {
             Object.keys(errors).forEach((name, index) => {
                 target.find("[name=\"" + name + "\"]")
                     .fire("validity:fail", errors[name], index + 1);
