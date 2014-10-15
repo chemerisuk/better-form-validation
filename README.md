@@ -1,5 +1,5 @@
 # better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][fury-image]][fury-url]
-> HTML5 form validation for [better-dom](https://github.com/chemerisuk/better-dom)
+> Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
 HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
 
