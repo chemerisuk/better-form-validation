@@ -20,7 +20,7 @@
   ],
   "dependencies": {
     "better-dom": "~2.0.0",
-    "better-i18n": "~1.0.0",
-    "better-popover": "~0.5.0"
+    "better-i18n-plugin": "~1.0.0",
+    "better-popover-plugin": "~0.5.1"
   }
 }
