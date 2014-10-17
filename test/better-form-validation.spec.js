@@ -223,6 +223,10 @@ describe("better-form-validation", function() {
                 expect(spy).toHaveBeenCalled();
             });
 
+            inputs.forEach(function(el) {
+                expect(el.get("aria-invalid")).toBeNull();
+            });
+
             form.remove();
         });
 
@@ -335,7 +339,7 @@ describe("better-form-validation", function() {
                         }
 
                         if (!result.pass) {
-                            result.message = "Expected element <" + actual.toString() + "> to be valid";
+                            result.message = "Expected element " + actual + " to be valid";
                         }
 
                         return result;

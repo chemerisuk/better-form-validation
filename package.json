@@ -1,7 +1,7 @@
 {
   "name": "better-form-validation",
-  "description": "HTML5 form validation for better-dom",
-  "version": "1.4.0-rc.2",
+  "description": "Form validation for better-dom",
+  "version": "1.4.0",
   "author": "Maksim Chemerisuk",
   "license": "MIT",
   "repository": {
@@ -9,21 +9,15 @@
     "url": "https://github.com/chemerisuk/better-form-validation"
   },
   "devDependencies": {
-    "grunt": "0.4.1",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-contrib-watch": "^0.6.0",
-    "grunt-github-publish": "~0.1.5",
-    "grunt-karma": "^0.9.0",
-    "grunt-shell": "~0.6.0",
-    "karma": "^0.12.0",
-    "karma-coverage": "^0.1",
-    "karma-coveralls": "^0.1.4",
-    "karma-jasmine": "^0.2",
-    "karma-jasmine-ajax": "^0.1.4",
-    "karma-phantomjs-launcher": "^0.1"
+    "better-dom-boilerplate": "git://github.com/chemerisuk/better-dom-boilerplate.git"
   },
   "scripts": {
-    "test": "grunt test",
-    "start": "grunt dev"
-  }
+    "test": "gulp test --gulpfile node_modules/better-dom-boilerplate/gulpfile.js --cwd .",
+    "start": "gulp dev --gulpfile node_modules/better-dom-boilerplate/gulpfile.js --cwd ."
+  },
+  "karmaFiles": [
+    "bower_components/better-dom/dist/better-dom.js",
+    "bower_components/better-i18n-plugin/dist/better-i18n-plugin.js",
+    "bower_components/better-popover-plugin/dist/better-popover-plugin.js"
+  ]
 }

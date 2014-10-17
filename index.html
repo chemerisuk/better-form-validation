@@ -4,20 +4,30 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>better-form-validation demo</title>
-    <link rel="stylesheet" href="src/better-form-validation.css">
     <!--[if IE]>
-        <link href="bower_components/better-dom/dist/better-dom.htc" rel="htc"/>
-        <script src="bower_components/es5-shim/es5-shim.js"></script>
-        <script src="bower_components/html5shiv/dist/html5shiv.js"></script>
+        <script src="bower_components/better-dom/dist/better-dom-legacy.js"></script>
     <![endif]-->
     <style type="text/css">
-    input, textarea {
-        font-size: 1em;
-        margin: 0;
+    body {
+        line-height: 1.5;
+        font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", sans-serif;
     }
 
-    #custom_form {
-        width: 450px;
+    label { display: block; }
+
+    input, textarea, button {
+        font-size: 1em;
+        margin: 0;
+        padding: 0.25em;
+    }
+
+    input[type=text], input[type=email], input[type=password], textarea {
+        border: 1px solid #333;
+        width: 100%;
+    }
+
+    form {
+        width: 300px;
     }
 
     #custom_form input {
@@ -46,17 +56,18 @@
         </p>
         <p>
             <label>Your comment<br>
-                <textarea placeholder="say what you think..." name="comment" maxlength="10"></textarea>
+                <textarea placeholder="say what you think..." name="comment" rows="3"maxlength="10"></textarea>
             </label>
         </p>
-        <p>Select gender:</p>
-        <ul>
-            <li><label><input type="radio" name="gender" value="male" required>Male</label></li>
-            <li><label><input type="radio" name="gender" value="female" required>Female</label></li>
-        </ul>
+        <p>
+            Select gender:
+            <label><input type="radio" name="gender" value="male" required>Male</label>
+            <label><input type="radio" name="gender" value="female" required>Female</label>
+        </p>
         <button type="submit">Submit</button>
         <button type="reset">Reset</button>
     </form>
+    <hr>
     <h2>Summary validation example</h2>
     <form id="custom_form">
         <ul id="custom_form_errors" style="color:red"></ul>
@@ -79,9 +90,9 @@
         <button type="reset">Reset</button>
     </form>
     <script src="bower_components/better-dom/dist/better-dom.js"></script>
-    <script src="bower_components/better-i18n/dist/better-i18n.js"></script>
-    <script src="bower_components/better-popover/dist/better-popover.js"></script>
-    <script src="src/better-form-validation.js"></script>
+    <script src="bower_components/better-i18n-plugin/dist/better-i18n-plugin.js"></script>
+    <script src="bower_components/better-popover-plugin/dist/better-popover-plugin.js"></script>
+    <script src="build/better-form-validation.js"></script>
     <script src="i18n/better-form-validation.ru.js"></script>
     <script type="text/javascript">
         DOM.extend("body", function() {

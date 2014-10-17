@@ -1,9 +1,8 @@
 {
   "name": "better-form-validation",
-  "version": "1.4.0-rc.2",
+  "version": "1.4.0",
   "main": [
     "dist/better-form-validation.js",
-    "dist/better-form-validation.css",
     "i18n/better-form-validation.ru.js",
     "i18n/better-form-validation.de.js"
   ],
@@ -12,7 +11,6 @@
     "test",
     "src",
     "index.html",
-    "Gruntfile.js",
     "package.json",
     "bower.json"
   ],
@@ -21,7 +19,7 @@
   ],
   "dependencies": {
     "better-dom": "~2.0.0",
-    "better-i18n": "~1.0.0",
-    "better-popover": "~0.5.0"
+    "better-i18n-plugin": "~1.0.0",
+    "better-popover-plugin": "~0.5.1"
   }
 }

@@ -16,53 +16,38 @@
     border-radius: 0.25em;
     box-shadow: 0 0 0.25em;
 
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
 
-    -webkit-transition: 0.3s ease-in-out;
-    transition: 0.3s ease-in-out;
-
-    -webkit-transition-property: -webkit-transform, opacity;
-    transition-property: transform, opacity;
-
-    -webkit-transform: scale(1, 1);
+    opacity: 0.925;
     transform: scale(1, 1);
-
-    -webkit-transform-origin: 0 0;
     transform-origin: 0 0;
-
-    opacity: 1;
-
+    transition: 0.3s ease-in-out;
+    transition-property: transform, opacity;
 }
 
 .better-validity-tooltip[aria-hidden=true] {
-    -webkit-transform: scale(3, 3);
-    transform: scale(3, 3);
     opacity: 0;
+    transform: scale(2, 2);
 }
 
 input[aria-invalid] {
-    background-size: auto 100%;
-    background-position: right center;
-    background-repeat: no-repeat;
+    background: none no-repeat right center / auto 100% content-box;
 }
 
 input[aria-invalid=false] {
-    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iIzQyQjMwMCIgZD0iTTI0IDBjLTEzLjI1NSAwLTI0IDEwLjc0NS0yNCAyNHMxMC43NDUgMjQgMjQgMjQgMjQtMTAuNzQ1IDI0LTI0LTEwLjc0NS0yNC0yNC0yNHpNMTkuNSAzOWwtOS45MzgtMTIuOTM4IDQuNDA2LTQuNTk0IDUuNTMxIDcuMDMxIDE3LjM0NC0xNC4xNTYgMi4xNTYgMi4xNTYtMTkuNSAyMi41eiIvPgo8L3N2Zz4=);
+    background-image: url(src/valid-icon.svg);
 }
 
 input[aria-invalid=true] {
-    background-image: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2aWV3Qm94PSIwIDAgNDggNDgiPgogICAgPHBhdGggZmlsbD0iI0ZGMzMyOSIgZD0iTTQ4IDM0LjVsLTEzLjUtMzQuNWgtMjFsLTEzLjUgMTMuNXYyMWwxMy41IDEzLjVoMjFsMTMuNS0xMy41di0yMWwtMTMuNS0xMy41ek0yNyAzOWgtNnYtNmg2djZ6TTI3IDI3aC02di0xOGg2djE4eiIvPgo8L3N2Zz4K);
+    background-image: url(src/invalid-icon.svg);
+}
+
+input[aria-invalid][type=checkbox],
+input[aria-invalid][type=radio] {
+    background: none;
 }
 
 input[aria-invalid]::-ms-clear,
 input[aria-invalid]::-ms-reveal {
     display: none;
-}
-
-input[type=radio][aria-invalid],
-input[type=checkbox][aria-invalid] {
-    background-image: none;
 }

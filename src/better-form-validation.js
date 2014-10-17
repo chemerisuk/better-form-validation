@@ -1,20 +1,16 @@
 (function(DOM, VALIDITY_KEY, I18N_MISMATCH, undefined) {
     "use strict";
 
-    var patterns = {
-            email: new RegExp("^([a-z0-9_\\.\\-\\+]+)@([\\da-z\\.\\-]+)\\.([a-z\\.]{2,6})$", "i"),
-            url: new RegExp("^(https?:\\/\\/)?[\\da-z\\.\\-]+\\.[a-z\\.]{2,6}[#&+_\\?\\/\\w \\.\\-=]*$", "i"),
-            tel: new RegExp("^((\\+\\d{1,3}(-| )?\\(?\\d\\)?(-| )?\\d{1,5})|(\\(?\\d{2,6}\\)?))(-| )?(\\d{3,4})(-| )?(\\d{4})(( x| ext)\\d{1,5}){0,1}$"),
-            number: new RegExp("^-?[0-9]*(\\.[0-9]+)?$"),
-            required: new RegExp("\\S")
-        };
+    var patterns = {};
 
-    var hasCheckedRadio = function(el) {
-            return el.get("name") === this.get("name") && el.get("checked");
-        };
+    patterns.required = /\S/;
+    patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
+    patterns.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
+    patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
+    patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
 
     DOM.extend("input[name],select[name],textarea[name]", {
-        constructor: function() {
+        constructor() {
             var type = this.get("type");
 
             if (type !== "checkbox" && type !== "radio") {
@@ -23,7 +19,7 @@
 
             this.on("change", this.onValidityUpdate);
         },
-        validity: function(errors) {
+        validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
             } else {
@@ -33,8 +29,7 @@
             if (this.get("novalidate")) return [];
 
             var type = this.get("type"),
-                value = this.get("value"),
-                required = this.matches("[required]"),
+                required = this.get("required"),
                 regexp, pattern, msg;
 
             if (typeof errors === "function") errors = errors.call(this);
@@ -53,7 +48,12 @@
                     break;
 
                 case "radio":
-                    if (!required || this.closest("form").findAll("[name]").some(hasCheckedRadio, this)) break;
+                    if (!required) break;
+
+                    let elements = this.closest("form").findAll("[name]"),
+                        hasCheckedRadio = (el) => el.get("name") === this.get("name") && el.get("checked");
+
+                    if (elements.some(hasCheckedRadio)) break;
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
@@ -62,6 +62,7 @@
                     break;
 
                 default:
+                    let value = this.get("value");
                     // pattern/type validations ignore blank values
                     if (value) {
                         pattern = this.get("pattern");
@@ -98,7 +99,7 @@
 
             return errors;
         },
-        onValidityCheck: function() {
+        onValidityCheck() {
             var value = this.get(),
                 maxlength = this.get("maxlength");
 
@@ -116,7 +117,7 @@
                 }
             }
         },
-        onValidityUpdate: function() {
+        onValidityUpdate() {
             var errors = this.validity();
 
             if (errors.length) {
@@ -128,13 +129,13 @@
     });
 
     DOM.extend("form", {
-        constructor: function() {
+        constructor() {
             this
                 .set("novalidate", "novalidate") // disable native validation
                 .on("submit", this.onFormSubmit)
                 .on("reset", this.onFormReset);
         },
-        validity: function(errors) {
+        validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
             } else {
@@ -150,7 +151,7 @@
                 errors = {length: 0};
             }
 
-            this.findAll("[name]").forEach(function(el) {
+            this.findAll("[name]").forEach((el) => {
                 var name = el.get("name");
 
                 if (!(name in errors)) {
@@ -166,7 +167,7 @@
 
             return errors;
         },
-        onFormSubmit: function() {
+        onFormSubmit() {
             var errors = this.validity();
 
             if (errors.length) {
@@ -176,47 +177,49 @@
                 return false;
             }
         },
-        onFormReset: function() {
-            this.findAll("[name]").forEach(function(el) {
-                el.popover().hide();
+        onFormReset() {
+            this.findAll("[name]").forEach((el) => {
+                el.set("aria-invalid", null).popover().hide();
             });
         }
     });
 
-    DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel) {
+    DOM.on("validity:ok", ["target", "defaultPrevented"], (target, cancel) => {
         target.set("aria-invalid", false);
 
         if (!cancel) target.popover().hide();
     });
 
-    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel) {
+    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, coef, target, cancel) => {
         target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
-        if (target.toString() === "form") {
-            Object.keys(errors).forEach(function(name, index) {
+        if (target.matches("form")) {
+            Object.keys(errors).forEach((name, index) => {
                 target.find("[name=\"" + name + "\"]")
                     .fire("validity:fail", errors[name], index + 1);
             });
         } else {
             var errorMessage = DOM.i18n(typeof errors === "string" ? errors : errors[0]),
-                popover = target.popover(errorMessage.toString(), "left", "bottom"),
+                popover = target.popover(errorMessage, "left", "bottom"),
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
-            if (!popover.hide().hasClass("better-validity-tooltip")) {
+            if (!popover.hasClass("better-validity-tooltip")) {
                 popover.addClass("better-validity-tooltip");
 
-                popover.on("click", function() {
-                    popover.hide();
-
+                popover.on("click", () => {
                     target.fire("focus");
+                    // hide with delay to fix issue in IE10-11
+                    // which trigger input event on focus
+                    setTimeout(() => { popover.hide() }, delay);
                 });
             }
 
-            if (coef) {
-                delay = popover.css("transition-duration");
+            delay = popover.hide().css("transition-duration");
+
+            if (coef && delay) {
                 // parse animation duration value
                 delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
                 // use extra delay for each next form melement
@@ -224,7 +227,7 @@
             }
 
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(function() { popover.show() }, delay);
+            setTimeout(() => { popover.show() }, delay);
         }
     });
 }(window.DOM, "_validity", {
