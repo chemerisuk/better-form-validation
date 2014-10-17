@@ -26,6 +26,6 @@
     "commit": "f0c651ebdcef3bef923fde992c02e6bccb7381ad"
   },
   "_source": "git://github.com/chemerisuk/better-popover-plugin.git",
-  "_target": "~0.5.0",
+  "_target": "~0.5.1",
   "_originalSource": "better-popover-plugin"
 }
