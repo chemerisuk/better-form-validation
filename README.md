@@ -25,8 +25,8 @@ Then append the following tags on your page:
 
 ```html
 <script src="bower_components/better-dom/dist/better-dom.js"></script>
-<script src="bower_components/better-i18n/dist/better-i18n.js"></script>
-<script src="bower_components/better-i18n/dist/better-popover.js"></script>
+<script src="bower_components/better-i18n-plugin/dist/better-i18n-plugin.js"></script>
+<script src="bower_components/better-popover-plugin/dist/better-popover-plugin.js"></script>
 <script src="bower_components/better-form-validation/dist/better-form-validation.js"></script>
 ```
 

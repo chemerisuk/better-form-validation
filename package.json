@@ -4,6 +4,7 @@
   "version": "1.4.0",
   "author": "Maksim Chemerisuk",
   "license": "MIT",
+  "homepage": "https://github.com/chemerisuk/better-form-validation",
   "repository": {
     "type": "git",
     "url": "https://github.com/chemerisuk/better-form-validation"
