@@ -51,3 +51,9 @@ input[aria-invalid]::-ms-clear,
 input[aria-invalid]::-ms-reveal {
     display: none;
 }
+
+/* reset user agent styles */
+:invalid {
+    outline: inherit;
+    box-shadow: inherit;
+}

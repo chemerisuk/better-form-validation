@@ -35,6 +35,11 @@
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
+            if (typeof required === "string") {
+                // handle boolean attribute in browsers that do not support it
+                required = required === "" || required === "required";
+            }
+
             errors = errors || [];
 
             if (!errors.length) {
@@ -130,8 +135,24 @@
 
     DOM.extend("form", {
         constructor() {
+            if (typeof this.get("noValidate") === "boolean") {
+                let timeoutId;
+
+                this.on("invalid", ["target"], () => {
+                    if (!timeoutId) {
+                        timeoutId = setTimeout(() => {
+                            // trigger submit event manually
+                            this.fire("submit");
+
+                            timeoutId = null;
+                        });
+                    }
+
+                    return false; // don't show tooltips
+                });
+            }
+
             this
-                .set("novalidate", "novalidate") // disable native validation
                 .on("submit", this.onFormSubmit)
                 .on("reset", this.onFormReset);
         },
@@ -141,6 +162,8 @@
             } else {
                 errors = this.get(VALIDITY_KEY);
             }
+
+            if (this.get("novalidate")) return {length: 0};
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = {0: errors, length: 1};
@@ -201,8 +224,7 @@
                     .fire("validity:fail", errors[name], index + 1);
             });
         } else {
-            var errorMessage = DOM.i18n(typeof errors === "string" ? errors : errors[0]),
-                popover = target.popover(errorMessage, "left", "bottom"),
+            var popover = target.popover(void 0, "left", "bottom"),
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
@@ -216,6 +238,8 @@
                     setTimeout(() => { popover.hide() }, delay);
                 });
             }
+            // set error message
+            popover.l10n(typeof errors === "string" ? errors : errors[0]);
 
             delay = popover.hide().css("transition-duration");
 
