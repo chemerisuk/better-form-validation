@@ -27,7 +27,7 @@
                 errors = this.get(VALIDITY_KEY);
             }
 
-            if (this.get("novalidate")) return [];
+            if (this.get("novalidate") != null) return [];
 
             var type = this.get("type"),
                 required = this.get("required"),
@@ -105,6 +105,10 @@
                 this.set(value.substr(0, maxlength));
             }
 
+            var form = DOM.constructor(this.get("form"));
+
+            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
+
             if (this.get("aria-invalid")) {
                 var errors = this.validity();
 
@@ -116,6 +120,10 @@
             }
         },
         onValidityUpdate() {
+            var form = DOM.constructor(this.get("form"));
+
+            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
+
             var errors = this.validity();
 
             if (errors.length) {
@@ -156,7 +164,7 @@
                 errors = this.get(VALIDITY_KEY);
             }
 
-            if (this.get("novalidate")) return {length: 0};
+            if (this.get("novalidate") != null) return {length: 0};
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = {0: errors, length: 1};
