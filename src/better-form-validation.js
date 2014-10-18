@@ -2,6 +2,7 @@
     "use strict";
 
     var patterns = {};
+    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button"];
 
     patterns.required = /\S/;
     patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
@@ -9,7 +10,7 @@
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
 
-    DOM.extend("input[name],select[name],textarea[name]", {
+    DOM.extend("[name]", (el) => invalidTypes.indexOf(el.get("type")) < 0, {
         constructor() {
             var type = this.get("type");
 
@@ -44,14 +45,6 @@
 
             if (!errors.length) {
                 switch(type) {
-                case "image":
-                case "submit":
-                case "button":
-                case "select-one":
-                case "select-multiple":
-                    // only check custom error case
-                    break;
-
                 case "radio":
                     if (!required) break;
 
