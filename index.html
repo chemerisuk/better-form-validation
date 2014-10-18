@@ -17,13 +17,13 @@
 
     input, textarea, button {
         font-size: 1em;
-        margin: 0;
-        padding: 0.25em;
     }
 
     input[type=text], input[type=email], input[type=password], textarea {
         border: 1px solid #333;
         width: 100%;
+        margin: 0;
+        padding: 0.25em;
     }
 
     form {
@@ -56,7 +56,7 @@
         </p>
         <p>
             <label>Your comment<br>
-                <textarea placeholder="say what you think..." name="comment" rows="3"maxlength="10"></textarea>
+                <textarea placeholder="say what you think..." name="comment" rows="3" maxlength="10"></textarea>
             </label>
         </p>
         <p>
@@ -118,7 +118,7 @@
                         error = errors[field][0];
 
                     if (error) {
-                        customErrors.append(li.append(DOM.i18n(error).toString()));
+                        customErrors.append(li.append(DOM.__(error).toString()));
                     }
                 });
             });
