@@ -138,8 +138,11 @@
         constructor() {
             if (typeof this.get("noValidate") === "boolean") {
                 let timeoutId;
+                // have to use legacy addEventListener because
+                // the invalid event does not bubble
+                this[0].addEventListener("invalid", (e) => {
+                    e.preventDefault(); // don't show tooltips
 
-                this.on("invalid", ["target"], () => {
                     if (!timeoutId) {
                         timeoutId = setTimeout(() => {
                             // trigger submit event manually
@@ -148,9 +151,7 @@
                             timeoutId = null;
                         });
                     }
-
-                    return false; // don't show tooltips
-                });
+                }, true);
             }
 
             this
@@ -248,7 +249,7 @@
                 // parse animation duration value
                 delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
                 // use extra delay for each next form melement
-                delay = delay * coef / target.get("form").length;
+                delay *= coef / 7;
             }
 
             // use a small delay if several tooltips are going to be displayed
