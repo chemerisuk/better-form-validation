@@ -1,4 +1,4 @@
-# better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][fury-image]][fury-url]
+# better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][bower-image]][bower-url]
 > Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
 
 HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
@@ -96,5 +96,5 @@ By default elements with `aria-invalid` have a success or fail icon on the right
 [coveralls-url]: https://coveralls.io/r/chemerisuk/better-form-validation
 [coveralls-image]: http://img.shields.io/coveralls/chemerisuk/better-form-validation/master.svg
 
-[fury-url]: http://badge.fury.io/bo/better-form-validation
-[fury-image]: https://badge.fury.io/bo/better-form-validation.svg
+[bower-url]: https://github.com/chemerisuk/better-form-validation
+[bower-image]: http://img.shields.io/bower/v/better-form-validation.svg

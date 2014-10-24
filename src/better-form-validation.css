@@ -31,7 +31,9 @@
 }
 
 input[aria-invalid] {
-    background: none no-repeat right center / auto 100% content-box;
+    background-size: auto 90%;
+    background-position: right center;
+    background-repeat: no-repeat;
 }
 
 input[aria-invalid=false] {
