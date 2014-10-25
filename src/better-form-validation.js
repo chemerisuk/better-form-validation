@@ -10,6 +10,29 @@
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
 
+    function Validity(errors) {
+        if (typeof errors === "string") {
+            this[0] = errors;
+            this.valid = !errors;
+        } else if (errors && typeof errors === "object") {
+            this.valid = Object.keys(errors).every((key) => {
+                if (key === "length" && Array.isArray(errors)) return true;
+
+                var validity = errors[key];
+
+                this[key] = validity;
+
+                if (validity instanceof Validity) {
+                    return validity.valid;
+                } else {
+                    return !validity.length;
+                }
+            });
+        } else {
+            this.valid = true;
+        }
+    }
+
     DOM.extend("[name]", (el) => invalidTypes.indexOf(el.get("type")) < 0, {
         constructor() {
             var type = this.get("type");
@@ -50,20 +73,20 @@
         validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else {
-                errors = this.get(VALIDITY_KEY);
+            } else if (this.get("novalidate") != null) {
+                return new Validity();
             }
 
-            if (this.get("novalidate") != null) return [];
-
-            var type = this.get("type"),
-                required = this.get("required"),
-                regexp, pattern, msg;
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
             errors = errors || [];
+
+            var type = this.get("type"),
+                required = this.get("required"),
+                regexp, pattern, msg;
 
             if (!errors.length) {
                 switch(type) {
@@ -117,7 +140,7 @@
                 }
             }
 
-            return errors;
+            return new Validity(errors);
         },
         onValidityCheck() {
             var value = this.get(),
@@ -134,10 +157,10 @@
             if (this.get("aria-invalid")) {
                 var errors = this.validity();
 
-                if (errors.length) {
-                    this.fire("validity:fail", errors);
-                } else {
+                if (errors.valid) {
                     this.fire("validity:ok");
+                } else {
+                    this.fire("validity:fail", errors);
                 }
             }
         },
@@ -148,10 +171,10 @@
 
             var errors = this.validity();
 
-            if (errors.length) {
-                this.fire("validity:fail", errors);
-            } else {
+            if (errors.valid) {
                 this.fire("validity:ok");
+            } else {
+                this.fire("validity:fail", errors);
             }
         }
     });
@@ -183,43 +206,33 @@
         validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else {
-                errors = this.get(VALIDITY_KEY);
+            } else if (this.get("novalidate") != null) {
+                return new Validity();
             }
 
-            if (this.get("novalidate") != null) return {length: 0};
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
-            if (typeof errors === "string") errors = {0: errors, length: 1};
+            if (typeof errors === "string") errors = [errors];
 
-            if (errors) {
-                errors.length = errors.length || 0;
-            } else {
-                errors = {length: 0};
-            }
+            errors = errors || [];
 
             this.findAll("[name]").forEach((el) => {
                 var name = el.get("name");
 
-                if (!(name in errors)) {
-                    errors[name] = el.validity && el.validity();
-                }
+                if (name in errors) return;
 
-                if (errors[name] && errors[name].length) {
-                    errors.length += errors[name].length;
-                } else {
-                    delete errors[name];
-                }
+                errors[name] = el.validity && el.validity();
             });
 
-            return errors;
+            return new Validity(errors);
         },
         onFormSubmit() {
-            var errors = this.validity();
+            var validity = this.validity();
 
-            if (errors.length) {
+            if (!validity.valid) {
                 // fire event on form level
-                this.fire("validity:fail", errors);
+                this.fire("validity:fail", validity);
 
                 return false;
             }
@@ -239,8 +252,6 @@
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, batch, target, cancel) => {
         target.set("aria-invalid", true);
-
-        if (cancel || !errors.length) return;
 
         if (target.matches("form")) {
             Object.keys(errors).forEach((name) => {

@@ -87,10 +87,10 @@ describe("elements", function() {
 
         input.set({pattern: "[a-z]+", title: "msg"});
         input.set("123").fire("input");
-        expect(input.validity()).toEqual(["msg"]);
+        expect(input.validity()[0]).toBe("msg");
 
         input.set("title", "").fire("input");
-        expect(input.validity()).toEqual(["illegal value format"]);
+        expect(input.validity()[0]).toBe("illegal value format");
 
         input.set("abc").fire("input");
         expect(input).toBeValid();
@@ -110,10 +110,10 @@ describe("elements", function() {
 
             return ["error"];
         });
-        expect(input.validity()).toEqual(["error"]);
+        expect(input.validity()[0]).toBe("error");
 
         input.validity(function() { return "" });
-        expect(input).not.toBeValid();
+        expect(input).toBeValid();
 
         input.validity(null);
         input.set("123");
@@ -192,11 +192,11 @@ beforeEach(function() {
                     var result = {};
 
                     if (actual) {
-                        result.pass = actual.validity().length === 0;
+                        result.pass = actual.validity().valid;
                     }
 
                     if (!result.pass) {
-                        result.message = "Expected element " + actual + " to be valid";
+                        result.message = "Expected " + actual + " to be valid";
                     }
 
                     return result;

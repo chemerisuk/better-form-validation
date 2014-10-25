@@ -3,12 +3,13 @@ describe("forms", function() {
         var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name=b]"),
             spy = jasmine.createSpy("validity:fail");
 
-        form.on("validity:fail", spy).fire("submit");
-        expect(spy).toHaveBeenCalledWith({
-            a: ["can't be empty"],
-            b: ["can't be empty"],
-            length: 2
+        spy.and.callFake(function(validity) {
+            expect(validity.a[0]).toBe("can't be empty");
+            expect(validity.valid).toBe(false);
         });
+
+        form.on("validity:fail", spy).fire("submit");
+        expect(spy).toHaveBeenCalled();
     });
 
     it("should hide all messages on form reset", function() {
@@ -100,15 +101,15 @@ describe("forms", function() {
             return "FAIL";
         });
 
-        expect(form.validity()).toEqual({0: "FAIL", length: 1});
+        expect(form.validity()[0]).toBe("FAIL");
 
         form.validity(function() {
             expect(this).toBe(form);
 
-            return {d: ["FAIL"]};
+            return {d: "FAIL"};
         });
 
-        expect(form.validity()).toEqual({d: ["FAIL"], length: 1});
+        expect(form.validity().d).toBe("FAIL");
     });
 
     it("should fire validity:fail on invalid elements", function() {
@@ -139,11 +140,11 @@ describe("forms", function() {
                         var result = {};
 
                         if (actual) {
-                            result.pass = actual.validity().length === 0;
+                            result.pass = actual.validity().valid;
                         }
 
                         if (!result.pass) {
-                            result.message = "Expected element " + actual + " to be valid";
+                            result.message = "Expected " + actual + " to be valid";
                         }
 
                         return result;
