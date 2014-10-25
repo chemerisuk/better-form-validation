@@ -126,7 +126,7 @@ describe("forms", function() {
 
         input.on("validity:fail", spy);
         form.onFormSubmit();
-        expect(spy).toHaveBeenCalledWith(["FAIL"], 1);
+        expect(spy).toHaveBeenCalledWith(["FAIL"]);
 
         form.remove();
     });

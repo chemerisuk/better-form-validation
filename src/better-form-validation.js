@@ -237,15 +237,15 @@
         if (!cancel) target.popover().hide();
     });
 
-    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, coef, target, cancel) => {
+    DOM.on("validity:fail", [1, "target", "defaultPrevented"], (errors, target, cancel) => {
         target.set("aria-invalid", true);
 
         if (cancel || !errors.length) return;
 
         if (target.matches("form")) {
-            Object.keys(errors).forEach((name, index) => {
+            Object.keys(errors).forEach((name) => {
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], index + 1);
+                    .fire("validity:fail", errors[name]);
             });
         } else {
             var popover = target.popover(),
@@ -267,16 +267,10 @@
             popover.l10n(typeof errors === "string" ? errors : errors[0]);
 
             delay = popover.hide().css("transition-duration");
-
-            if (coef && delay) {
-                // parse animation duration value
-                delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
-                // use extra delay for each next form melement
-                delay *= coef / 7;
-            }
-
+            // parse animation duration value
+            delay = delay && parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(() => { popover.show() }, delay);
+            setTimeout(() => { popover.show() }, delay || 0);
         }
     });
 }(window.DOM, "_validity", {
