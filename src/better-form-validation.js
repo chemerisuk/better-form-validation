@@ -19,6 +19,33 @@
             }
 
             this.on("change", this.onValidityUpdate);
+            /* istanbul ignore if */
+            if (typeof this.get("required") !== "boolean") {
+                ["required", "noValidate"].forEach((propName) => {
+                    this.defineAttribute(propName, {
+                        get: this.doGetBooleanProp(propName),
+                        set: this.doSetBooleanProp(propName)
+                    });
+                });
+            }
+        },
+        doGetBooleanProp(name) {
+            return (attrValue) => {
+                attrValue = String(attrValue).toLowerCase();
+
+                return attrValue === "" || attrValue === name.toLowerCase();
+            };
+        },
+        doSetBooleanProp(name) {
+            return (propValue) => {
+                var currentValue = this.get(name);
+
+                propValue = !!propValue;
+
+                if (currentValue !== propValue) {
+                    return propValue ? "" : null;
+                }
+            };
         },
         validity(errors) {
             if (errors !== undefined) {
@@ -35,11 +62,6 @@
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
-
-            if (typeof required === "string") {
-                // handle boolean attribute in browsers that do not support it
-                required = required === "" || required === "required";
-            }
 
             errors = errors || [];
 
@@ -226,19 +248,20 @@
                     .fire("validity:fail", errors[name], index + 1);
             });
         } else {
-            var popover = target.popover(void 0, "left", "bottom"),
+            var popover = target.popover(),
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
             if (!popover.hasClass("better-validity-tooltip")) {
-                popover.addClass("better-validity-tooltip");
-
-                popover.on("click", () => {
-                    target.fire("focus");
-                    // hide with delay to fix issue in IE10-11
-                    // which trigger input event on focus
-                    setTimeout(() => { popover.hide() }, delay);
-                });
+                popover = target
+                    .popover(null, "left", "bottom")
+                    .addClass("better-validity-tooltip")
+                    .on("click", () => {
+                        target.fire("focus");
+                        // hide with delay to fix issue in IE10-11
+                        // which trigger input event on focus
+                        setTimeout(() => { popover.hide() }, delay);
+                    });
             }
             // set error message
             popover.l10n(typeof errors === "string" ? errors : errors[0]);
