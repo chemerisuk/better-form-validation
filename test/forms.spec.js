@@ -1,5 +1,5 @@
 describe("forms", function() {
-    it("should send invalid event when validation fails", function() {
+    it("should send validity:fail event when validation fails", function() {
         var form = DOM.mock("form>input[type=checkbox required name=a]+textarea[required name=b]"),
             spy = jasmine.createSpy("validity:fail");
 

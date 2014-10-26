@@ -3,6 +3,7 @@
 
     var patterns = {};
     var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button"];
+    var isValidInput = (el) => invalidTypes.indexOf(el.get("type")) < 0;
 
     patterns.required = /\S/;
     patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
@@ -14,26 +15,28 @@
         if (typeof errors === "string") {
             this[0] = errors;
             this.valid = !errors;
-        } else if (errors && typeof errors === "object") {
-            this.valid = Object.keys(errors).every((key) => {
-                if (key === "length" && Array.isArray(errors)) return true;
+        } else {
+            this.valid = true;
 
+            if (!errors || typeof errors !== "object") return;
+
+            var keys = Object.keys(errors).filter((key) => key !== "length");
+
+            keys.forEach((key) => {
                 var validity = errors[key];
 
                 this[key] = validity;
 
                 if (validity instanceof Validity) {
-                    return validity.valid;
+                    this.valid = this.valid && validity.valid;
                 } else {
-                    return !validity.length;
+                    this.valid = this.valid && !validity.length;
                 }
             });
-        } else {
-            this.valid = true;
         }
     }
 
-    DOM.extend("[name]", (el) => invalidTypes.indexOf(el.get("type")) < 0, {
+    DOM.extend("[name]", isValidInput, {
         constructor() {
             var type = this.get("type");
 
@@ -217,13 +220,16 @@
 
             errors = errors || [];
 
-            this.findAll("[name]").forEach((el) => {
-                var name = el.get("name");
+            this.findAll("[name]")
+                .filter(isValidInput)
+                .forEach((el) => {
+                    var name = el.get("name"),
+                        validity = el.validity();
 
-                if (name in errors) return;
-
-                errors[name] = el.validity && el.validity();
-            });
+                    if (!(name in errors || validity.valid)) {
+                        errors[name] = validity;
+                    }
+                });
 
             return new Validity(errors);
         },
@@ -253,6 +259,8 @@
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, batch, target, cancel) => {
         target.set("aria-invalid", true);
 
+        if (cancel) return;
+
         if (target.matches("form")) {
             Object.keys(errors).forEach((name) => {
                 target.find("[name=\"" + name + "\"]")
@@ -275,7 +283,7 @@
                     });
             }
             // set error message
-            popover.l10n(typeof errors === "string" ? errors : errors[0]);
+            popover.l10n(errors[0]);
 
             if (batch) {
                 // hide popover and show it later with delay
