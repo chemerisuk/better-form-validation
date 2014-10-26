@@ -1,6 +1,6 @@
 /**
  * better-form-validation: Form validation for better-dom
- * @version 1.4.1 Sat, 18 Oct 2014 18:16:46 GMT
+ * @version 1.5.0-beta.1 Sun, 26 Oct 2014 11:40:24 GMT
  * @link https://github.com/chemerisuk/better-form-validation
  * @copyright 2014 Maksim Chemerisuk
  * @license MIT
@@ -10,6 +10,7 @@
 
     var patterns = {};
     var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button"];
+    var isValidInput = function(el)  {return invalidTypes.indexOf(el.get("type")) < 0};
 
     patterns.required = /\S/;
     patterns.number = /^-?[0-9]*(\.[0-9]+)?$/;
@@ -17,8 +18,33 @@
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
 
-    DOM.extend("[name]", function(el)  {return invalidTypes.indexOf(el.get("type")) < 0}, {
-        constructor: function() {
+    function Validity(errors) {var this$0 = this;
+        if (typeof errors === "string") {
+            this[0] = errors;
+            this.valid = !errors;
+        } else {
+            this.valid = true;
+
+            if (!errors || typeof errors !== "object") return;
+
+            var keys = Object.keys(errors).filter(function(key)  {return key !== "length"});
+
+            keys.forEach(function(key)  {
+                var validity = errors[key];
+
+                this$0[key] = validity;
+
+                if (validity instanceof Validity) {
+                    this$0.valid = this$0.valid && validity.valid;
+                } else {
+                    this$0.valid = this$0.valid && !validity.length;
+                }
+            });
+        }
+    }
+
+    DOM.extend("[name]", isValidInput, {
+        constructor: function() {var this$0 = this;
             var type = this.get("type");
 
             if (type !== "checkbox" && type !== "radio") {
@@ -26,29 +52,51 @@
             }
 
             this.on("change", this.onValidityUpdate);
+            /* istanbul ignore if */
+            if (typeof this.get("required") !== "boolean") {
+                ["required", "noValidate"].forEach(function(propName)  {
+                    this$0.defineAttribute(propName, {
+                        get: this$0.doGetBooleanProp(propName),
+                        set: this$0.doSetBooleanProp(propName)
+                    });
+                });
+            }
+        },
+        doGetBooleanProp: function(name) {
+            return function(attrValue)  {
+                attrValue = String(attrValue).toLowerCase();
+
+                return attrValue === "" || attrValue === name.toLowerCase();
+            };
+        },
+        doSetBooleanProp: function(name) {var this$0 = this;
+            return function(propValue)  {
+                var currentValue = this$0.get(name);
+
+                propValue = !!propValue;
+
+                if (currentValue !== propValue) {
+                    return propValue ? "" : null;
+                }
+            };
         },
         validity: function(errors) {var this$0 = this;
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else {
-                errors = this.get(VALIDITY_KEY);
+            } else if (this.get("novalidate") != null) {
+                return new Validity();
             }
 
-            if (this.get("novalidate") != null) return [];
-
-            var type = this.get("type"),
-                required = this.get("required"),
-                regexp, pattern, msg;
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
             if (typeof errors === "string") errors = [errors];
 
-            if (typeof required === "string") {
-                // handle boolean attribute in browsers that do not support it
-                required = required === "" || required === "required";
-            }
-
             errors = errors || [];
+
+            var type = this.get("type"),
+                required = this.get("required"),
+                regexp, pattern, msg;
 
             if (!errors.length) {
                 switch(type) {
@@ -102,7 +150,7 @@
                 }
             }
 
-            return errors;
+            return new Validity(errors);
         },
         onValidityCheck: function() {
             var value = this.get(),
@@ -119,10 +167,10 @@
             if (this.get("aria-invalid")) {
                 var errors = this.validity();
 
-                if (errors.length) {
-                    this.fire("validity:fail", errors);
-                } else {
+                if (errors.valid) {
                     this.fire("validity:ok");
+                } else {
+                    this.fire("validity:fail", errors);
                 }
             }
         },
@@ -133,10 +181,10 @@
 
             var errors = this.validity();
 
-            if (errors.length) {
-                this.fire("validity:fail", errors);
-            } else {
+            if (errors.valid) {
                 this.fire("validity:ok");
+            } else {
+                this.fire("validity:fail", errors);
             }
         }
     });
@@ -145,8 +193,11 @@
         constructor: function() {var this$0 = this;
             if (typeof this.get("noValidate") === "boolean") {
                 var timeoutId;
+                // have to use legacy addEventListener because
+                // the invalid event does not bubble
+                this[0].addEventListener("invalid", function(e)  {
+                    e.preventDefault(); // don't show tooltips
 
-                this.on("invalid", ["target"], function()  {
                     if (!timeoutId) {
                         timeoutId = setTimeout(function()  {
                             // trigger submit event manually
@@ -155,9 +206,7 @@
                             timeoutId = null;
                         });
                     }
-
-                    return false; // don't show tooltips
-                });
+                }, true);
             }
 
             this
@@ -167,43 +216,36 @@
         validity: function(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else {
-                errors = this.get(VALIDITY_KEY);
+            } else if (this.get("novalidate") != null) {
+                return new Validity();
             }
 
-            if (this.get("novalidate") != null) return {length: 0};
+            errors = this.get(VALIDITY_KEY);
 
             if (typeof errors === "function") errors = errors.call(this);
-            if (typeof errors === "string") errors = {0: errors, length: 1};
+            if (typeof errors === "string") errors = [errors];
 
-            if (errors) {
-                errors.length = errors.length || 0;
-            } else {
-                errors = {length: 0};
-            }
+            errors = errors || [];
 
-            this.findAll("[name]").forEach(function(el)  {
-                var name = el.get("name");
+            this.findAll("[name]")
+                .filter(isValidInput)
+                .forEach(function(el)  {
+                    var name = el.get("name"),
+                        validity = el.validity();
 
-                if (!(name in errors)) {
-                    errors[name] = el.validity && el.validity();
-                }
+                    if (!(name in errors || validity.valid)) {
+                        errors[name] = validity;
+                    }
+                });
 
-                if (errors[name] && errors[name].length) {
-                    errors.length += errors[name].length;
-                } else {
-                    delete errors[name];
-                }
-            });
-
-            return errors;
+            return new Validity(errors);
         },
         onFormSubmit: function() {
-            var errors = this.validity();
+            var validity = this.validity();
 
-            if (errors.length) {
+            if (!validity.valid) {
                 // fire event on form level
-                this.fire("validity:fail", errors);
+                this.fire("validity:fail", validity);
 
                 return false;
             }
@@ -221,45 +263,44 @@
         if (!cancel) target.popover().hide();
     });
 
-    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, coef, target, cancel)  {
+    DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, batch, target, cancel)  {
         target.set("aria-invalid", true);
 
-        if (cancel || !errors.length) return;
+        if (cancel) return;
 
         if (target.matches("form")) {
-            Object.keys(errors).forEach(function(name, index)  {
+            Object.keys(errors).forEach(function(name)  {
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], index + 1);
+                    .fire("validity:fail", errors[name], true);
             });
         } else {
-            var popover = target.popover(void 0, "left", "bottom"),
+            var popover = target.popover(),
                 delay = 0;
 
             // hiding the tooltip to show later with a small delay
             if (!popover.hasClass("better-validity-tooltip")) {
-                popover.addClass("better-validity-tooltip");
-
-                popover.on("click", function()  {
-                    target.fire("focus");
-                    // hide with delay to fix issue in IE10-11
-                    // which trigger input event on focus
-                    setTimeout(function()  { popover.hide() }, delay);
-                });
+                popover = target
+                    .popover(null, "left", "bottom")
+                    .addClass("better-validity-tooltip")
+                    .on("click", function()  {
+                        target.fire("focus");
+                        // hide with delay to fix issue in IE10-11
+                        // which trigger input event on focus
+                        setTimeout(function()  { popover.hide() }, delay);
+                    });
             }
             // set error message
-            popover.l10n(typeof errors === "string" ? errors : errors[0]);
+            popover.l10n(errors[0]);
 
-            delay = popover.hide().css("transition-duration");
-
-            if (coef && delay) {
+            if (batch) {
+                // hide popover and show it later with delay
+                delay = popover.hide().css("transition-duration");
                 // parse animation duration value
-                delay = parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
-                // use extra delay for each next form melement
-                delay = delay * coef / target.get("form").length;
+                delay = delay && parseFloat(delay) * (delay.slice(-2) === "ms" ? 1 : 1000);
             }
 
             // use a small delay if several tooltips are going to be displayed
-            setTimeout(function()  { popover.show() }, delay);
+            setTimeout(function()  { popover.show() }, delay || 0);
         }
     });
 }(window.DOM, "_validity", {
@@ -269,11 +310,14 @@
     number: "should be a numeric value"
 }));
 
-DOM.importStyles(".better-validity-tooltip", "position:absolute;cursor:pointer;color:#ff3329;background:#FFF;font-weight:700;text-transform:uppercase;font-size:.75em;line-height:1;padding:.5em;border:1px solid;border-radius:.25em;-webkit-box-shadow:0 0 .25em;box-shadow:0 0 .25em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;opacity:.925;-webkit-transform:scale(1,1);-ms-transform:scale(1,1);transform:scale(1,1);-webkit-transform-origin:0 0;-ms-transform-origin:0 0;transform-origin:0 0;-webkit-transition:.3s ease-in-out;transition:.3s ease-in-out;-webkit-transition-property:-webkit-transform,opacity;transition-property:transform,opacity");
-DOM.importStyles(".better-validity-tooltip[aria-hidden=true]", "opacity:0;-webkit-transform:scale(2,2);-ms-transform:scale(2,2);transform:scale(2,2)");
-DOM.importStyles("input[aria-invalid]", "background:none no-repeat right center / auto 100% content-box");
-DOM.importStyles("input[aria-invalid=false]", "background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxwYXRoIGZpbGw9IiM0MkIzMDAiIGQ9Ik0xNiAzYy03LjE4IDAtMTMgNS44Mi0xMyAxM3M1LjgyIDEzIDEzIDEzIDEzLTUuODIgMTMtMTMtNS44Mi0xMy0xMy0xM3pNMjMuMjU4IDEyLjMwN2wtOS40ODYgOS40ODVjLTAuMjM4IDAuMjM3LTAuNjIzIDAuMjM3LTAuODYxIDBsLTAuMTkxLTAuMTkxLTAuMDAxIDAuMDAxLTUuMjE5LTUuMjU2Yy0wLjIzOC0wLjIzOC0wLjIzOC0wLjYyNCAwLTAuODYybDEuMjk0LTEuMjkzYzAuMjM4LTAuMjM4IDAuNjI0LTAuMjM4IDAgMGwzLjY4OSAzIDcuNzU2LTcuNzU2YzAuMjM4LTAuMjM4IDAuNjI0LTAuMjM4IDAgMGwxLjI5NCAxLjI5NGMwLjIzOSAwIDAgMCAwIDAuODYyeiIvPjwvc3ZnPg==)");
-DOM.importStyles("input[aria-invalid=true]", "background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxwYXRoIGZpbGw9IiNGRjMzMjkiIGQ9Ik0xNS41IDMuNWMtNy4xOCAwLTEzIDUuODItMTMgMTNzNS44MiAxMyAxMyAxMyAxMy01LjgyIDEzLTEzLTUuODItMTMtMTMtMTN6TTE1LjUgMjMuODc1Yy0wLjgyOSAwLTEuNS0wLjY3Mi0xLjUtMS41czAuNjcxLTEuNSAxLjUtMS41YzAuODI4IDAgMSAwIDEgMS41cy0wLjY3MiAxLjUtMS41IDEuNXpNMTcgMTcuMzc1YzAgMC44MjgtMC42NzIgMS41LTEuNSAxLjUtMC44MjkgMC0xLjUtMC42NzItMS41LTEuNXYtN2MwLTAuODI5IDAuNjcxLTEuNSAxLjUtMS41IDAgMCAxIDAgMSAxLjV2N3oiLz48L3N2Zz4=)");
+DOM.importStyles(".better-validity-tooltip", "cursor:pointer;color:#ff3329;background:#FFF;font-weight:700;text-transform:uppercase;font-size:.75em;line-height:1;padding:.5em;border:1px solid;border-radius:.25em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;opacity:.9;-webkit-transform:translateY(1px);-ms-transform:translateY(1px);transform:translateY(1px);-webkit-transition:.3s ease-out;transition:.3s ease-out;-webkit-transition-property:-webkit-transform,opacity;transition-property:transform,opacity;-webkit-transform-origin:1em 0;-ms-transform-origin:1em 0;transform-origin:1em 0");
+DOM.importStyles(".better-validity-tooltip[aria-hidden=true]", "opacity:0;-webkit-transform:translateY(1em);-ms-transform:translateY(1em);transform:translateY(1em)");
+DOM.importStyles(".better-validity-tooltip:before,.better-validity-tooltip:after", "content:'';width:0;height:0;display:block;position:absolute;bottom:100%");
+DOM.importStyles(".better-validity-tooltip:before", "border:6px solid transparent;border-bottom-color:inherit");
+DOM.importStyles(".better-validity-tooltip:after", "border:5px solid transparent;border-bottom-color:#FFF;margin-left:1px");
+DOM.importStyles("input[aria-invalid]", "-webkit-background-size:auto 80%;background-size:auto 80%;background-position:right center;background-repeat:no-repeat");
+DOM.importStyles("input[aria-invalid=false]", "background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNDJCMzAwIiBkPSJNMTYgM0M4LjgyIDMgMyA4LjgyIDMgMTZzNS44MiAxMyAxMyAxMyAxMy01LjgyIDEzLTEzUzIzLjE4IDMgMTYgM3ptNy4yNTggOS4zMDdsLTkuNDg2IDkuNDg1Yy0uMjM4LjIzNy0uNjIzLjIzNy0uODYgMGwtLjE5Mi0uMTktNS4yMi01LjI1NmMtLjIzOC0uMjM4LS4yMzgtLjYyNCAwLS44NjJsMS4yOTQtMS4yOTNjLjIzOC0uMjM3LjYyNC0uMjM3Ljg2MiAwbDMuNjkgMy43MTdMMjEuMSAxMC4xNWMuMjQtLjIzNy42MjUtLjIzNy44NjMgMGwxLjI5NCAxLjI5NWMuMjQuMjM3LjI0LjYyMyAwIC44NjJ6Ii8+PC9zdmc+)");
+DOM.importStyles("input[aria-invalid=true]", "background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjRkYzMzI5IiBkPSJNMTUuNSAzLjVjLTcuMTggMC0xMyA1LjgyLTEzIDEzczUuODIgMTMgMTMgMTMgMTMtNS44MiAxMy0xMy01LjgyLTEzLTEzLTEzem0wIDIwLjM3NWMtLjgzIDAtMS41LS42NzItMS41LTEuNXMuNjctMS41IDEuNS0xLjVjLjgyOCAwIDEuNS42NzIgMS41IDEuNXMtLjY3MiAxLjUtMS41IDEuNXptMS41LTYuNWMwIC44MjgtLjY3MiAxLjUtMS41IDEuNS0uODMgMC0xLjUtLjY3Mi0xLjUtMS41di03YzAtLjgzLjY3LTEuNSAxLjUtMS41LjgyOCAwIDEuNS42NyAxLjUgMS41djd6Ii8+PC9zdmc+)");
 DOM.importStyles("input[aria-invalid][type=checkbox],input[aria-invalid][type=radio]", "background:none");
 DOM.importStyles("input[aria-invalid]::-ms-clear,input[aria-invalid]::-ms-reveal", "display:none");
 DOM.importStyles(":invalid", "outline:inherit;-webkit-box-shadow:inherit;box-shadow:inherit");
