@@ -12,18 +12,14 @@
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
     /* istanbul ignore next */
     var getBooleanProp = (name) => {
-            return function(attrValue) {
+            return (attrValue) => {
                 attrValue = String(attrValue).toLowerCase();
 
                 return attrValue === "" || attrValue === name.toLowerCase();
             };
         },
-        setBooleanProp = (name) => {
-            return function(propValue) {
-                var currentValue = this.get(name);
-
-                return propValue ? "" : null;
-            };
+        setBooleanProp = () => {
+            return (propValue) => propValue ? "" : null;
         };
 
     function Validity(errors) {
@@ -32,8 +28,6 @@
         if (!errors || typeof errors !== "object") return;
 
         Object.keys(errors).forEach((key) => {
-            if (key === "length") return;
-
             var validity = errors[key];
 
             this[key] = validity;
