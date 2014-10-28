@@ -10,6 +10,21 @@
     patterns.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
+    /* istanbul ignore next */
+    var getBooleanProp = (name) => {
+            return function(attrValue) {
+                attrValue = String(attrValue).toLowerCase();
+
+                return attrValue === "" || attrValue === name.toLowerCase();
+            };
+        },
+        setBooleanProp = (name) => {
+            return function(propValue) {
+                var currentValue = this.get(name);
+
+                return propValue ? "" : null;
+            };
+        };
 
     function Validity(errors) {
         this.valid = true;
@@ -44,29 +59,11 @@
             if (typeof this.get("required") !== "boolean") {
                 ["required", "noValidate"].forEach((propName) => {
                     this.defineAttribute(propName, {
-                        get: this.doGetBooleanProp(propName),
-                        set: this.doSetBooleanProp(propName)
+                        get: getBooleanProp(propName),
+                        set: setBooleanProp(propName)
                     });
                 });
             }
-        },
-        doGetBooleanProp(name) {
-            return (attrValue) => {
-                attrValue = String(attrValue).toLowerCase();
-
-                return attrValue === "" || attrValue === name.toLowerCase();
-            };
-        },
-        doSetBooleanProp(name) {
-            return (propValue) => {
-                var currentValue = this.get(name);
-
-                propValue = !!propValue;
-
-                if (currentValue !== propValue) {
-                    return propValue ? "" : null;
-                }
-            };
         },
         validity(errors) {
             if (errors !== undefined) {
@@ -173,13 +170,16 @@
 
     DOM.extend("form", {
         constructor() {
-            if (typeof this.get("noValidate") === "boolean") {
+            /* istanbul ignore if */
+            if (typeof this.get("noValidate") !== "boolean") {
+                this.defineAttribute("noValidate", {
+                    get: getBooleanProp("noValidate"),
+                    set: setBooleanProp("noValidate")
+                });
+            } else {
                 let timeoutId;
-                // have to use legacy addEventListener because
-                // the invalid event does not bubble
-                this[0].addEventListener("invalid", (e) => {
-                    e.preventDefault(); // don't show tooltips
 
+                this.on("invalid", () => {
                     if (!timeoutId) {
                         timeoutId = setTimeout(() => {
                             // trigger submit event manually
@@ -188,7 +188,9 @@
                             timeoutId = null;
                         });
                     }
-                }, true);
+
+                    return false; // don't show tooltips
+                });
             }
 
             this

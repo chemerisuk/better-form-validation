@@ -132,6 +132,12 @@ describe("forms", function() {
         form.remove();
     });
 
+    it("should skip forms with novalidate", function() {
+        var form = DOM.mock("form[novalidate]>input[type=text name=a required]");
+
+        expect(form).toBeValid();
+    });
+
     beforeEach(function() {
         jasmine.addMatchers({
             toBeValid: function() {
