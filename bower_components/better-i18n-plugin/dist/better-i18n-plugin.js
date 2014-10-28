@@ -1,6 +1,6 @@
 /**
  * better-i18n-plugin: Internationalization plugin for better-dom
- * @version 1.0.0 Sat, 18 Oct 2014 18:13:15 GMT
+ * @version 1.0.1 Sat, 25 Oct 2014 11:37:21 GMT
  * @link https://github.com/chemerisuk/better-i18n-plugin
  * @copyright 2014 Maksim Chemerisuk
  * @license MIT
@@ -74,7 +74,7 @@
     Entry.prototype = new String();
     Entry.prototype.constructor = Entry;
 
-    Entry.prototype.toString = function() {
+    Entry.prototype.toString = Entry.prototype.valueOf = function() {
         return this[DOM.get("lang")] || this._;
     };
 

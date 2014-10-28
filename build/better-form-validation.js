@@ -2,7 +2,7 @@
     "use strict";
 
     var patterns = {};
-    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button"];
+    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button", "hidden"];
     var isValidInput = function(el)  {return invalidTypes.indexOf(el.get("type")) < 0};
 
     patterns.required = /\S/;
@@ -10,30 +10,34 @@
     patterns.email = /^([a-z0-9_\.\-\+]+)@([\da-z\.\-]+)\.([a-z\.]{2,6})$/i;
     patterns.url = /^(https?:\/\/)?[\da-z\.\-]+\.[a-z\.]{2,6}[#&+_\?\/\w \.\-=]*$/i;
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
+    /* istanbul ignore next */
+    var getBooleanProp = function(name)  {
+            return function(attrValue)  {
+                attrValue = String(attrValue).toLowerCase();
+
+                return attrValue === "" || attrValue === name.toLowerCase();
+            };
+        },
+        setBooleanProp = function()  {
+            return function(propValue)  {return propValue ? "" : null};
+        };
 
     function Validity(errors) {var this$0 = this;
-        if (typeof errors === "string") {
-            this[0] = errors;
-            this.valid = !errors;
-        } else {
-            this.valid = true;
+        this.valid = true;
 
-            if (!errors || typeof errors !== "object") return;
+        if (!errors || typeof errors !== "object") return;
 
-            var keys = Object.keys(errors).filter(function(key)  {return key !== "length"});
+        Object.keys(errors).forEach(function(key)  {
+            var validity = errors[key];
 
-            keys.forEach(function(key)  {
-                var validity = errors[key];
+            this$0[key] = validity;
 
-                this$0[key] = validity;
-
-                if (validity instanceof Validity) {
-                    this$0.valid = this$0.valid && validity.valid;
-                } else {
-                    this$0.valid = this$0.valid && !validity.length;
-                }
-            });
-        }
+            if (validity instanceof Validity) {
+                this$0.valid = this$0.valid && validity.valid;
+            } else {
+                this$0.valid = this$0.valid && !validity.length;
+            }
+        });
     }
 
     DOM.extend("[name]", isValidInput, {
@@ -44,40 +48,26 @@
                 this.on("input", this.onValidityCheck);
             }
 
-            this.on("change", this.onValidityUpdate);
+            this.on("change", this.reportValidity);
             /* istanbul ignore if */
             if (typeof this.get("required") !== "boolean") {
                 ["required", "noValidate"].forEach(function(propName)  {
                     this$0.defineAttribute(propName, {
-                        get: this$0.doGetBooleanProp(propName),
-                        set: this$0.doSetBooleanProp(propName)
+                        get: getBooleanProp(propName),
+                        set: setBooleanProp(propName)
                     });
                 });
             }
         },
-        doGetBooleanProp: function(name) {
-            return function(attrValue)  {
-                attrValue = String(attrValue).toLowerCase();
-
-                return attrValue === "" || attrValue === name.toLowerCase();
-            };
-        },
-        doSetBooleanProp: function(name) {var this$0 = this;
-            return function(propValue)  {
-                var currentValue = this$0.get(name);
-
-                propValue = !!propValue;
-
-                if (currentValue !== propValue) {
-                    return propValue ? "" : null;
-                }
-            };
-        },
         validity: function(errors) {var this$0 = this;
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else if (this.get("novalidate") != null) {
-                return new Validity();
+            } else {
+                var form = DOM.constructor(this.get("form"));
+
+                if (this.get("novalidate") != null || form.get("novalidate") != null) {
+                    return new Validity();
+                }
             }
 
             errors = this.get(VALIDITY_KEY);
@@ -153,44 +143,37 @@
                 this.set(value.substr(0, maxlength));
             }
 
-            var form = DOM.constructor(this.get("form"));
-
-            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
-
             if (this.get("aria-invalid")) {
-                var errors = this.validity();
-
-                if (errors.valid) {
-                    this.fire("validity:ok");
-                } else {
-                    this.fire("validity:fail", errors);
-                }
+                this.reportValidity();
             }
         },
-        onValidityUpdate: function() {
-            var form = DOM.constructor(this.get("form"));
+        reportValidity: function() {
+            var validity = this.validity();
 
-            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
+            this.set("aria-invalid", !validity.valid);
 
-            var errors = this.validity();
-
-            if (errors.valid) {
+            if (validity.valid) {
                 this.fire("validity:ok");
             } else {
-                this.fire("validity:fail", errors);
+                this.fire("validity:fail", validity);
             }
+
+            return validity;
         }
     });
 
     DOM.extend("form", {
         constructor: function() {var this$0 = this;
-            if (typeof this.get("noValidate") === "boolean") {
+            /* istanbul ignore if */
+            if (typeof this.get("noValidate") !== "boolean") {
+                this.defineAttribute("noValidate", {
+                    get: getBooleanProp("noValidate"),
+                    set: setBooleanProp("noValidate")
+                });
+            } else {
                 var timeoutId;
-                // have to use legacy addEventListener because
-                // the invalid event does not bubble
-                this[0].addEventListener("invalid", function(e)  {
-                    e.preventDefault(); // don't show tooltips
 
+                this.on("invalid", function()  {
                     if (!timeoutId) {
                         timeoutId = setTimeout(function()  {
                             // trigger submit event manually
@@ -199,7 +182,9 @@
                             timeoutId = null;
                         });
                     }
-                }, true);
+
+                    return false; // don't show tooltips
+                });
             }
 
             this
@@ -223,11 +208,10 @@
             this.findAll("[name]")
                 .filter(isValidInput)
                 .forEach(function(el)  {
-                    var name = el.get("name"),
-                        validity = el.validity();
+                    var name = el.get("name");
 
-                    if (!(name in errors || validity.valid)) {
-                        errors[name] = validity;
+                    if (!(name in errors)) {
+                        errors[name] = el.validity();
                     }
                 });
 
@@ -251,20 +235,24 @@
     });
 
     DOM.on("validity:ok", ["target", "defaultPrevented"], function(target, cancel)  {
-        target.set("aria-invalid", false);
-
         if (!cancel) target.popover().hide();
     });
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], function(errors, batch, target, cancel)  {
-        target.set("aria-invalid", true);
-
         if (cancel) return;
 
         if (target.matches("form")) {
             Object.keys(errors).forEach(function(name)  {
+                var validity = errors[name];
+
+                if (validity instanceof Validity) {
+                    if (validity.valid) return;
+                } else {
+                    if (!validity.length) return;
+                }
+
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], true);
+                    .fire("validity:fail", validity, true);
             });
         } else {
             var popover = target.popover(),
