@@ -2,7 +2,7 @@
     "use strict";
 
     var patterns = {};
-    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button"];
+    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button", "hidden"];
     var isValidInput = (el) => invalidTypes.indexOf(el.get("type")) < 0;
 
     patterns.required = /\S/;
@@ -12,28 +12,23 @@
     patterns.tel = /^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})(( x| ext)\d{1,5}){0,1}$/;
 
     function Validity(errors) {
-        if (typeof errors === "string") {
-            this[0] = errors;
-            this.valid = !errors;
-        } else {
-            this.valid = true;
+        this.valid = true;
 
-            if (!errors || typeof errors !== "object") return;
+        if (!errors || typeof errors !== "object") return;
 
-            var keys = Object.keys(errors).filter((key) => key !== "length");
+        Object.keys(errors).forEach((key) => {
+            if (key === "length") return;
 
-            keys.forEach((key) => {
-                var validity = errors[key];
+            var validity = errors[key];
 
-                this[key] = validity;
+            this[key] = validity;
 
-                if (validity instanceof Validity) {
-                    this.valid = this.valid && validity.valid;
-                } else {
-                    this.valid = this.valid && !validity.length;
-                }
-            });
-        }
+            if (validity instanceof Validity) {
+                this.valid = this.valid && validity.valid;
+            } else {
+                this.valid = this.valid && !validity.length;
+            }
+        });
     }
 
     DOM.extend("[name]", isValidInput, {
@@ -44,7 +39,7 @@
                 this.on("input", this.onValidityCheck);
             }
 
-            this.on("change", this.onValidityUpdate);
+            this.on("change", this.reportValidity);
             /* istanbul ignore if */
             if (typeof this.get("required") !== "boolean") {
                 ["required", "noValidate"].forEach((propName) => {
@@ -76,8 +71,12 @@
         validity(errors) {
             if (errors !== undefined) {
                 this.set(VALIDITY_KEY, errors);
-            } else if (this.get("novalidate") != null) {
-                return new Validity();
+            } else {
+                var form = DOM.constructor(this.get("form"));
+
+                if (this.get("novalidate") != null || form.get("novalidate") != null) {
+                    return new Validity();
+                }
             }
 
             errors = this.get(VALIDITY_KEY);
@@ -153,32 +152,22 @@
                 this.set(value.substr(0, maxlength));
             }
 
-            var form = DOM.constructor(this.get("form"));
-
-            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
-
             if (this.get("aria-invalid")) {
-                var errors = this.validity();
-
-                if (errors.valid) {
-                    this.fire("validity:ok");
-                } else {
-                    this.fire("validity:fail", errors);
-                }
+                this.reportValidity();
             }
         },
-        onValidityUpdate() {
-            var form = DOM.constructor(this.get("form"));
+        reportValidity() {
+            var validity = this.validity();
 
-            if (this.get("novalidate") != null || form.get("novalidate") != null) return;
+            this.set("aria-invalid", !validity.valid);
 
-            var errors = this.validity();
-
-            if (errors.valid) {
+            if (validity.valid) {
                 this.fire("validity:ok");
             } else {
-                this.fire("validity:fail", errors);
+                this.fire("validity:fail", validity);
             }
+
+            return validity;
         }
     });
 
@@ -223,11 +212,10 @@
             this.findAll("[name]")
                 .filter(isValidInput)
                 .forEach((el) => {
-                    var name = el.get("name"),
-                        validity = el.validity();
+                    var name = el.get("name");
 
-                    if (!(name in errors || validity.valid)) {
-                        errors[name] = validity;
+                    if (!(name in errors)) {
+                        errors[name] = el.validity();
                     }
                 });
 
@@ -251,20 +239,24 @@
     });
 
     DOM.on("validity:ok", ["target", "defaultPrevented"], (target, cancel) => {
-        target.set("aria-invalid", false);
-
         if (!cancel) target.popover().hide();
     });
 
     DOM.on("validity:fail", [1, 2, "target", "defaultPrevented"], (errors, batch, target, cancel) => {
-        target.set("aria-invalid", true);
-
         if (cancel) return;
 
         if (target.matches("form")) {
             Object.keys(errors).forEach((name) => {
+                var validity = errors[name];
+
+                if (validity instanceof Validity) {
+                    if (validity.valid) return;
+                } else {
+                    if (!validity.length) return;
+                }
+
                 target.find("[name=\"" + name + "\"]")
-                    .fire("validity:fail", errors[name], true);
+                    .fire("validity:fail", validity, true);
             });
         } else {
             var popover = target.popover(),
