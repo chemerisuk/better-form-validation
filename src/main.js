@@ -247,7 +247,8 @@
                     if (!validity.length) return;
                 }
 
-                target.find("[name=\"" + name + "\"]")
+                target.find(`[name="${name}"]`)
+                    .set("aria-invalid", true)
                     .fire("validity:fail", validity, true);
             });
         } else {

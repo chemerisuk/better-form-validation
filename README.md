@@ -1,5 +1,5 @@
 # better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][bower-image]][bower-url]
-> Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
+> Form validation using [better-dom](https://github.com/chemerisuk/better-dom)
 
 HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
 
@@ -65,10 +65,10 @@ As you can see I use `validity` to set a function that will do validation. If th
 Calling `validity` method without arguments returns current array of error(s). Therefore you can use it to check field value manually:
 
 ```js
-if (replyPassword.validity().length) {
-    // validation fails
-} else {
+if (replyPassword.validity().valid) {
     // validation is passed
+} else {
+    // validation fails
 } 
 ```
 
