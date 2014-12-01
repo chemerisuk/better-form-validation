@@ -52,10 +52,8 @@
             /* istanbul ignore if */
             if (typeof this.get("required") !== "boolean") {
                 ["required", "noValidate"].forEach((propName) => {
-                    this.defineAttribute(propName, {
-                        get: getBooleanProp(propName),
-                        set: setBooleanProp(propName)
-                    });
+                    this.define(propName,
+                        getBooleanProp(propName), setBooleanProp(propName));
                 });
             }
         },
@@ -166,10 +164,8 @@
         constructor() {
             /* istanbul ignore if */
             if (typeof this.get("noValidate") !== "boolean") {
-                this.defineAttribute("noValidate", {
-                    get: getBooleanProp("noValidate"),
-                    set: setBooleanProp("noValidate")
-                });
+                this.define("noValidate",
+                    getBooleanProp("noValidate"), setBooleanProp("noValidate"));
             } else {
                 let timeoutId;
 

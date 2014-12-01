@@ -18,8 +18,11 @@
     "better-dom"
   ],
   "dependencies": {
-    "better-dom": "~2.0.0",
+    "better-dom": "~2.1.0",
     "better-i18n-plugin": "~1.0.0",
     "better-popover-plugin": "~0.5.1"
+  },
+  "resolutions": {
+    "better-dom": "~2.1.0"
   }
 }
