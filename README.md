@@ -9,9 +9,10 @@ HTML5 form validation is extremely useful to make client-side data checking cons
 * polyfills HTML5 form validation markup support for browsers (mobile browsers as well)
 * [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
 * validity tooltips are fully customizable (messages and presentation)
-* custom validation via new `validity` method for inputs and forms
+* custom validation via new `validity` method for inputs and forms (instead of `setCustomValidity`)
 * new `validity:ok` and `validity:fail` events that bubble (unlike standard `invalid`)
-* standards-based `aria-invalid` instead of broken `:valid` and `:invalid`
+* polyfills `novalidate` and `required` properties in browsers that do not support them natively
+* standards-based `aria-invalid` for styling inputs in CSS instead of broken `:valid` and `:invalid`
 * `maxlength` attribute fix for  `<input type="number">` and `<textarea>`
 
 ## Installing
