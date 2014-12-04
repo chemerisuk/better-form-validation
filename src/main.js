@@ -45,7 +45,7 @@
             var type = this.get("type");
 
             if (type !== "checkbox" && type !== "radio") {
-                this.on("input", this.onValidityCheck);
+                this.on("input", this._checkValidity);
             }
 
             this.on("change", this.reportValidity);
@@ -133,7 +133,7 @@
 
             return new Validity(errors);
         },
-        onValidityCheck() {
+        _checkValidity() {
             var value = this.get(),
                 maxlength = this.get("maxlength");
 
@@ -184,8 +184,8 @@
             }
 
             this
-                .on("submit", this.onFormSubmit)
-                .on("reset", this.onFormReset);
+                .on("submit", this._submitForm)
+                .on("reset", this._resetForm);
         },
         validity(errors) {
             if (errors !== undefined) {
@@ -213,7 +213,7 @@
 
             return new Validity(errors);
         },
-        onFormSubmit() {
+        _submitForm() {
             var validity = this.validity();
 
             if (!validity.valid) {
@@ -223,7 +223,7 @@
                 return false;
             }
         },
-        onFormReset() {
+        _resetForm() {
             this.findAll("[name]").forEach((el) => {
                 el.set("aria-invalid", null).popover().hide();
             });

@@ -19,12 +19,12 @@ describe("forms", function() {
 
         DOM.find("body").append(form);
 
-        expect(function() { form.onFormReset() }).not.toThrow();
+        expect(function() { form._resetForm() }).not.toThrow();
 
-        form.onFormSubmit();
+        form._submitForm();
         spys = inputs.map(function(el) { return spyOn(el.popover(), "hide") });
 
-        form.onFormReset();
+        form._resetForm();
         spys.forEach(function(spy) {
             expect(spy).toHaveBeenCalled();
         });
@@ -126,7 +126,7 @@ describe("forms", function() {
         });
 
         input.on("validity:fail", spy);
-        form.onFormSubmit();
+        form._submitForm();
         expect(spy).toHaveBeenCalledWith(["FAIL"], true);
 
         form.remove();

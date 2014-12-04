@@ -127,11 +127,11 @@ describe("elements", function() {
         expect(input).not.toBeValid();
 
         input.on("validity:fail", failSpy);
-        input.set("aria-invalid", false).onValidityCheck();
+        input.set("aria-invalid", false)._checkValidity();
         expect(failSpy).toHaveBeenCalled();
 
         input.set("123").on("validity:ok", successSpy);
-        input.onValidityCheck();
+        input._checkValidity();
         expect(successSpy).toHaveBeenCalled();
     });
 
@@ -153,16 +153,16 @@ describe("maxlength", function() {
         var textarea = DOM.mock("textarea[name=b maxlength=5]");
 
         textarea.set("1234567");
-        textarea.onValidityCheck();
+        textarea._checkValidity();
         expect(textarea.get()).toBe("12345");
 
         textarea.set("1234");
-        textarea.onValidityCheck();
+        textarea._checkValidity();
         expect(textarea.get()).toBe("1234");
 
         textarea.set("maxlength", null);
         textarea.set("1234567");
-        textarea.onValidityCheck();
+        textarea._checkValidity();
         expect(textarea.get()).toBe("1234567");
     });
 
@@ -170,16 +170,16 @@ describe("maxlength", function() {
         var input = DOM.mock("input[name=c type=number maxlength=3]");
 
         input.set("1234567");
-        input.onValidityCheck();
+        input._checkValidity();
         expect(input.get()).toBe("123");
 
         input.set("12");
-        input.onValidityCheck();
+        input._checkValidity();
         expect(input.get()).toBe("12");
 
         input.set("maxlength", null);
         input.set("1234567");
-        input.onValidityCheck();
+        input._checkValidity();
         expect(input.get()).toBe("1234567");
     });
 });
