@@ -4,7 +4,7 @@ describe("forms", function() {
             spy = jasmine.createSpy("validity:fail");
 
         spy.and.callFake(function(validity) {
-            expect(validity.a[0]).toBe("can't be empty");
+            expect(validity.a[0]).toBe("field is required");
             expect(validity.valid).toBe(false);
         });
 
