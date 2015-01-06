@@ -91,7 +91,7 @@
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
-                        errors.push("can't be empty");
+                        errors.push("field is required");
                     }
                     break;
 
@@ -122,7 +122,7 @@
 
                     if (required && !regexp) {
                         regexp = patterns.required;
-                        msg = "can't be empty";
+                        msg = "field is required";
                     }
 
                     if (regexp && !regexp.test(value)) {
@@ -146,6 +146,12 @@
             }
         },
         reportValidity() {
+            var form = DOM.constructor(this.get("form"));
+
+            if (this.get("novalidate") != null || form.get("novalidate") != null) {
+                return new Validity();
+            }
+
             var validity = this.validity();
 
             this.set("aria-invalid", !validity.valid);
