@@ -211,8 +211,8 @@
                 .filter(isValidInput)
                 .forEach((el) => {
                     var name = el.get("name");
-
-                    if (!(name in errors)) {
+                    // hidden elements might not have validity method yet
+                    if (!(name in errors) && el.validity) {
                         errors[name] = el.validity();
                     }
                 });
