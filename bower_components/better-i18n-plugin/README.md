@@ -5,17 +5,19 @@ The project aims to solve the internationalization problem __on front-end side__
 
 ## Features
 
-* no JavaScript calls to switch to web page language
-* change current language using the `lang` attribute
+* no JavaScript calls to switch to the current web page language
+* change current language using the vanilla DOM `lang` attribute
+* support for HTML markup in localized string values
 * ability to change language on a document subtree
-* support for HTML markup in localized strings
 
 NOTE: currently the project can't localize empty DOM elements (like `<input>`, `<select>` etc.) or attribute values.
 
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
-    $ bower install better-i18n-plugin
+```sh
+$ bower install better-i18n-plugin
+```
 
 This will clone the latest version of the __better-i18n-plugin__ into the `bower_components` directory at the root of your project.
 

@@ -1,6 +1,6 @@
 /**
  * better-i18n-plugin: Internationalization plugin for better-dom
- * @version 1.0.1 Sat, 25 Oct 2014 11:37:21 GMT
+ * @version 1.0.2 Tue, 28 Oct 2014 17:19:30 GMT
  * @link https://github.com/chemerisuk/better-i18n-plugin
  * @copyright 2014 Maksim Chemerisuk
  * @license MIT
@@ -27,7 +27,7 @@
             // by default localized strings should be hidden
             DOM.importStyles((("[data-l10n=\"" + lang) + "\"]"), "display:none");
             // ... except current page language is `lang`
-            DOM.importStyles(((":lang(" + lang) + (") > [data-l10n=\"" + lang) + "\"]"), "display:inline");
+            DOM.importStyles(((":lang(" + lang) + (") > [data-l10n=\"" + lang) + "\"]"), "display:inline !important");
             // ... in such case hide default value too
             DOM.importStyles(((":lang(" + lang) + (") > [data-l10n=\"" + lang) + "\"] ~ [data-l10n]"), "display:none");
         }
@@ -43,14 +43,8 @@
 
     DOM.extend("*", {
         l10n: function(key, varMap) {
-            var entry = new Entry(key, varMap),
-                keys = Object.keys(entry).sort(function(k)  {return k === "_" ? 1 : -1});
-
-            return this.set(keys.map(function(key)  {
-                var attrValue = key === "_" ? "" : key;
-
-                return (("<span data-l10n=\"" + attrValue) + ("\">" + (entry[key])) + "</span>");
-            }).join(""));
+            // unwrap outer <span> from toHTMLString call
+            return this.set(new Entry(key, varMap).toHTMLString().slice(6, -7));
         }
     });
 
@@ -80,5 +74,14 @@
 
     Entry.prototype.toLocaleString = function(lang) {
         return lang ? this[lang] || this._ : this.toString();
+    };
+
+    Entry.prototype.toHTMLString = function() {var this$0 = this;
+        // "_" key should always be the last one
+        var keys = Object.keys(this).sort(function(k)  {return k === "_" ? 1 : -1});
+
+        return DOM.emmet("span>" + keys.map(function(key)  {
+            return "span[data-l10n=`" + key + "`]>`" + this$0[key] + "`";
+        }).join("^"));
     };
 }(window.DOM));

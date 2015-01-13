@@ -1,5 +1,5 @@
 DOM.importStrings("de", {
-    "can't be empty": "darf nicht leer sein",
+    "field is required": "аeld wird benötigt",
     "illegal value format": "ungültiges Format" ,
     "should be a valid URL": "muss eine gültige URL sein",
     "should be a valid email": "muss eine gültige E-Mail-sein",

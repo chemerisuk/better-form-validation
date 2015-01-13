@@ -1,5 +1,5 @@
 DOM.importStrings("ru", {
-    "can't be empty": "не может быть пустым",
+    "field is required": "обязательное поле",
     "illegal value format": "недопустимый формат",
     "should be a valid URL": "должен быть правильный URL",
     "should be a valid email": "должен быть правильный email",

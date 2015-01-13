@@ -1,5 +1,5 @@
 # better-form-validation<br>[![Build Status][travis-image]][travis-url] [![Coverage Status][coveralls-image]][coveralls-url] [![Bower version][bower-image]][bower-url]
-> Form validation for [better-dom](https://github.com/chemerisuk/better-dom)
+> Form validation using [better-dom](https://github.com/chemerisuk/better-dom)
 
 HTML5 form validation is extremely useful to make client-side data checking consistent and standards-friendly. Unfortunately at present browser support is limited to the latest versions on desktop, and some mobile browsers don't support it at all. Also the current standard has lack of customization options (not possible to style tooltips or error messages), JavaScript APIs are not developer-friendly. This project aims to solve all issues above.
 
@@ -9,15 +9,18 @@ HTML5 form validation is extremely useful to make client-side data checking cons
 * polyfills HTML5 form validation markup support for browsers (mobile browsers as well)
 * [live extension](https://github.com/chemerisuk/better-dom/wiki/Live-extensions) - works for current and future content
 * validity tooltips are fully customizable (messages and presentation)
-* custom validation via new `validity` method for inputs and forms
+* custom validation via new `validity` method for inputs and forms (instead of `setCustomValidity`)
 * new `validity:ok` and `validity:fail` events that bubble (unlike standard `invalid`)
-* standards-based `aria-invalid` instead of broken `:valid` and `:invalid`
+* polyfills `novalidate` and `required` properties in browsers that do not support them natively
+* standards-based `aria-invalid` for styling inputs in CSS instead of broken `:valid` and `:invalid`
 * `maxlength` attribute fix for  `<input type="number">` and `<textarea>`
 
 ## Installing
 Use [bower](http://bower.io/) to download this extension with all required dependencies.
 
-    $ bower install better-form-validation
+```sh
+$ bower install better-form-validation
+```
 
 This will clone the latest version of the __better-form-validation__ into the `bower_components` directory at the root of your project.
 
@@ -63,10 +66,10 @@ As you can see I use `validity` to set a function that will do validation. If th
 Calling `validity` method without arguments returns current array of error(s). Therefore you can use it to check field value manually:
 
 ```js
-if (replyPassword.validity().length) {
-    // validation fails
-} else {
+if (replyPassword.validity().valid) {
     // validation is passed
+} else {
+    // validation fails
 } 
 ```
 
