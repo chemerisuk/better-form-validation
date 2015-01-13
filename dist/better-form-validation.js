@@ -1,6 +1,6 @@
 /**
  * better-form-validation: Form validation using better-dom
- * @version 1.5.0-rc.1 Thu, 04 Dec 2014 05:45:31 GMT
+ * @version 1.5.0-rc.2 Tue, 13 Jan 2015 08:38:42 GMT
  * @link https://github.com/chemerisuk/better-form-validation
  * @copyright 2014 Maksim Chemerisuk
  * @license MIT
@@ -98,7 +98,7 @@
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
-                        errors.push("can't be empty");
+                        errors.push("field is required");
                     }
                     break;
 
@@ -129,7 +129,7 @@
 
                     if (required && !regexp) {
                         regexp = patterns.required;
-                        msg = "can't be empty";
+                        msg = "field is required";
                     }
 
                     if (regexp && !regexp.test(value)) {
@@ -153,6 +153,12 @@
             }
         },
         reportValidity: function() {
+            var form = DOM.constructor(this.get("form"));
+
+            if (this.get("novalidate") != null || form.get("novalidate") != null) {
+                return new Validity();
+            }
+
             var validity = this.validity();
 
             this.set("aria-invalid", !validity.valid);
@@ -212,8 +218,8 @@
                 .filter(isValidInput)
                 .forEach(function(el)  {
                     var name = el.get("name");
-
-                    if (!(name in errors)) {
+                    // hidden elements might not have validity method yet
+                    if (!(name in errors) && el.validity) {
                         errors[name] = el.validity();
                     }
                 });
@@ -295,4 +301,4 @@
     number: "should be a numeric value"
 }));
 
-DOM.importStyles("@media all", ".better-validity-tooltip{cursor:pointer;color:#ff3329;background:#FFF;font-weight:700;text-transform:uppercase;font-size:.75em;line-height:1;padding:.5em;border:1px solid;border-radius:.25em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;opacity:.9;-webkit-transform:translateY(1px);-ms-transform:translateY(1px);transform:translateY(1px);-webkit-transition:.3s ease-out;transition:.3s ease-out;-webkit-transition-property:-webkit-transform,opacity;transition-property:transform,opacity;-webkit-transform-origin:1em 0;-ms-transform-origin:1em 0;transform-origin:1em 0}.better-validity-tooltip[aria-hidden=true]{opacity:0;-webkit-transform:translateY(1em);-ms-transform:translateY(1em);transform:translateY(1em)}.better-validity-tooltip:before,.better-validity-tooltip:after{content:'';width:0;height:0;display:block;position:absolute;bottom:100%}.better-validity-tooltip:before{border:6px solid transparent;border-bottom-color:inherit}.better-validity-tooltip:after{border:5px solid transparent;border-bottom-color:#FFF;margin-left:1px}input[aria-invalid]{-webkit-background-size:auto 80%;background-size:auto 80%;background-position:right center;background-repeat:no-repeat}input[aria-invalid=false]{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNDJCMzAwIiBkPSJNMTYgM0M4LjgyIDMgMyA4LjgyIDMgMTZzNS44MiAxMyAxMyAxMyAxMy01LjgyIDEzLTEzUzIzLjE4IDMgMTYgM3ptNy4yNTggOS4zMDdsLTkuNDg2IDkuNDg1Yy0uMjM4LjIzNy0uNjIzLjIzNy0uODYgMGwtLjE5Mi0uMTktNS4yMi01LjI1NmMtLjIzOC0uMjM4LS4yMzgtLjYyNCAwLS44NjJsMS4yOTQtMS4yOTNjLjIzOC0uMjM3LjYyNC0uMjM3Ljg2MiAwbDMuNjkgMy43MTdMMjEuMSAxMC4xNWMuMjQtLjIzNy42MjUtLjIzNy44NjMgMGwxLjI5NCAxLjI5NWMuMjQuMjM3LjI0LjYyMyAwIC44NjJ6Ii8+PC9zdmc+)}input[aria-invalid=true]{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjRkYzMzI5IiBkPSJNMTUuNSAzLjVjLTcuMTggMC0xMyA1LjgyLTEzIDEzczUuODIgMTMgMTMgMTMgMTMtNS44MiAxMy0xMy01LjgyLTEzLTEzLTEzem0wIDIwLjM3NWMtLjgzIDAtMS41LS42NzItMS41LTEuNXMuNjctMS41IDEuNS0xLjVjLjgyOCAwIDEuNS42NzIgMS41IDEuNXMtLjY3MiAxLjUtMS41IDEuNXptMS41LTYuNWMwIC44MjgtLjY3MiAxLjUtMS41IDEuNS0uODMgMC0xLjUtLjY3Mi0xLjUtMS41di03YzAtLjgzLjY3LTEuNSAxLjUtMS41LjgyOCAwIDEuNS42NyAxLjUgMS41djd6Ii8+PC9zdmc+)}input[aria-invalid][type=checkbox],input[aria-invalid][type=radio]{background:none}input[aria-invalid]::-ms-clear,input[aria-invalid]::-ms-reveal{display:none}:invalid{outline:inherit;-webkit-box-shadow:inherit;box-shadow:inherit}");
+DOM.importStyles("@media screen", ".better-validity-tooltip{cursor:pointer;color:#ff3329;background:#FFF;font-weight:700;text-transform:uppercase;font-size:.75em;line-height:1;padding:.5em;border:1px solid;border-radius:.25em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;opacity:.9;-webkit-transform:translateY(1px);-ms-transform:translateY(1px);transform:translateY(1px);-webkit-transition:.3s ease-out;transition:.3s ease-out;-webkit-transition-property:-webkit-transform,opacity;transition-property:transform,opacity;-webkit-transform-origin:1em 0;-ms-transform-origin:1em 0;transform-origin:1em 0}.better-validity-tooltip[aria-hidden=true]{opacity:0;-webkit-transform:translateY(1em);-ms-transform:translateY(1em);transform:translateY(1em)}.better-validity-tooltip:before,.better-validity-tooltip:after{content:'';width:0;height:0;display:block;position:absolute;bottom:100%}.better-validity-tooltip:before{border:6px solid transparent;border-bottom-color:inherit}.better-validity-tooltip:after{border:5px solid transparent;border-bottom-color:#FFF;margin-left:1px}input[aria-invalid]{-webkit-background-size:auto 80%;background-size:auto 80%;background-position:right center;background-repeat:no-repeat}input[aria-invalid=false]{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjNDJCMzAwIiBkPSJNMTYgM0M4LjgyIDMgMyA4LjgyIDMgMTZzNS44MiAxMyAxMyAxMyAxMy01LjgyIDEzLTEzUzIzLjE4IDMgMTYgM3ptNy4yNTggOS4zMDdsLTkuNDg2IDkuNDg1Yy0uMjM4LjIzNy0uNjIzLjIzNy0uODYgMGwtLjE5Mi0uMTktNS4yMi01LjI1NmMtLjIzOC0uMjM4LS4yMzgtLjYyNCAwLS44NjJsMS4yOTQtMS4yOTNjLjIzOC0uMjM3LjYyNC0uMjM3Ljg2MiAwbDMuNjkgMy43MTdMMjEuMSAxMC4xNWMuMjQtLjIzNy42MjUtLjIzNy44NjMgMGwxLjI5NCAxLjI5NWMuMjQuMjM3LjI0LjYyMyAwIC44NjJ6Ii8+PC9zdmc+)}input[aria-invalid=true]{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBmaWxsPSIjRkYzMzI5IiBkPSJNMTUuNSAzLjVjLTcuMTggMC0xMyA1LjgyLTEzIDEzczUuODIgMTMgMTMgMTMgMTMtNS44MiAxMy0xMy01LjgyLTEzLTEzLTEzem0wIDIwLjM3NWMtLjgzIDAtMS41LS42NzItMS41LTEuNXMuNjctMS41IDEuNS0xLjVjLjgyOCAwIDEuNS42NzIgMS41IDEuNXMtLjY3MiAxLjUtMS41IDEuNXptMS41LTYuNWMwIC44MjgtLjY3MiAxLjUtMS41IDEuNS0uODMgMC0xLjUtLjY3Mi0xLjUtMS41di03YzAtLjgzLjY3LTEuNSAxLjUtMS41LjgyOCAwIDEuNS42NyAxLjUgMS41djd6Ii8+PC9zdmc+)}input[aria-invalid][type=checkbox],input[aria-invalid][type=radio]{background:none}input[aria-invalid]::-ms-clear,input[aria-invalid]::-ms-reveal{display:none}:invalid{outline:inherit;-webkit-box-shadow:inherit;box-shadow:inherit}");
