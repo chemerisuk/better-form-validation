@@ -10,7 +10,9 @@
     "url": "https://github.com/chemerisuk/better-form-validation"
   },
   "devDependencies": {
-    "better-dom-boilerplate": "git://github.com/chemerisuk/better-dom-boilerplate.git"
+    "better-dom-boilerplate": "git://github.com/chemerisuk/better-dom-boilerplate.git",
+    "bower": "^1.5.2",
+    "gulp": "^3.9.0"
   },
   "config": {
     "gulp": "--gulpfile node_modules/better-dom-boilerplate/gulpfile.js --cwd ."
