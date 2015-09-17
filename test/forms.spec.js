@@ -88,6 +88,17 @@ describe("forms", function() {
         expect(spy).toHaveBeenCalled();
     });*/
 
+
+    it("should allow custom tooltip messages via the title attribute", function() {
+        var ValiditySpy = spyOn(window, 'Validity');
+        var form = DOM.mock("form>input[type=text name=d title=customerror");
+        DOM.find("body").append(form);
+
+        expect(form).toBeValid();
+
+        expect(ValiditySpy).toHaveBeenCalledWith(["customerror"]);
+    });
+
     it("should allow to add custom validation", function() {
         var form = DOM.mock("form>input[type=text name=d]");
 
