@@ -3,8 +3,10 @@
   "version": "1.5.0-rc.2",
   "main": [
     "dist/better-form-validation.js",
-    "i18n/better-form-validation.ru.js",
-    "i18n/better-form-validation.de.js"
+    "i18n/better-form-validation.de.js",
+    "i18n/better-form-validation.ja.js",
+    "i18n/better-form-validation.ms.js",
+    "i18n/better-form-validation.ru.js"
   ],
   "ignore": [
     ".*",
