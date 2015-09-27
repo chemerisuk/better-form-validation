@@ -9,7 +9,7 @@
     "use strict";
 
     var patterns = {};
-    var invalidTypes = [null, "file", "image", "submit", "fieldset", "reset", "button", "hidden"];
+    var invalidTypes = [null, "image", "submit", "fieldset", "reset", "button", "hidden"];
     var isValidInput = function(el)  {return invalidTypes.indexOf(el.get("type")) < 0};
 
     patterns.required = /\S/;
@@ -99,6 +99,12 @@
                 case "checkbox":
                     if (required && !this.get("checked")) {
                         errors.push("field is required");
+                    }
+                    break;
+
+                case "file":
+                    if (required && this.get('files').length === 0) {
+                        errors.push("can't be empty");
                     }
                     break;
 
