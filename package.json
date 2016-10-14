@@ -9,8 +9,13 @@
     "type": "git",
     "url": "https://github.com/chemerisuk/better-form-validation"
   },
-  "devDependencies": {
-    "better-dom-boilerplate": "git://github.com/chemerisuk/better-dom-boilerplate.git"
+  "keywords": [
+    "ecosystem:better-dom",
+    "better-forma-validation",
+    "HTML5 form validation"
+  ],
+  "bugs": {
+    "url": "https://github.com/chemerisuk/better-form-validation/issues"
   },
   "config": {
     "gulp": "--gulpfile node_modules/better-dom-boilerplate/gulpfile.js --cwd ."
@@ -18,8 +23,14 @@
   "scripts": {
     "test": "gulp test $npm_package_config_gulp",
     "start": "gulp dev $npm_package_config_gulp",
-    "release": "gulp release $npm_package_config_gulp",
-    "postrelease": "gulp gh-pages $npm_package_config_gulp"
+    "version": "gulp dist $npm_package_config_gulp && git add -A dist bower.json",
+    "postversion": "git push && git push --tags"
+  },
+  "peerDependencies": {
+    "better-dom": ">=2.0.0"
+  },
+  "devDependencies": {
+    "better-dom-boilerplate": "git://github.com/chemerisuk/better-dom-boilerplate.git"
   },
   "karmaFiles": [
     "bower_components/better-dom/dist/better-dom.js",
