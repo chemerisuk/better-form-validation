@@ -58,11 +58,11 @@
     }
 
     input[aria-invalid=false] {
-        background-image: url(src/valid-icon.svg);
+        background-image: url(valid-icon.svg);
     }
 
     input[aria-invalid=true] {
-        background-image: url(src/invalid-icon.svg);
+        background-image: url(invalid-icon.svg);
     }
 
     input[aria-invalid][type=checkbox],

@@ -273,11 +273,8 @@
                         setTimeout(() => { popover.hide() }, delay);
                     });
             }
-
-            if (errors.length > 0) {
-                // set error message
-                popover.value(errors[0].toLocaleString());
-            }
+            // set error message
+            popover.set("innerHTML", DOM.__(errors[0]));
 
             if (batch) {
                 // hide popover and show it later with delay
