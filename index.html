@@ -40,6 +40,45 @@
         -webkit-transform: rotate(-3deg);
         transform: rotate(-3deg);
     }
+
+    /* reset user agent styles */
+    :invalid {
+        outline: inherit;
+        box-shadow: inherit;
+    }
+
+    input[aria-invalid]::-ms-clear,
+    input[aria-invalid]::-ms-reveal {
+        display: none;
+    }
+
+    /* change background depending on value validity */
+    input[aria-invalid=false] {
+        background-color: #42B300;
+    }
+
+    input[aria-invalid=true] {
+        background-color: #FF5300;
+    }
+
+    /*input[aria-invalid] {
+        background-size: auto 80%;
+        background-position: right center;
+        background-repeat: no-repeat;
+    }
+
+    input[aria-invalid=false] {
+        background-image: url(valid-icon.svg);
+    }
+
+    input[aria-invalid=true] {
+        background-image: url(invalid-icon.svg);
+    }
+
+    input[aria-invalid][type=checkbox],
+    input[aria-invalid][type=radio] {
+        background: none;
+    }*/
     </style>
 </head>
 <body>

@@ -80,6 +80,29 @@ To fix the issue polyfill uses standards-based [`aria-invalid`](https://develope
 
 By default elements with `aria-invalid` have a success or fail icon on the right side of the input. But you can your owns style rules of course.
 
+Code example:
+```css
+/* reset user agent styles */
+:invalid {
+    outline: inherit;
+    box-shadow: inherit;
+}
+
+input[aria-invalid]::-ms-clear,
+input[aria-invalid]::-ms-reveal {
+    display: none;
+}
+
+/* change background depending on value validity */
+input[aria-invalid=false] {
+    background-color: #42B300;
+}
+
+input[aria-invalid=true] {
+    background-color: #FF5300;
+}
+```
+
 ## Browser support
 #### Desktop
 * Chrome

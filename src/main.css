@@ -50,34 +50,4 @@
         border-bottom-color: #FFF;
         margin-left: 1px;
     }
-
-    input[aria-invalid] {
-        background-size: auto 80%;
-        background-position: right center;
-        background-repeat: no-repeat;
-    }
-
-    input[aria-invalid=false] {
-        background-image: url(valid-icon.svg);
-    }
-
-    input[aria-invalid=true] {
-        background-image: url(invalid-icon.svg);
-    }
-
-    input[aria-invalid][type=checkbox],
-    input[aria-invalid][type=radio] {
-        background: none;
-    }
-
-    input[aria-invalid]::-ms-clear,
-    input[aria-invalid]::-ms-reveal {
-        display: none;
-    }
-
-    /* reset user agent styles */
-    :invalid {
-        outline: inherit;
-        box-shadow: inherit;
-    }
 }
