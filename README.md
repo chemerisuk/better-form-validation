@@ -78,19 +78,12 @@ Current standard has pseudo-selectors `:valid`, `:invalid` to capture an element
 
 To fix the issue polyfill uses standards-based [`aria-invalid`](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-invalid_attribute) attribute instead. Initially elements do not have this attribute, but as soon as user changed a value of an input (`"change"` event) or tried to submit the form (`"submit"` event) the attribute is set to `true` if the value is fine, or `false` otherwise.
 
-By default elements with `aria-invalid` have a success or fail icon on the right side of the input. But you can your owns style rules of course.
-
-Code example:
+###### Example of validity indication:
 ```css
 /* reset user agent styles */
 :invalid {
     outline: inherit;
     box-shadow: inherit;
-}
-
-input[aria-invalid]::-ms-clear,
-input[aria-invalid]::-ms-reveal {
-    display: none;
 }
 
 /* change background depending on value validity */
