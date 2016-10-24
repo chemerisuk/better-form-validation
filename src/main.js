@@ -91,7 +91,7 @@
                     /* falls through */
                 case "checkbox":
                     if (required && !this.get("checked")) {
-                        errors.push("field is required");
+                        errors.push(this.get("title") || "field is required");
                     }
                     break;
 
@@ -116,13 +116,13 @@
                             msg = this.get("title") || "illegal value format";
                         } else {
                             regexp = patterns[type];
-                            msg = I18N_MISMATCH[type];
+                            msg = this.get("title") || I18N_MISMATCH[type];
                         }
                     }
 
                     if (required && !regexp) {
                         regexp = patterns.required;
-                        msg = "field is required";
+                        msg = this.get("title") || "field is required";
                     }
 
                     if (regexp && !regexp.test(value)) {
